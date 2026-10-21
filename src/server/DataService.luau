@@ -18,6 +18,8 @@ function DataService.new()
     self.Profiles = {}
     self.Busy = {}
     self.Closing = {}
+    self.ExchangeLocks = {}
+    self.MutationLocks = {}
     -- Explicit opt-in only. API failures must never silently create disposable profiles.
     self.Ephemeral = RunService:IsStudio() and (Config.StudioPracticeMode or workspace:GetAttribute("ThriftEphemeral") == true)
     if not self.Ephemeral then
@@ -52,6 +54,7 @@ function DataService:load(userId)
                 blocked = true
                 return nil
             end
+            current.Data = Profile.reconcile(current.Data)
             current.Lock = {Token = self.Token, Expires = os.time() + Config.SessionLease}
             return current
         end)
@@ -101,7 +104,7 @@ function DataService:release(userId)
         return true
     end
     self.Closing[userId] = true
-    while self.Busy[userId] do task.wait(0.1) end
+    while self.Busy[userId] or self.ExchangeLocks[userId] or self.MutationLocks[userId] do task.wait(0.1) end
     local ok = self:save(userId, true)
     self.Profiles[userId] = nil
     self.Closing[userId] = nil

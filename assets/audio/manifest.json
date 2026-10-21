@@ -1,0 +1,80 @@
+{
+  "click": {
+    "file": "click.wav",
+    "duration": 0.41,
+    "sampleRate": 22050,
+    "channels": 1
+  },
+  "reveal": {
+    "file": "reveal.wav",
+    "duration": 1.02,
+    "sampleRate": 22050,
+    "channels": 1
+  },
+  "restore": {
+    "file": "restore.wav",
+    "duration": 0.85,
+    "sampleRate": 22050,
+    "channels": 1
+  },
+  "sale": {
+    "file": "sale.wav",
+    "duration": 1.05,
+    "sampleRate": 22050,
+    "channels": 1
+  },
+  "reward": {
+    "file": "reward.wav",
+    "duration": 1.4,
+    "sampleRate": 22050,
+    "channels": 1
+  },
+  "place": {
+    "file": "place.wav",
+    "duration": 0.58,
+    "sampleRate": 22050,
+    "channels": 1
+  },
+  "auction": {
+    "file": "auction.wav",
+    "duration": 0.9,
+    "sampleRate": 22050,
+    "channels": 1
+  },
+  "error": {
+    "file": "error.wav",
+    "duration": 0.55,
+    "sampleRate": 22050,
+    "channels": 1
+  },
+  "scrub": {
+    "file": "scrub.wav",
+    "duration": 0.48,
+    "sampleRate": 22050,
+    "channels": 1
+  },
+  "polish": {
+    "file": "polish.wav",
+    "duration": 0.68,
+    "sampleRate": 22050,
+    "channels": 1
+  },
+  "shop": {
+    "file": "shop.wav",
+    "duration": 22.857,
+    "sampleRate": 22050,
+    "channels": 1
+  },
+  "town": {
+    "file": "town.wav",
+    "duration": 20.0,
+    "sampleRate": 22050,
+    "channels": 1
+  },
+  "auction_music": {
+    "file": "auction_music.wav",
+    "duration": 17.143,
+    "sampleRate": 22050,
+    "channels": 1
+  }
+}
