@@ -1,0 +1,5 @@
+dist/
+.luau-tests.generated.luau
+*.rbxl
+*.rbxlx.lock
+.DS_Store

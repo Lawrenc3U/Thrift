@@ -1,0 +1,1703 @@
+<?xml version='1.0' encoding='utf-8'?>
+<roblox version="4">
+  <External>null</External>
+  <External>nil</External>
+  <Item class="Workspace" referent="RBX1">
+    <Properties>
+      <string name="Name">Workspace</string>
+      <bool name="StreamingEnabled">true</bool>
+      <float name="Gravity">196.2</float>
+    </Properties>
+  </Item>
+  <Item class="Lighting" referent="RBX2">
+    <Properties>
+      <string name="Name">Lighting</string>
+    </Properties>
+  </Item>
+  <Item class="SoundService" referent="RBX3">
+    <Properties>
+      <string name="Name">SoundService</string>
+    </Properties>
+  </Item>
+  <Item class="ReplicatedStorage" referent="RBX4">
+    <Properties>
+      <string name="Name">ReplicatedStorage</string>
+    </Properties>
+    <Item class="Folder" referent="RBX5">
+      <Properties>
+        <string name="Name">Shared</string>
+      </Properties>
+      <Item class="ModuleScript" referent="RBX11">
+        <Properties>
+          <string name="Name">Catalog</string>
+          <ProtectedString name="Source">local Catalog = {}
+local categories = {
+    {"Lamps", "Scrub", 22, {"Tulip", "Banker", "Mushroom", "Arc", "Lantern", "Desk", "Lava", "Tiffany", "Studio", "Moon"}},
+    {"Radios", "Rewire", 28, {"Pocket", "Bakelite", "Boombox", "Cathedral", "Transistor", "Space", "Kitchen", "Travel", "Jukebox", "Crystal"}},
+    {"Clocks", "Assemble", 25, {"Cuckoo", "Mantel", "Alarm", "Sunburst", "Pendulum", "Flip", "Station", "Carriage", "Orbital", "Kitten"}},
+    {"Chairs", "Repaint", 32, {"Rocking", "Windsor", "Tulip", "School", "Lounge", "Bistro", "Velvet", "Rattan", "Rocket", "Doll"}},
+    {"Toys", "Assemble", 18, {"Robot", "Train", "Teddy", "Rocket", "Carousel", "Dollhouse", "Racecar", "Duck", "Airplane", "Dinosaur"}},
+    {"Mirrors", "Polish", 24, {"Oval", "Sun", "Vanity", "Arch", "Pocket", "Gilded", "Cloud", "Star", "Shell", "Heart"}},
+    {"Cameras", "Rewire", 30, {"Box", "Instant", "Twin Lens", "Pocket", "Bellows", "Rangefinder", "Studio", "Movie", "Underwater", "Toy"}},
+    {"Vases", "Polish", 20, {"Bud", "Ginger", "Amphora", "Bubble", "Fluted", "Swan", "Geometric", "Rose", "Celadon", "Moon"}},
+}
+Catalog.Items = {}
+Catalog.ById = {}
+Catalog.Categories = {}
+for categoryIndex, group in ipairs(categories) do
+    table.insert(Catalog.Categories, group[1])
+    for index, name in ipairs(group[4]) do
+        local item = {
+            Id = string.lower(group[1]) .. "_" .. index,
+            Name = name .. " " .. string.sub(group[1], 1, #group[1] - 1),
+            Category = group[1], Minigame = group[2],
+            BaseValue = group[3] + index * 4,
+            Style = ({"Retro", "Cozy", "Futuristic", "Antique", "Cute"})[(index + categoryIndex - 2) % 5 + 1],
+            UnlockLevel = math.max(1, categoryIndex - 2),
+            Variant = index,
+        }
+        table.insert(Catalog.Items, item)
+        Catalog.ById[item.Id] = item
+    end
+end
+return Catalog
+</ProtectedString>
+        </Properties>
+      </Item>
+      <Item class="ModuleScript" referent="RBX12">
+        <Properties>
+          <string name="Name">Config</string>
+          <ProtectedString name="Source">-- Central tuning. No paid power or randomized Robux purchases.
+local Config = {
+    Version = 1,
+    StudioPracticeMode = true, -- Studio only; never disables live-server persistence.
+    StartingCash = 75,
+    InventoryLimit = 100,
+    MaxPlayers = 16,
+    AutosaveSeconds = 60,
+    SessionLease = 180,
+    Sources = {
+        Dumpster = {Cost = 0, Level = 1, Cooldown = 15, Weights = {70, 24, 5, 0.9, 0.1}},
+        Estate = {Cost = 90, Level = 3, Cooldown = 8, Weights = {30, 42, 22, 5, 1}},
+        Delivery = {Cost = 0, Level = 1, Cooldown = 0, Weights = {35, 40, 20, 4, 1}},
+    },
+    Rarities = {"Common", "Uncommon", "Rare", "Epic", "Legendary"},
+    RarityIcons = {"○", "◇", "△", "✦", "★"},
+    RarityColors = {"#AEB7B5", "#70C58D", "#6CABF3", "#C29AE8", "#EDC66D"},
+    RarityMultipliers = {1, 1.8, 3.5, 7, 15},
+    Conditions = {"Wrecked", "Poor", "Fair", "Good", "Mint"},
+    ConditionMultipliers = {0.25, 0.5, 0.85, 1.3, 2},
+    Styles = {"Retro", "Cozy", "Futuristic", "Antique", "Cute"},
+    Tiers = {
+        {Name = "Corner Stall", Cost = 0, Slots = 4, Level = 1},
+        {Name = "Small Shop", Cost = 600, Slots = 8, Level = 4},
+        {Name = "Boutique", Cost = 4000, Slots = 12, Level = 9},
+        {Name = "Department Store", Cost = 18000, Slots = 16, Level = 16},
+    },
+    ToolCosts = {150, 650, 2500},
+    CustomerSeconds = 18,
+    AuctionInterval = 240,
+    AuctionDuration = 45,
+    -- Peer transfers need a durable transaction journal before release. Never risk saves.
+    EnablePlayerMarket = false,
+    EnableTrading = false,
+    Decorations = {
+        {Id = "Rug", Name = "Woven welcome rug", Cost = 120},
+        {Id = "Plant", Name = "Happy houseplants", Cost = 180},
+        {Id = "Poster", Name = "Second chances poster", Cost = 90},
+        {Id = "Neon", Name = "Good finds neon sign", Cost = 400},
+        {Id = "Curtains", Name = "Rose linen curtains", Cost = 240},
+        {Id = "Trophy", Name = "Golden treasure sculpture", Cost = 1200},
+    },
+    CosmeticPasses = {}, -- [Roblox game-pass id] = cosmetic theme key; no placeholder IDs
+    Themes = {
+        {Id = "Cozy", Name = "Cozy Corner", Cost = 0, Color = {0.56, 0.75, 0.68}},
+        {Id = "Retro", Name = "Retro Revival", Cost = 350, Color = {0.83, 0.57, 0.47}},
+        {Id = "Futuristic", Name = "Neon Tomorrow", Cost = 600, Color = {0.43, 0.56, 0.76}},
+        {Id = "Antique", Name = "Antique Attic", Cost = 900, Color = {0.69, 0.56, 0.36}},
+        {Id = "Cute", Name = "Rose Cottage", Cost = 450, Color = {0.85, 0.61, 0.70}},
+    },
+}
+return Config
+</ProtectedString>
+        </Properties>
+      </Item>
+      <Item class="ModuleScript" referent="RBX13">
+        <Properties>
+          <string name="Name">Economy</string>
+          <ProtectedString name="Source">local Economy = {}
+function Economy.level(xp)
+    return math.floor(math.sqrt(math.max(0, xp) / 30)) + 1
+end
+function Economy.value(definition, item, rarityMultipliers, conditionMultipliers, demand, bonus)
+    return math.max(1, math.floor(definition.BaseValue * rarityMultipliers[item.Rarity]
+        * conditionMultipliers[item.Condition] * item.Variance * (demand or 1) * (bonus or 1)))
+end
+function Economy.pick(weights, randomUnit)
+    local total = 0
+    for _, weight in ipairs(weights) do total += weight end
+    local point = math.clamp(randomUnit, 0, 0.999999999) * total
+    for index, weight in ipairs(weights) do
+        point -= weight
+        if point &lt; 0 then return index end
+    end
+    return #weights
+end
+function Economy.daily(now) return math.floor(now / 86400) end
+function Economy.week(now) return math.floor((now + 3 * 86400) / (7 * 86400)) end
+function Economy.restore(condition, score, tool)
+    local gain = if score &gt;= 0.8 then 2 else 1
+    if tool &gt;= 3 and score &gt;= 0.6 then gain += 1 end
+    return math.min(5, condition + gain)
+end
+function Economy.validAmount(value, minimum, maximum)
+    return type(value) == "number" and value == value and value % 1 == 0
+        and value &gt;= minimum and value &lt;= maximum
+end
+return Economy
+</ProtectedString>
+        </Properties>
+      </Item>
+      <Item class="ModuleScript" referent="RBX14">
+        <Properties>
+          <string name="Name">Profile</string>
+          <ProtectedString name="Source">local Profile = {}
+function Profile.new()
+    return {
+        Version = 1, Cash = 75, XP = 0, Tier = 1, Tool = 0,
+        Inventory = {}, Collection = {}, Themes = {Cozy = true}, Theme = "Cozy",
+        Stats = {Found = 0, Restored = 0, Sold = 0, Earned = 0},
+        Tutorial = 0, LastDelivery = -1, Daily = {Day = -1, Claimed = {}},
+        Weekly = {Week = -1, Restored = 0, Sold = 0, Claimed = false},
+        Decorations = {}, PlacedDecor = {}, Reputation = 0, RatingTotal = 0, RatingCount = 0, Rated = {},
+        Settings = {Music = true, Effects = true}, Titles = {},
+    }
+end
+function Profile.reconcile(data)
+    local defaults = Profile.new()
+    local function merge(target, template)
+        for key, value in pairs(template) do
+            if target[key] == nil then
+                target[key] = if type(value) == "table" then table.clone(value) else value
+            elseif type(value) == "table" and type(target[key]) == "table" then
+                merge(target[key], value)
+            end
+        end
+    end
+    merge(data, defaults)
+    return data
+end
+return Profile
+</ProtectedString>
+        </Properties>
+      </Item>
+    </Item>
+  </Item>
+  <Item class="ServerScriptService" referent="RBX6">
+    <Properties>
+      <string name="Name">ServerScriptService</string>
+    </Properties>
+    <Item class="Folder" referent="RBX7">
+      <Properties>
+        <string name="Name">Server</string>
+      </Properties>
+      <Item class="ModuleScript" referent="RBX15">
+        <Properties>
+          <string name="Name">DataService</string>
+          <ProtectedString name="Source">local DataStoreService = game:GetService("DataStoreService")
+local HttpService = game:GetService("HttpService")
+local RunService = game:GetService("RunService")
+local Shared = game:GetService("ReplicatedStorage"):WaitForChild("Shared")
+local Config = require(Shared.Config)
+local Profile = require(Shared.Profile)
+local DataService = {}
+DataService.__index = DataService
+local function copy(value)
+    if type(value) ~= "table" then return value end
+    local result = {}
+    for key, child in pairs(value) do result[key] = copy(child) end
+    return result
+end
+function DataService.new()
+    local self = setmetatable({}, DataService)
+    self.Token = game.JobId .. ":" .. HttpService:GenerateGUID(false)
+    self.Profiles = {}
+    self.Busy = {}
+    self.Closing = {}
+    -- Explicit opt-in only. API failures must never silently create disposable profiles.
+    self.Ephemeral = RunService:IsStudio() and (Config.StudioPracticeMode or workspace:GetAttribute("ThriftEphemeral") == true)
+    if not self.Ephemeral then
+        self.Store = DataStoreService:GetDataStore("ThriftFlip_Profiles_v1")
+        self.Backup = DataStoreService:GetDataStore("ThriftFlip_Backups_v1")
+    end
+    return self
+end
+function DataService:retry(callback)
+    local lastError
+    for attempt = 1, 4 do
+        local ok, result = pcall(callback)
+        if ok then return true, result end
+        lastError = result
+        task.wait(math.min(8, 2 ^ (attempt - 1)))
+    end
+    warn("Thrift data operation failed: " .. tostring(lastError))
+    return false, nil
+end
+function DataService:load(userId)
+    if self.Ephemeral then
+        self.Profiles[userId] = Profile.new()
+        return self.Profiles[userId]
+    end
+    local blocked = false
+    local ok, record = self:retry(function()
+        blocked = false
+        return self.Store:UpdateAsync("p_" .. userId, function(current)
+            current = current or {Data = Profile.new()}
+            local lock = current.Lock
+            if lock and lock.Token ~= self.Token and lock.Expires &gt; os.time() then
+                blocked = true
+                return nil
+            end
+            current.Lock = {Token = self.Token, Expires = os.time() + Config.SessionLease}
+            return current
+        end)
+    end)
+    if not ok or blocked or not record then return nil end
+    self.Profiles[userId] = Profile.reconcile(record.Data)
+    return self.Profiles[userId]
+end
+function DataService:save(userId, release)
+    if not self.Profiles[userId] then return false end
+    if self.Busy[userId] then return false end
+    self.Busy[userId] = true
+    local snapshot = copy(self.Profiles[userId])
+    local savedAt = os.time()
+    local lostLock = false
+    local ok = true
+    if not self.Ephemeral then
+        ok = self:retry(function()
+            lostLock = false
+            return self.Store:UpdateAsync("p_" .. userId, function(current)
+                if not current or not current.Lock or current.Lock.Token ~= self.Token then
+                    lostLock = true
+                    return nil
+                end
+                return {Data = snapshot, SavedAt = savedAt,
+                    Lock = if release then nil else {Token = self.Token, Expires = os.time() + Config.SessionLease}}
+            end)
+        end)
+        if ok and not lostLock then
+            -- Separate recovery copy. Main UpdateAsync versions also remain available.
+            task.spawn(function()
+                self:retry(function()
+                    self.Backup:UpdateAsync("p_" .. userId, function(old)
+                        if old and old.SavedAt &gt;= savedAt then return nil end
+                        return {Data = snapshot, SavedAt = savedAt}
+                    end)
+                end)
+            end)
+        end
+    end
+    self.Busy[userId] = nil
+    return ok and not lostLock
+end
+function DataService:release(userId)
+    if self.Closing[userId] then
+        while self.Closing[userId] do task.wait(0.1) end
+        return true
+    end
+    self.Closing[userId] = true
+    while self.Busy[userId] do task.wait(0.1) end
+    local ok = self:save(userId, true)
+    self.Profiles[userId] = nil
+    self.Closing[userId] = nil
+    return ok
+end
+return DataService
+</ProtectedString>
+        </Properties>
+      </Item>
+      <Item class="ModuleScript" referent="RBX16">
+        <Properties>
+          <string name="Name">GameService</string>
+          <ProtectedString name="Source">local Players = game:GetService("Players")
+local HttpService = game:GetService("HttpService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Shared = ReplicatedStorage:WaitForChild("Shared")
+local Config = require(Shared.Config)
+local Catalog = require(Shared.Catalog)
+local Economy = require(Shared.Economy)
+local GameService = {}
+GameService.__index = GameService
+local customers = {
+    {Name = "Mabel · Collector", Style = "Antique", Budget = 20000},
+    {Name = "Jules · Designer", Style = "Retro", Budget = 10000},
+    {Name = "Pip · Pocket money", Style = "Cute", Budget = 180},
+    {Name = "Robin · Decorator", Style = "Cozy", Budget = 5000},
+    {Name = "Alex · Inventor", Style = "Futuristic", Budget = 6000},
+    {Name = "Sam · Bargain hunter", Style = "Retro", Budget = 1000},
+    {Name = "Lee · Neighbor", Style = "Cozy", Budget = 600},
+    {Name = "Bea · Curator", Style = "Antique", Budget = 40000},
+}
+local function shallowPublicItem(item)
+    if item.Inspected then return table.clone(item) end
+    return {Uid = item.Uid, DefId = item.DefId, Inspected = false, Condition = item.Condition}
+end
+function GameService.new(data, world, event)
+    return setmetatable({Data = data, World = world, Event = event,
+        Random = Random.new(), Sessions = {}, Offers = {}, Cooldowns = {}, Buckets = {},
+        Auction = nil, NextAuction = os.time() + 45, NextCustomer = {}, Ready = {},
+        Closing = false, Showcase = {Week = Economy.week(os.time()), Entries = {}, Votes = {}}}, GameService)
+end
+function GameService:profile(player)
+    if not self.Ready[player.UserId] or self.Data.Closing[player.UserId] then return nil end
+    return self.Data.Profiles[player.UserId]
+end
+function GameService:notify(player, message)
+    self.Event:FireClient(player, "Notice", message)
+end
+function GameService:spendable(player, profile)
+    local held = if self.Auction and self.Auction.Bidder == player.UserId then self.Auction.Bid else 0
+    return profile.Cash - held
+end
+function GameService:find(profile, uid)
+    if type(uid) ~= "string" or #uid &gt; 60 then return nil end
+    for index, item in ipairs(profile.Inventory) do if item.Uid == uid then return item, index end end
+    return nil
+end
+function GameService:demandStyle()
+    return Config.Styles[Economy.daily(os.time()) % #Config.Styles + 1]
+end
+function GameService:value(profile, item)
+    local definition = Catalog.ById[item.DefId]
+    local demand = if (item.Style or definition.Style) == self:demandStyle() then 1.2 else 1
+    local bonus = if (item.Style or definition.Style) == profile.Theme then 1.1 else 1
+    return Economy.value(definition, item, Config.RarityMultipliers, Config.ConditionMultipliers, demand, bonus)
+end
+function GameService:resetQuests(profile)
+    local day, week = Economy.daily(os.time()), Economy.week(os.time())
+    if profile.Daily.Day ~= day then
+        profile.Daily = {Day = day, Claimed = {}, Found = 0, Restored = 0, Sold = 0}
+    end
+    if profile.Weekly.Week ~= week then
+        profile.Weekly = {Week = week, Restored = 0, Sold = 0, Claimed = false}
+    end
+end
+function GameService:stat(profile, name, amount)
+    self:resetQuests(profile)
+    profile.Stats[name] = (profile.Stats[name] or 0) + amount
+    profile.Daily[name] = (profile.Daily[name] or 0) + amount
+    profile.Weekly[name] = (profile.Weekly[name] or 0) + amount
+    if profile.Stats.Sold &gt;= 10 then profile.Titles.Shopkeeper = true end
+    if profile.Stats.Restored &gt;= 100 then profile.Titles.Restorer = true end
+    if profile.Stats.Earned &gt;= 50000 then profile.Titles.Mogul = true end
+end
+function GameService:analytics(player, name)
+    -- Custom events require a published experience. Failure must not break gameplay.
+    pcall(function() game:GetService("AnalyticsService"):LogCustomEvent(player, name, 1) end)
+end
+function GameService:snapshot(player)
+    local profile = self:profile(player)
+    if not profile then return end
+    self:resetQuests(profile)
+    local inventory = {}
+    for _, item in ipairs(profile.Inventory) do
+        local view = shallowPublicItem(item)
+        if item.Inspected then view.Value = self:value(profile, item) end
+        table.insert(inventory, view)
+    end
+    local shops = {}
+    for _, other in ipairs(Players:GetPlayers()) do
+        local otherProfile = self:profile(other)
+        if otherProfile then
+            local plot = self.World.Owners[other.UserId]
+            table.insert(shops, {UserId = other.UserId, Name = other.DisplayName, Tier = otherProfile.Tier,
+                Rating = if otherProfile.RatingCount &gt; 0 then otherProfile.RatingTotal / otherProfile.RatingCount else 0,
+                Plot = plot and plot.Index})
+        end
+    end
+    local auction
+    if self.Auction then
+        auction = {Ends = self.Auction.Ends, Bid = self.Auction.Bid, Bidder = self.Auction.Bidder,
+            Item = self.Auction.PublicItem}
+    end
+    self.Event:FireClient(player, "State", {
+        Cash = profile.Cash, AvailableCash = self:spendable(player, profile), XP = profile.XP,
+        Level = Economy.level(profile.XP), Tier = profile.Tier, Tool = profile.Tool,
+        Inventory = inventory, Tutorial = profile.Tutorial, Reputation = profile.Reputation,
+        Decorations = profile.Decorations, PlacedDecor = profile.PlacedDecor, Collection = profile.Collection, Themes = profile.Themes, Theme = profile.Theme,
+        Daily = profile.Daily, Weekly = profile.Weekly, Stats = profile.Stats,
+        LastDelivery = profile.LastDelivery, Day = Economy.daily(os.time()),
+        Settings = profile.Settings, Titles = profile.Titles, Shops = shops,
+        Demand = self:demandStyle(), Auction = auction, NextAuction = self.NextAuction,
+        Offer = self.Offers[player.UserId], Ephemeral = self.Data.Ephemeral,
+        Showcase = self.Showcase, ServerTime = os.time(),
+    })
+end
+function GameService:broadcast()
+    for _, player in ipairs(Players:GetPlayers()) do self:snapshot(player) end
+end
+function GameService:refresh(player)
+    local profile = self:profile(player)
+    if profile then self.World:render(player, profile, Catalog, Config); self:snapshot(player) end
+end
+function GameService:generate(source, level, tutorial)
+    local eligible = {}
+    for _, definition in ipairs(Catalog.Items) do
+        if definition.UnlockLevel &lt;= level then table.insert(eligible, definition) end
+    end
+    local definition = eligible[self.Random:NextInteger(1, #eligible)]
+    local rarity = if tutorial then 2 else Economy.pick(Config.Sources[source].Weights, self.Random:NextNumber())
+    -- Free weekend event affects estate finds only; no Robux or odds manipulation.
+    if source == "Estate" and (os.date("!*t").wday == 1 or os.date("!*t").wday == 7) then
+        rarity = math.min(5, rarity + (if self.Random:NextNumber() &lt; 0.08 then 1 else 0))
+    end
+    return {Uid = HttpService:GenerateGUID(false), DefId = definition.Id, Rarity = rarity,
+        Condition = if tutorial then 2 else self.Random:NextInteger(1, 3),
+        Variance = self.Random:NextNumber(0.92, 1.08), Inspected = false, Style = definition.Style}
+end
+function GameService:source(player, payload)
+    local profile = self:profile(player)
+    local source = payload.Source
+    if type(source) ~= "string" or not Config.Sources[source] then return end
+    local location = if source == "Dumpster" then "Source" else source
+    if not self.World:near(player, location) then return self:notify(player, "Walk to the sourcing spot first.") end
+    local tuning = Config.Sources[source]
+    if Economy.level(profile.XP) &lt; tuning.Level then return self:notify(player, "Unlocks at level " .. tuning.Level .. ".") end
+    if #profile.Inventory &gt;= Config.InventoryLimit then return self:notify(player, "Inventory full. Sell an item first.") end
+    if self:spendable(player, profile) &lt; tuning.Cost then return self:notify(player, "Not enough available cash.") end
+    local cooldowns = self.Cooldowns[player.UserId] or {}; self.Cooldowns[player.UserId] = cooldowns
+    local remaining = (cooldowns[source] or 0) - os.clock()
+    if remaining &gt; 0 then return self:notify(player, "Come back in " .. math.ceil(remaining) .. "s.") end
+    if source == "Delivery" then
+        if profile.LastDelivery == Economy.daily(os.time()) then return self:notify(player, "Your next delivery arrives tomorrow (UTC).") end
+        profile.LastDelivery = Economy.daily(os.time())
+    end
+    cooldowns[source] = os.clock() + tuning.Cooldown
+    profile.Cash -= tuning.Cost
+    table.insert(profile.Inventory, self:generate(source, Economy.level(profile.XP), profile.Tutorial == 0))
+    profile.XP += 4; self:stat(profile, "Found", 1)
+    if profile.Tutorial == 0 then profile.Tutorial = 1; self:analytics(player, "TutorialFind") end
+    self:notify(player, "A mystery find! Open your bag to inspect it."); self:snapshot(player)
+end
+function GameService:inspect(player, payload)
+    local profile = self:profile(player)
+    local item = self:find(profile, payload.Uid)
+    if not item or item.Inspected then return end
+    item.Inspected = true
+    local key = item.DefId .. ":" .. item.Rarity
+    if not profile.Collection[key] then
+        profile.Collection[key] = true; profile.XP += 8
+        local count = 0; for _ in pairs(profile.Collection) do count += 1 end
+        if count % 10 == 0 then profile.Cash += 100; self:notify(player, "Collection milestone! +$100") end
+    end
+    if profile.Tutorial == 1 then profile.Tutorial = 2 end
+    self:notify(player, Config.RarityIcons[item.Rarity] .. " " .. Config.Rarities[item.Rarity] .. " " .. Catalog.ById[item.DefId].Name)
+    self:snapshot(player)
+end
+function GameService:beginRestore(player, payload)
+    local profile = self:profile(player)
+    if not self.World:near(player, "Workbench") then return self:notify(player, "Visit your workbench to restore.") end
+    if self.Sessions[player.UserId] then return self:notify(player, "Finish your current restoration first.") end
+    local item = self:find(profile, payload.Uid)
+    if not item or not item.Inspected or item.Slot or item.Condition &gt;= 5 then return self:notify(player, "Choose an inspected item below Mint; take it off display first.") end
+    local kind = payload.Kind or Catalog.ById[item.DefId].Minigame
+    if not table.find({"Scrub", "Polish", "Rewire", "Repaint", "Assemble"}, kind) then return end
+    local order = {}; for i = 1, 16 do order[i] = i end
+    for i = #order, 2, -1 do local j = self.Random:NextInteger(1, i); order[i], order[j] = order[j], order[i] end
+    local targets = if kind == "Polish" then {1, 2, 3, 4, 8, 7, 6, 5, 9, 10, 11, 12, 16, 15, 14, 13} else order
+    local session = {Token = HttpService:GenerateGUID(false), Uid = item.Uid, Kind = kind,
+        Started = os.clock(), Ends = os.clock() + 20, Progress = 0, Mistakes = 0, LastInput = 0,
+        Targets = targets, Seen = {}, Palette = 1, RequiredPalette = self.Random:NextInteger(1, 5)}
+    self.Sessions[player.UserId] = session
+    self.Event:FireClient(player, "Minigame", {Token = session.Token, Kind = kind, Targets = targets,
+        RequiredPalette = session.RequiredPalette, Duration = 20, Minimum = 8, Tool = profile.Tool})
+end
+function GameService:restoreInput(player, payload)
+    local session = self.Sessions[player.UserId]
+    if not session or session.Token ~= payload.Token or os.clock() &gt; session.Ends then return end
+    if not self.World:near(player, "Workbench") then return end
+    if os.clock() - session.LastInput &lt; 0.06 then return end
+    session.LastInput = os.clock()
+    if payload.Palette and session.Kind == "Repaint" and Economy.validAmount(payload.Palette, 1, 5) then
+        session.Palette = payload.Palette; return
+    end
+    local cell = payload.Cell
+    if not Economy.validAmount(cell, 1, 16) or session.Progress &gt;= 16 then return end
+    local valid = true
+    local other
+    local gain = 1
+    if session.Kind == "Rewire" then
+        if session.Seen[cell] then return end
+        if not session.WireStart then
+            session.WireStart = cell
+            self.Event:FireClient(player, "MinigameProgress", {Progress = session.Progress, Mistakes = session.Mistakes, Cell = cell, Selected = true})
+            return
+        end
+        other = session.WireStart
+        if cell == other then return end
+        session.WireStart = nil
+        local a, b = table.find(session.Targets, cell), table.find(session.Targets, other)
+        valid = math.ceil(a / 2) == math.ceil(b / 2)
+        gain = 2
+    elseif session.Kind == "Assemble" then
+        valid = not session.Seen[cell] and payload.Piece == table.find(session.Targets, cell)
+    elseif session.Kind == "Scrub" then valid = not session.Seen[cell]
+    elseif session.Kind == "Repaint" then valid = not session.Seen[cell] and session.Palette == session.RequiredPalette
+    else valid = cell == session.Targets[session.Progress + 1] end
+    if valid then
+        session.Progress += gain; session.Seen[cell] = true
+        if other then session.Seen[other] = true end
+    else session.Mistakes += 1 end
+    self.Event:FireClient(player, "MinigameProgress", {Progress = session.Progress, Mistakes = session.Mistakes, Cell = cell, Other = other, Valid = valid})
+end
+function GameService:finishRestore(player, payload)
+    local session = self.Sessions[player.UserId]
+    if not session or session.Token ~= payload.Token then return end
+    if os.clock() - session.Started &lt; 8 then return end
+    local profile = self:profile(player)
+    local item = self:find(profile, session.Uid)
+    self.Sessions[player.UserId] = nil
+    if not item then return end
+    if payload.Cancel or not self.World:near(player, "Workbench") then
+        self.Event:FireClient(player, "MinigameDone", {Cancelled = true}); return
+    end
+    local score = math.clamp(session.Progress / 16 - session.Mistakes * 0.025 + profile.Tool * 0.025, 0, 1)
+    item.Condition = Economy.restore(item.Condition, score, profile.Tool)
+    if session.Kind == "Repaint" then item.Style = Config.Styles[session.RequiredPalette] end
+    profile.XP += 15; self:stat(profile, "Restored", 1)
+    if profile.Tutorial == 2 then profile.Tutorial = 3; self:analytics(player, "TutorialRestore") end
+    local quality = if score &gt;= 0.8 then "Perfect" elseif score &gt;= 0.45 then "Good" else "Okay"
+    self.Event:FireClient(player, "MinigameDone", {Quality = quality, Condition = Config.Conditions[item.Condition]})
+    self:snapshot(player)
+end
+function GameService:display(player, payload)
+    local profile = self:profile(player)
+    if not self.World:near(player, "Display") then return self:notify(player, "Visit your shop to place items.") end
+    local item = self:find(profile, payload.Uid)
+    if not item or not item.Inspected then return end
+    local session = self.Sessions[player.UserId]
+    if session and session.Uid == item.Uid then return self:notify(player, "Finish restoring this item first.") end
+    if payload.Remove then
+        if self.Offers[player.UserId] and self.Offers[player.UserId].Uid == item.Uid then self.Offers[player.UserId] = nil end
+        item.Slot = nil; return self:refresh(player)
+    end
+    if not Economy.validAmount(payload.Slot, 1, Config.Tiers[profile.Tier].Slots) then return end
+    for _, other in ipairs(profile.Inventory) do
+        if other.Slot == payload.Slot then return self:notify(player, "That display is occupied.") end
+    end
+    item.Slot = payload.Slot
+    if profile.Tutorial == 3 then profile.Tutorial = 4; self.NextCustomer[player.UserId] = os.time() + 3 end
+    self:refresh(player)
+end
+function GameService:makeOffer(player)
+    local profile = self:profile(player)
+    if not profile or self.Offers[player.UserId] then return end
+    local displayed = {}; for _, item in ipairs(profile.Inventory) do if item.Slot then table.insert(displayed, item) end end
+    if #displayed == 0 then return end
+    local customer = customers[self.Random:NextInteger(1, #customers)]
+    local item = displayed[self.Random:NextInteger(1, #displayed)]
+    local value = self:value(profile, item)
+    local preferred = item.Style == customer.Style
+    local amount = math.floor(value * (if preferred then 1.15 else self.Random:NextNumber(0.85, 1.05)))
+    if profile.Tutorial == 4 then customer = {Name = "Mabel · Welcome gift", Budget = 100000}; amount = math.max(150, amount) end
+    if amount &gt; customer.Budget then return end
+    self.Offers[player.UserId] = {Uid = item.Uid, Amount = amount, Customer = customer.Name,
+        Ends = os.time() + 20, Countered = false, Preferred = preferred}
+    self.World:customer(player.UserId, customer.Name); self:snapshot(player)
+end
+function GameService:haggle(player, payload)
+    local profile = self:profile(player)
+    local offer = self.Offers[player.UserId]
+    if not offer or os.time() &gt; offer.Ends then return end
+    if not self.World:near(player, "Shop") then return self:notify(player, "Meet your customer in your shop.") end
+    local item, index = self:find(profile, offer.Uid)
+    if not item or not item.Slot then self.Offers[player.UserId] = nil; return end
+    if payload.Choice == "Decline" then self.Offers[player.UserId] = nil
+    elseif payload.Choice == "Counter" and not offer.Countered then
+        offer.Countered = true
+        if self.Random:NextNumber() &lt; 0.65 then
+            offer.Amount = math.floor(offer.Amount * 1.12); self:notify(player, "They accepted your counter! Accept to sell.")
+        else self.Offers[player.UserId] = nil; self:notify(player, "They passed this time. Another customer will come.") end
+    elseif payload.Choice == "Accept" then
+        self.Offers[player.UserId] = nil; table.remove(profile.Inventory, index)
+        profile.Cash += offer.Amount; profile.XP += 20; profile.Reputation += 1
+        self:stat(profile, "Sold", 1); self:stat(profile, "Earned", offer.Amount)
+        if profile.Tutorial == 4 then profile.Tutorial = 5; self:analytics(player, "TutorialFirstSale") end
+        self:notify(player, "Sold! +$" .. offer.Amount); self:analytics(player, "ItemSold")
+    else return end
+    self:refresh(player)
+end
+function GameService:upgrade(player, payload)
+    local profile = self:profile(player)
+    if not self.World:near(player, "Shop") then return self:notify(player, "Upgrade at your shop counter.") end
+    if payload.Kind == "Shop" then
+        local nextTier = Config.Tiers[profile.Tier + 1]
+        if not nextTier then return self:notify(player, "Your shop is fully upgraded!") end
+        if Economy.level(profile.XP) &lt; nextTier.Level then return self:notify(player, "Requires level " .. nextTier.Level .. ".") end
+        if self:spendable(player, profile) &lt; nextTier.Cost then return self:notify(player, "Not enough cash.") end
+        profile.Cash -= nextTier.Cost; profile.Tier += 1; self:analytics(player, "ShopUpgrade")
+    elseif payload.Kind == "Tool" then
+        local cost = Config.ToolCosts[profile.Tool + 1]
+        if not cost then return self:notify(player, "Tools fully upgraded!") end
+        if self:spendable(player, profile) &lt; cost then return self:notify(player, "Not enough cash.") end
+        profile.Cash -= cost; profile.Tool += 1
+    elseif payload.Kind == "Decor" then
+        local decoration
+        for _, entry in ipairs(Config.Decorations) do if entry.Id == payload.Decor then decoration = entry end end
+        if not decoration then return end
+        if not profile.Decorations[decoration.Id] then
+            if self:spendable(player, profile) &lt; decoration.Cost then return self:notify(player, "Not enough cash.") end
+            profile.Cash -= decoration.Cost; profile.Decorations[decoration.Id] = true
+        end
+        profile.PlacedDecor[decoration.Id] = not profile.PlacedDecor[decoration.Id]
+    elseif payload.Kind == "Theme" then
+        local theme
+        for _, candidate in ipairs(Config.Themes) do if candidate.Id == payload.Theme then theme = candidate end end
+        if not theme then return end
+        if not profile.Themes[theme.Id] then
+            if self:spendable(player, profile) &lt; theme.Cost then return self:notify(player, "Not enough cash.") end
+            profile.Cash -= theme.Cost; profile.Themes[theme.Id] = true
+        end
+        profile.Theme = theme.Id
+    end
+    self:refresh(player)
+end
+function GameService:quest(player, payload)
+    local profile = self:profile(player); self:resetQuests(profile)
+    local daily = {Find = {"Found", 3, 65}, Restore = {"Restored", 3, 100}, Sell = {"Sold", 3, 150}}
+    local quest = daily[payload.Id]
+    if quest then
+        if profile.Daily.Claimed[payload.Id] then return end
+        if (profile.Daily[quest[1]] or 0) &lt; quest[2] then return self:notify(player, "Quest not finished yet.") end
+        profile.Daily.Claimed[payload.Id] = true; profile.Cash += quest[3]; profile.XP += 20
+        self:notify(player, "Daily quest complete! +$" .. quest[3])
+    elseif payload.Id == "Weekly" then
+        if profile.Weekly.Claimed then return end
+        if profile.Weekly.Restored &lt; 20 or profile.Weekly.Sold &lt; 15 then return self:notify(player, "Restore 20 and sell 15 this week.") end
+        profile.Weekly.Claimed = true; profile.Cash += 1200; profile.XP += 100
+        profile.Titles.WeeklyWonder = true; self:notify(player, "Weekly quest complete! +$1200")
+    end
+    self:snapshot(player)
+end
+function GameService:bid(player, payload)
+    local profile = self:profile(player)
+    local auction = self.Auction
+    if not auction or os.time() &gt;= auction.Ends then return end
+    if not self.World:near(player, "Auction") then return self:notify(player, "Visit the auction house to bid.") end
+    if #profile.Inventory &gt;= Config.InventoryLimit then return self:notify(player, "Make room in your inventory first.") end
+    local minimum = auction.Bid + math.max(10, math.floor(auction.Bid * 0.1))
+    if not Economy.validAmount(payload.Amount, minimum, 10000000) or payload.Amount &gt; profile.Cash then return self:notify(player, "Your bid must beat $" .. (minimum - 1) .. " and fit your cash balance.") end
+    auction.Bid = payload.Amount; auction.Bidder = player.UserId
+    -- Cash is reserved, never removed before a win. Save cannot persist an orphan escrow.
+    auction.Ends = math.max(auction.Ends, math.min(auction.Started + 90, os.time() + 8))
+    self:broadcast()
+end
+function GameService:rating(player, payload)
+    local profile = self:profile(player)
+    if not Economy.validAmount(payload.UserId, 1, 9007199254740991) or payload.UserId == player.UserId then return end
+    if not Economy.validAmount(payload.Stars, 1, 5) then return end
+    local target = Players:GetPlayerByUserId(payload.UserId)
+    local targetProfile = target and self:profile(target)
+    local plot = self.World.Owners[payload.UserId]
+    local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+    if not targetProfile or not plot or not root or (root.Position - plot.CF.Position).Magnitude &gt; 30 then return self:notify(player, "Visit that shop before rating it.") end
+    local key = tostring(payload.UserId)
+    if profile.Rated[key] == Economy.daily(os.time()) then return self:notify(player, "You rated this shop today.") end
+    profile.Rated[key] = Economy.daily(os.time()); targetProfile.RatingTotal += payload.Stars; targetProfile.RatingCount += 1
+    -- Remove old votes to bound saved data.
+    for id, day in pairs(profile.Rated) do if day &lt; Economy.daily(os.time()) - 2 then profile.Rated[id] = nil end end
+    self:notify(player, "Thanks for visiting!"); self:refresh(target); self:snapshot(player)
+end
+function GameService:showcase(player, payload)
+    local profile = self:profile(player)
+    if payload.Choice == "Enter" then
+        local existing = self.Showcase.Entries[tostring(player.UserId)]
+        self.Showcase.Entries[tostring(player.UserId)] = {Name = player.DisplayName, Votes = if existing then existing.Votes else 0, Theme = profile.Theme}
+        self:notify(player, "Shop entered in this server's weekly showcase.")
+    elseif payload.Choice == "Vote" then
+        if type(payload.UserId) ~= "number" or payload.UserId == player.UserId then return end
+        local key = tostring(player.UserId)
+        local entry = self.Showcase.Entries[tostring(payload.UserId)]
+        if not entry or self.Showcase.Votes[key] then return end
+        self.Showcase.Votes[key] = true; entry.Votes += 1
+    end
+    self:broadcast()
+end
+function GameService:settings(player, payload)
+    local profile = self:profile(player)
+    if (payload.Name == "Music" or payload.Name == "Effects") and type(payload.Enabled) == "boolean" then
+        profile.Settings[payload.Name] = payload.Enabled; self:snapshot(player)
+    end
+end
+local handlers = {
+    Source = GameService.source, Inspect = GameService.inspect, BeginRestore = GameService.beginRestore,
+    RestoreInput = GameService.restoreInput, FinishRestore = GameService.finishRestore,
+    Display = GameService.display, Haggle = GameService.haggle, Upgrade = GameService.upgrade,
+    Quest = GameService.quest, Bid = GameService.bid, Rate = GameService.rating,
+    Showcase = GameService.showcase, Settings = GameService.settings,
+}
+function GameService:request(player, action, payload)
+    if self.Closing or not self:profile(player) then return end
+    if type(action) ~= "string" or #action &gt; 32 or type(payload) ~= "table" then return end
+    local bucket = self.Buckets[player.UserId] or {Tokens = 35, At = os.clock()}
+    self.Buckets[player.UserId] = bucket
+    local now = os.clock(); bucket.Tokens = math.min(35, bucket.Tokens + (now - bucket.At) * 18); bucket.At = now
+    if bucket.Tokens &lt; 1 then return end
+    bucket.Tokens -= 1
+    -- Reject oversized/nested input before dispatch; all payloads are scalar.
+    local count = 0
+    for key, value in pairs(payload) do
+        count += 1
+        if count &gt; 8 or type(key) ~= "string" or #key &gt; 32 then return end
+        if type(value) ~= "string" and type(value) ~= "number" and type(value) ~= "boolean" then return end
+        if type(value) == "string" and #value &gt; 100 then return end
+        if type(value) == "number" and (value ~= value or math.abs(value) == math.huge) then return end
+    end
+    if action == "Sync" then return self:snapshot(player) end
+    if action == "CancelRestore" then
+        local session = self.Sessions[player.UserId]
+        if session then self.Sessions[player.UserId] = nil; self.Event:FireClient(player, "MinigameDone", {Cancelled = true}) end
+        return
+    end
+    local handler = handlers[action]
+    if handler then
+        local ok, err = pcall(handler, self, player, payload)
+        if not ok then warn("Action " .. action .. " failed: " .. tostring(err)); self:notify(player, "That action could not finish. Please try again.") end
+    end
+end
+function GameService:join(player)
+    local profile = self.Data:load(player.UserId)
+    if not profile then player:Kick("Your save is unavailable or still open in another server. Please rejoin shortly; no data was overwritten."); return end
+    if not player.Parent then self.Data:release(player.UserId); return end
+    if self.Closing then self.Data:release(player.UserId); player:Kick("Server closing. Please rejoin."); return end
+    if not self.World:assign(player) then self.Data:release(player.UserId); player:Kick("This town is full. Please join another server."); return end
+    self.Ready[player.UserId] = true; self:resetQuests(profile)
+    self.NextCustomer[player.UserId] = os.time() + 10
+    local leaderstats = Instance.new("Folder"); leaderstats.Name = "leaderstats"; leaderstats.Parent = player
+    local cash = Instance.new("IntValue"); cash.Name = "Cash"; cash.Value = profile.Cash; cash.Parent = leaderstats
+    local level = Instance.new("IntValue"); level.Name = "Level"; level.Value = Economy.level(profile.XP); level.Parent = leaderstats
+    self:refresh(player); self:analytics(player, "SessionStart")
+    self:notify(player, if profile.Tutorial &lt; 5 then "Welcome! Find a mystery item in Dumpster Alley." else "Welcome back to Thrift Street!")
+end
+function GameService:leave(player)
+    self.Ready[player.UserId] = nil
+    if self.Auction and self.Auction.Bidder == player.UserId then self.Auction.Bidder = nil; self.Auction.Bid = 0 end
+    self.Sessions[player.UserId] = nil; self.Offers[player.UserId] = nil
+    self.Cooldowns[player.UserId] = nil; self.Buckets[player.UserId] = nil; self.NextCustomer[player.UserId] = nil
+    self.World:release(player.UserId)
+    self.Data:release(player.UserId)
+end
+function GameService:tick()
+    local now = os.time()
+    if self.Showcase.Week ~= Economy.week(now) then
+        local winner, votes = nil, 0
+        for id, entry in pairs(self.Showcase.Entries) do if entry.Votes &gt; votes then winner = tonumber(id); votes = entry.Votes end end
+        local winnerProfile = winner and self.Data.Profiles[winner]
+        if winnerProfile then winnerProfile.Titles.ShowcaseWinner = true end
+        self.Showcase = {Week = Economy.week(now), Entries = {}, Votes = {}}
+    end
+    if not self.Auction and now &gt;= self.NextAuction then
+        local item = self:generate("Estate", 100, false); item.Rarity = math.max(3, item.Rarity); item.Inspected = true
+        self.Auction = {Item = item, PublicItem = shallowPublicItem(item), Bid = 0, Bidder = nil,
+            Started = now, Ends = now + Config.AuctionDuration}
+        self:broadcast()
+    elseif self.Auction and now &gt;= self.Auction.Ends then
+        local auction = self.Auction
+        local winner = auction.Bidder and Players:GetPlayerByUserId(auction.Bidder)
+        local profile = winner and self:profile(winner)
+        if profile and #profile.Inventory &lt; Config.InventoryLimit and profile.Cash &gt;= auction.Bid then
+            profile.Cash -= auction.Bid; table.insert(profile.Inventory, auction.Item)
+            profile.Collection[auction.Item.DefId .. ":" .. auction.Item.Rarity] = true
+            self:notify(winner, "Going, going, yours! Your auction find is in your bag.")
+        end
+        self.Auction = nil; self.NextAuction = now + Config.AuctionInterval; self:broadcast()
+    end
+    for _, player in ipairs(Players:GetPlayers()) do
+        local profile = self:profile(player)
+        if profile then
+            local offer = self.Offers[player.UserId]
+            if offer and now &gt;= offer.Ends then self.Offers[player.UserId] = nil; self:snapshot(player) end
+            if now &gt;= (self.NextCustomer[player.UserId] or 0) then
+                self.NextCustomer[player.UserId] = now + math.max(8, Config.CustomerSeconds - math.floor(profile.Reputation / 30))
+                self:makeOffer(player)
+            end
+            local session = self.Sessions[player.UserId]
+            if session and os.clock() &gt; session.Ends then self:finishRestore(player, {Token = session.Token}) end
+            local stats = player:FindFirstChild("leaderstats")
+            if stats then stats.Cash.Value = profile.Cash; stats.Level.Value = Economy.level(profile.XP) end
+        end
+    end
+end
+return GameService
+</ProtectedString>
+        </Properties>
+      </Item>
+      <Item class="Script" referent="RBX17">
+        <Properties>
+          <string name="Name">Main</string>
+          <ProtectedString name="Source">local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local CollectionService = game:GetService("CollectionService")
+local MarketplaceService = game:GetService("MarketplaceService")
+local Config = require(ReplicatedStorage.Shared.Config)
+local remotes = Instance.new("Folder"); remotes.Name = "Remotes"; remotes.Parent = ReplicatedStorage
+local event = Instance.new("RemoteEvent"); event.Name = "Game"; event.Parent = remotes
+local DataService = require(script.Parent.DataService)
+local World = require(script.Parent.World)
+local GameService = require(script.Parent.GameService)
+local data = DataService.new()
+local world = World.new()
+local service = GameService.new(data, world, event)
+event.OnServerEvent:Connect(function(player, action, payload) service:request(player, action, payload) end)
+local function connectPrompt(prompt)
+    prompt.Triggered:Connect(function(player)
+        if not service:profile(player) then return end
+        local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+        if not root or not prompt.Parent:IsA("BasePart") or (root.Position - prompt.Parent.Position).Magnitude &gt; 16 then return end
+        local action, owner = prompt:GetAttribute("Action"), prompt:GetAttribute("Owner")
+        if owner ~= 0 and owner ~= player.UserId then
+            event:FireClient(player, "Open", {Page = "Visit", Owner = owner}); return
+        end
+        event:FireClient(player, "Open", {Page = action, Slot = prompt:GetAttribute("Slot")})
+    end)
+end
+for _, prompt in ipairs(CollectionService:GetTagged("ThriftInteractable")) do connectPrompt(prompt) end
+CollectionService:GetInstanceAddedSignal("ThriftInteractable"):Connect(connectPrompt)
+Players.PlayerAdded:Connect(function(player) service:join(player) end)
+Players.PlayerRemoving:Connect(function(player) service:leave(player) end)
+for _, player in ipairs(Players:GetPlayers()) do task.spawn(function() service:join(player) end) end
+MarketplaceService.PromptGamePassPurchaseFinished:Connect(function(player, passId, purchased)
+    local theme = Config.CosmeticPasses[passId]
+    local profile = service:profile(player)
+    if purchased and theme and profile then profile.Themes[theme] = true; service:snapshot(player) end
+end)
+task.spawn(function()
+    while not service.Closing do task.wait(1); service:tick() end
+end)
+task.spawn(function()
+    while not service.Closing do
+        task.wait(Config.AutosaveSeconds)
+        for _, player in ipairs(Players:GetPlayers()) do
+            if service:profile(player) then
+                task.spawn(function()
+                    if not data:save(player.UserId, false) and player.Parent then
+                        -- Stop mutations when the lease cannot be renewed. A failed save
+                        -- cannot safely coexist with another server acquiring the profile.
+                        service.Ready[player.UserId] = nil
+                        player:Kick("Save connection interrupted. Please rejoin to protect your progress.")
+                    end
+                end)
+            end
+        end
+    end
+end)
+game:BindToClose(function()
+    service.Closing = true
+    local remaining = 0
+    for userId in pairs(data.Profiles) do
+        remaining += 1
+        task.spawn(function()
+            if not data.Closing[userId] then data:release(userId) end
+            remaining -= 1
+        end)
+    end
+    local deadline = os.clock() + 25
+    while remaining &gt; 0 and os.clock() &lt; deadline do task.wait(0.1) end
+end)
+</ProtectedString>
+        </Properties>
+      </Item>
+      <Item class="ModuleScript" referent="RBX18">
+        <Properties>
+          <string name="Name">World</string>
+          <ProtectedString name="Source">local CollectionService = game:GetService("CollectionService")
+local Lighting = game:GetService("Lighting")
+local TweenService = game:GetService("TweenService")
+local World = {}
+World.__index = World
+local colors = {
+    Cream = Color3.fromRGB(246, 233, 207), Wood = Color3.fromRGB(151, 105, 72),
+    Teal = Color3.fromRGB(111, 173, 158), Rose = Color3.fromRGB(207, 146, 153),
+    Gold = Color3.fromRGB(235, 190, 87), Dark = Color3.fromRGB(56, 69, 66),
+}
+local function part(parent, name, size, cf, color, shape)
+    local p = Instance.new("Part")
+    p.Name = name; p.Size = size; p.CFrame = cf; p.Color = color
+    p.Anchored = true; p.TopSurface = Enum.SurfaceType.Smooth; p.BottomSurface = Enum.SurfaceType.Smooth
+    p.Material = Enum.Material.SmoothPlastic
+    if shape then p.Shape = shape end
+    p.Parent = parent
+    return p
+end
+local function sign(parent, text, cf, size)
+    local board = part(parent, "Sign", size or Vector3.new(16, 3, 0.3), cf, colors.Dark)
+    local gui = Instance.new("SurfaceGui"); gui.Face = Enum.NormalId.Front
+    gui.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud; gui.PixelsPerStud = 35; gui.Parent = board
+    local label = Instance.new("TextLabel"); label.Size = UDim2.fromScale(1, 1)
+    label.BackgroundTransparency = 1; label.Text = text; label.TextColor3 = colors.Cream
+    label.Font = Enum.Font.GothamBold; label.TextScaled = true; label.Parent = gui
+    local padding = Instance.new("UIPadding"); padding.PaddingLeft = UDim.new(0.04, 0); padding.PaddingRight = UDim.new(0.04, 0); padding.Parent = label
+    return label
+end
+local function prompt(parent, text, action, owner, slot)
+    local p = Instance.new("ProximityPrompt"); p.ActionText = text; p.ObjectText = "Thrift Flip"
+    p.MaxActivationDistance = 12; p.RequiresLineOfSight = false; p.HoldDuration = 0.15
+    p:SetAttribute("Action", action); p:SetAttribute("Owner", owner or 0); p:SetAttribute("Slot", slot or 0)
+    CollectionService:AddTag(p, "ThriftInteractable"); p.Parent = parent
+end
+function World.new()
+    local self = setmetatable({Plots = {}, Owners = {}, Hooks = {}}, World)
+    local existing = workspace:FindFirstChild("ThriftStreet")
+    if existing then existing:Destroy() end
+    self.Root = Instance.new("Model"); self.Root.Name = "ThriftStreet"; self.Root.Parent = workspace
+    Lighting.ClockTime = 16.2; Lighting.Brightness = 2; Lighting.Ambient = Color3.fromRGB(147, 131, 116)
+    Lighting.OutdoorAmbient = Color3.fromRGB(163, 157, 142)
+    local atmosphere = Instance.new("Atmosphere"); atmosphere.Density = 0.22; atmosphere.Color = colors.Cream; atmosphere.Parent = Lighting
+    part(self.Root, "Meadow", Vector3.new(440, 2, 520), CFrame.new(0, -2, 0), Color3.fromRGB(134, 163, 112))
+    local street = part(self.Root, "Cobblestone", Vector3.new(36, 0.5, 440), CFrame.new(0, -0.6, 0), Color3.fromRGB(181, 171, 151))
+    street.Material = Enum.Material.Cobblestone
+    part(self.Root, "Square", Vector3.new(100, 0.5, 70), CFrame.new(0, -0.3, -170), colors.Cream)
+    for side = -1, 1, 2 do
+        part(self.Root, "Walkway", Vector3.new(9, 0.5, 440), CFrame.new(side * 23, -0.1, 0), colors.Cream)
+    end
+    local fountain = part(self.Root, "Fountain", Vector3.new(2, 14, 14), CFrame.new(0, 1, -170), colors.Wood, Enum.PartType.Cylinder)
+    fountain.CFrame *= CFrame.Angles(0, 0, math.pi / 2)
+    part(self.Root, "Water", Vector3.new(11, 0.3, 11), CFrame.new(0, 2.2, -170), Color3.fromRGB(114, 189, 209))
+    part(self.Root, "FountainTop", Vector3.new(3, 4, 3), CFrame.new(0, 3, -170), colors.Cream)
+    local spawn = Instance.new("SpawnLocation"); spawn.Name = "TownSpawn"; spawn.Size = Vector3.new(8, 0.3, 8)
+    spawn.CFrame = CFrame.new(0, 0.2, -145); spawn.Anchored = true; spawn.Neutral = true; spawn.Transparency = 1; spawn.Parent = self.Root
+    local destinations = {
+        {"DUMPSTER ALLEY", Vector3.new(-40, 2, -120), "Source", colors.Teal},
+        {"ESTATE SALE", Vector3.new(42, 2, -120), "Estate", colors.Rose},
+        {"AUCTION HOUSE", Vector3.new(0, 2, -211), "Auction", colors.Gold},
+        {"QUESTS &amp; SHOWCASE", Vector3.new(40, 2, -175), "Quests", colors.Teal},
+        {"DAILY DELIVERY", Vector3.new(-40, 2, -175), "Delivery", colors.Rose},
+        {"MARKET SQUARE", Vector3.new(0, 2, 210), "Market", colors.Teal},
+    }
+    self.Destinations = {}
+    for _, entry in ipairs(destinations) do
+        local base = part(self.Root, entry[1], Vector3.new(14, 4, 8), CFrame.new(entry[2]), entry[4])
+        sign(self.Root, entry[1], CFrame.new(entry[2] + Vector3.new(0, 5, -4.2)))
+        prompt(base, "Open", entry[3]); self.Destinations[entry[3]] = entry[2]
+    end
+    sign(self.Root, "THRIFT STREET  •  FIND SOMETHING WONDERFUL", CFrame.new(0, 13, -137), Vector3.new(35, 4, 0.5))
+    for i = 1, 16 do
+        local row = math.ceil(i / 2)
+        local side = if i % 2 == 1 then -1 else 1
+        local center = Vector3.new(side * 52, 0, -83 + (row - 1) * 35)
+        local cf = CFrame.new(center) * CFrame.Angles(0, if side == -1 then -math.pi / 2 else math.pi / 2, 0)
+        self:buildPlot(i, cf)
+    end
+    for i = 1, 18 do
+        for side = -1, 1, 2 do
+            local z = -220 + i * 25
+            part(self.Root, "TreeTrunk", Vector3.new(2, 8, 2), CFrame.new(side * 107, 3, z), colors.Wood)
+            part(self.Root, "TreeCanopy", Vector3.new(11, 12, 11), CFrame.new(side * 107, 12, z), Color3.fromRGB(96, 144, 108), Enum.PartType.Ball)
+        end
+    end
+    for i = 1, 9 do
+        local z = -170 + i * 40
+        for side = -1, 1, 2 do
+            part(self.Root, "StreetLamp", Vector3.new(0.6, 9, 0.6), CFrame.new(side * 24, 4.5, z), colors.Dark)
+            local bulb = part(self.Root, "WarmLight", Vector3.new(2, 2, 2), CFrame.new(side * 24, 9, z), colors.Gold, Enum.PartType.Ball)
+            bulb.Material = Enum.Material.Neon
+            local light = Instance.new("PointLight"); light.Color = colors.Gold; light.Range = 20; light.Brightness = 0.6; light.Parent = bulb
+        end
+    end
+    return self
+end
+function World:buildPlot(index, cf)
+    local model = Instance.new("Model"); model.Name = "Shop" .. index; model.Parent = self.Root
+    part(model, "Floor", Vector3.new(28, 1, 28), cf, colors.Wood)
+    local back = part(model, "BackWall", Vector3.new(28, 12, 1), cf * CFrame.new(0, 6, 14), colors.Teal)
+    part(model, "LeftWall", Vector3.new(1, 12, 28), cf * CFrame.new(-14, 6, 0), colors.Cream)
+    part(model, "RightWall", Vector3.new(1, 12, 28), cf * CFrame.new(14, 6, 0), colors.Cream)
+    part(model, "Awning", Vector3.new(29, 0.7, 6), cf * CFrame.new(0, 10, -13), colors.Rose)
+    local label = sign(model, "SHOP AVAILABLE", cf * CFrame.new(0, 8, -14.2), Vector3.new(23, 3, 0.5))
+    local bench = part(model, "Workbench", Vector3.new(9, 3, 3), cf * CFrame.new(-7, 2, 10), colors.Wood)
+    prompt(bench, "Restore an item", "Workbench", 0)
+    local counter = part(model, "Counter", Vector3.new(7, 3, 3), cf * CFrame.new(8, 2, -8), colors.Teal)
+    prompt(counter, "Shop &amp; upgrades", "Shop", 0)
+    local slots = {}
+    for slot = 1, 16 do
+        local column, row = (slot - 1) % 4, math.floor((slot - 1) / 4)
+        local slotCF = cf * CFrame.new(-9 + column * 6, 1.5, -4 + row * 3.5)
+        local display = part(model, "Display" .. slot, Vector3.new(4, 2, 2.5), slotCF, colors.Cream)
+        prompt(display, "Display slot " .. slot, "Display", 0, slot)
+        slots[slot] = {Base = display, CF = slotCF * CFrame.new(0, 2.3, 0)}
+    end
+    self.Plots[index] = {Model = model, CF = cf, Label = label, Wall = back, Slots = slots, Items = {}, Index = index}
+end
+function World:assign(player)
+    for index, plot in ipairs(self.Plots) do
+        if not plot.Owner then
+            plot.Owner = player.UserId; self.Owners[player.UserId] = plot
+            for _, child in ipairs(plot.Model:GetDescendants()) do
+                if child:IsA("ProximityPrompt") then child:SetAttribute("Owner", player.UserId) end
+            end
+            return index
+        end
+    end
+    return nil
+end
+function World:release(userId)
+    local plot = self.Owners[userId]
+    if not plot then return end
+    for _, item in pairs(plot.Items) do item:Destroy() end
+    plot.Items = {}; plot.Owner = nil; plot.Label.Text = "SHOP AVAILABLE"
+    for _, child in ipairs(plot.Model:GetDescendants()) do
+        if child:IsA("ProximityPrompt") then child:SetAttribute("Owner", 0) end
+    end
+    self.Owners[userId] = nil
+end
+function World:near(player, action)
+    local character = player.Character
+    local root = character and character:FindFirstChild("HumanoidRootPart")
+    if not root then return false end
+    local target = self.Destinations[action]
+    if target then return (root.Position - target).Magnitude &lt; 25 end
+    local plot = self.Owners[player.UserId]
+    return plot ~= nil and (root.Position - plot.CF.Position).Magnitude &lt; 29
+end
+function World:render(player, profile, catalog, config)
+    local plot = self.Owners[player.UserId]
+    if not plot then return end
+    local tier = config.Tiers[profile.Tier]
+    local average = if profile.RatingCount &gt; 0 then string.format("%.1f", profile.RatingTotal / profile.RatingCount) else "NEW"
+    plot.Label.Text = player.DisplayName .. "'s " .. tier.Name .. "  |  ★ " .. average
+    for _, theme in ipairs(config.Themes) do
+        if theme.Id == profile.Theme then plot.Wall.Color = Color3.new(unpack(theme.Color)) end
+    end
+    self:decorate(plot, profile)
+    for slot, data in ipairs(plot.Slots) do
+        data.Base.Transparency = if slot &lt;= tier.Slots then 0 else 0.85
+        data.Base.CanCollide = slot &lt;= tier.Slots
+    end
+    for _, item in pairs(plot.Items) do item:Destroy() end
+    plot.Items = {}
+    for _, item in ipairs(profile.Inventory) do
+        if item.Slot then
+            local definition = catalog.ById[item.DefId]
+            local model = self:makeItem(plot.Model, definition, item, plot.Slots[item.Slot].CF, config)
+            plot.Items[item.Uid] = model
+        end
+    end
+end
+function World:decorate(plot, profile)
+    local old = plot.Model:FindFirstChild("Decorations")
+    if old then old:Destroy() end
+    local folder = Instance.new("Folder"); folder.Name = "Decorations"; folder.Parent = plot.Model
+    local cf = plot.CF
+    local decor = profile.PlacedDecor
+    if decor.Rug then
+        part(folder, "WovenRug", Vector3.new(17, 0.08, 15), cf * CFrame.new(0, 0.56, 0), colors.Rose)
+        part(folder, "RugInset", Vector3.new(15, 0.09, 13), cf * CFrame.new(0, 0.57, 0), colors.Cream)
+    end
+    if decor.Plant then
+        for side = -1, 1, 2 do
+            part(folder, "TerracottaPot", Vector3.new(2, 2, 2), cf * CFrame.new(side * 11, 1.5, -10), colors.Rose)
+            part(folder, "LeafyPlant", Vector3.new(3, 4, 3), cf * CFrame.new(side * 11, 4, -10), colors.Teal, Enum.PartType.Ball)
+        end
+    end
+    if decor.Poster then sign(folder, "SECOND CHANCES\nGOOD THINGS LIVE HERE", cf * CFrame.new(6, 7, 13.3), Vector3.new(7, 5, 0.2)) end
+    if decor.Neon then
+        local label = sign(folder, "GOOD FINDS ✦", cf * CFrame.new(-6, 8, 13.3), Vector3.new(10, 2.5, 0.2))
+        label.TextColor3 = colors.Gold
+    end
+    if decor.Curtains then
+        for side = -1, 1, 2 do part(folder, "LinenCurtain", Vector3.new(4, 7, 0.3), cf * CFrame.new(side * 11, 5, -13.5), colors.Rose) end
+    end
+    if decor.Trophy then
+        part(folder, "TrophyPedestal", Vector3.new(2.5, 3, 2.5), cf * CFrame.new(0, 2, 11), colors.Dark)
+        part(folder, "GoldenTreasure", Vector3.new(2, 2, 2), cf * CFrame.new(0, 4.5, 11), colors.Gold, Enum.PartType.Ball)
+    end
+    -- Each tier visibly adds architectural details as well as display capacity.
+    if profile.Tier &gt;= 2 then
+        for side = -1, 1, 2 do part(folder, "Trim", Vector3.new(0.4, 1, 27), cf * CFrame.new(side * 13.4, 10, 0), colors.Gold) end
+    end
+    if profile.Tier &gt;= 3 then sign(folder, "✦ THE BOUTIQUE COLLECTION ✦", cf * CFrame.new(0, 10.5, 13.3), Vector3.new(20, 1.5, 0.2)) end
+    if profile.Tier &gt;= 4 then
+        for side = -1, 1, 2 do part(folder, "DisplayPillar", Vector3.new(1.5, 10, 1.5), cf * CFrame.new(side * 12, 5, -11), colors.Cream) end
+    end
+end
+function World:makeItem(parent, definition, item, cf, config)
+    local model = Instance.new("Model"); model.Name = definition.Name; model.Parent = parent
+    local rarity = Color3.fromHex(config.RarityColors[item.Rarity])
+    local color = rarity:Lerp(colors.Wood, (5 - item.Condition) / 7)
+    local category = definition.Category
+    if category == "Lamps" then
+        part(model, "Base", Vector3.new(1.8, 0.25, 1.8), cf * CFrame.new(0, -0.7, 0), colors.Dark)
+        part(model, "Stem", Vector3.new(0.25, 1.7, 0.25), cf, colors.Gold)
+        part(model, "Shade", Vector3.new(2.2, 1.2, 2.2), cf * CFrame.new(0, 1, 0), color)
+    elseif category == "Chairs" then
+        part(model, "Seat", Vector3.new(2.3, 0.4, 2), cf, color)
+        part(model, "Back", Vector3.new(2.3, 2, 0.4), cf * CFrame.new(0, 1, 0.8), color)
+        for x = -1, 1, 2 do for z = -1, 1, 2 do
+            part(model, "Leg", Vector3.new(0.3, 1.5, 0.3), cf * CFrame.new(x, -0.8, z * 0.8), colors.Wood)
+        end end
+    elseif category == "Vases" then
+        part(model, "Bowl", Vector3.new(1.8, 2, 1.8), cf, color, Enum.PartType.Ball)
+        part(model, "Neck", Vector3.new(0.8, 1.2, 0.8), cf * CFrame.new(0, 1, 0), color)
+    elseif category == "Mirrors" then
+        part(model, "Frame", Vector3.new(2.4, 3, 0.3), cf * CFrame.new(0, 0.5, 0), colors.Gold)
+        local glass = part(model, "Glass", Vector3.new(2, 2.6, 0.1), cf * CFrame.new(0, 0.5, -0.2), Color3.fromRGB(185, 217, 222))
+        glass.Material = Enum.Material.Glass; glass.Reflectance = 0.35
+    else
+        part(model, "Body", Vector3.new(2.2, 1.7, 1), cf, color)
+        if category == "Clocks" then
+            part(model, "Face", Vector3.new(1.4, 1.4, 0.1), cf * CFrame.new(0, 0, -0.55), colors.Cream, Enum.PartType.Ball)
+            part(model, "Hand", Vector3.new(0.1, 0.6, 0.1), cf * CFrame.new(0, 0.2, -0.65), colors.Dark)
+        elseif category == "Cameras" then
+            part(model, "Lens", Vector3.new(1, 1, 0.6), cf * CFrame.new(0.3, 0, -0.7), colors.Dark, Enum.PartType.Ball)
+        elseif category == "Radios" then
+            for n = 1, 4 do part(model, "Grille", Vector3.new(0.12, 1, 0.1), cf * CFrame.new(-0.8 + n * 0.3, 0, -0.55), colors.Dark) end
+        else
+            part(model, "Head", Vector3.new(1.1, 1.1, 1.1), cf * CFrame.new(0, 1.2, 0), color, Enum.PartType.Ball)
+        end
+    end
+    if item.Rarity &gt;= 4 then
+        local highlight = Instance.new("Highlight"); highlight.FillTransparency = 0.9
+        highlight.OutlineColor = rarity; highlight.OutlineTransparency = 0.25; highlight.Parent = model
+    end
+    -- Silhouette, proportions and accents vary per catalog design without external assets.
+    local scale = 0.85 + definition.Variant * 0.035
+    model:ScaleTo(scale)
+    return model
+end
+function World:customer(userId, name)
+    local plot = self.Owners[userId]
+    if not plot then return end
+    local model = Instance.new("Model"); model.Name = name; model.Parent = self.Root
+    local cf = plot.CF * CFrame.new(0, 3, -20)
+    local torso = part(model, "Torso", Vector3.new(2, 2.5, 1), cf, colors.Rose)
+    part(model, "Head", Vector3.new(1.3, 1.3, 1.3), cf * CFrame.new(0, 2, 0), colors.Cream, Enum.PartType.Ball)
+    part(model, "LegL", Vector3.new(0.8, 2, 0.8), cf * CFrame.new(-0.5, -2, 0), colors.Dark)
+    part(model, "LegR", Vector3.new(0.8, 2, 0.8), cf * CFrame.new(0.5, -2, 0), colors.Dark)
+    local bill = Instance.new("BillboardGui"); bill.Size = UDim2.fromOffset(170, 35); bill.StudsOffset = Vector3.new(0, 3.5, 0); bill.Parent = torso
+    local label = Instance.new("TextLabel"); label.Size = UDim2.fromScale(1, 1); label.BackgroundTransparency = 1
+    label.Text = name; label.TextColor3 = colors.Dark; label.Font = Enum.Font.GothamBold; label.TextSize = 18; label.Parent = bill
+    local from = cf.Position
+    local target = (plot.CF * CFrame.new(0, 3, -7)).Position
+    for _, child in ipairs(model:GetChildren()) do
+        if child:IsA("BasePart") then
+            local offset = child.Position - from
+            TweenService:Create(child, TweenInfo.new(3, Enum.EasingStyle.Linear), {Position = target + offset}):Play()
+            task.delay(17, function()
+                if child.Parent then TweenService:Create(child, TweenInfo.new(3, Enum.EasingStyle.Linear), {Position = from + offset}):Play() end
+            end)
+        end
+    end
+    game:GetService("Debris"):AddItem(model, 21)
+end
+return World
+</ProtectedString>
+        </Properties>
+      </Item>
+    </Item>
+  </Item>
+  <Item class="StarterPlayer" referent="RBX8">
+    <Properties>
+      <string name="Name">StarterPlayer</string>
+    </Properties>
+    <Item class="StarterPlayerScripts" referent="RBX9">
+      <Properties>
+        <string name="Name">StarterPlayerScripts</string>
+      </Properties>
+      <Item class="Folder" referent="RBX10">
+        <Properties>
+          <string name="Name">Client</string>
+        </Properties>
+        <Item class="LocalScript" referent="RBX19">
+          <Properties>
+            <string name="Name">Main</string>
+            <ProtectedString name="Source">local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+local Shared = ReplicatedStorage:WaitForChild("Shared")
+local Config = require(Shared:WaitForChild("Config"))
+local Catalog = require(Shared:WaitForChild("Catalog"))
+local UI = require(script.Parent:WaitForChild("UI"))
+local Minigames = require(script.Parent:WaitForChild("Minigames"))
+local event = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("Game")
+local player = Players.LocalPlayer
+local ui = UI.new()
+local state, page, context, session = nil, nil, {}, nil
+local render
+local function send(action, payload) event:FireServer(action, payload or {}) end
+local function money(value) return "$" .. tostring(math.floor(value)) end
+local function open(name, data)
+    if session then ui:notice("Finish or cancel your restoration first."); return end
+    page = name; context = data or {}; render()
+end
+local function card(text)
+    local frame = UI.card(ui.Content); if text then UI.label(frame, text, 18) end; return frame
+end
+local function button(parent, text, action, payload, secondary)
+    return UI.button(parent, text, function() send(action, payload) end, secondary)
+end
+local function navigate(parent, text, name, data)
+    return UI.button(parent, text, function() open(name, data) end, true)
+end
+local function inventory(filter, displaySlot)
+    local count = 0
+    for _, item in ipairs(state.Inventory) do
+        if not filter or filter(item) then
+            count += 1
+            local definition = Catalog.ById[item.DefId]
+            local frame = card(if item.Inspected then definition.Name else "Mystery " .. definition.Category)
+            if not item.Inspected then
+                UI.label(frame, "Hidden rarity · " .. Config.Conditions[item.Condition], 15, UI.Colors.Muted)
+                button(frame, "Inspect find", "Inspect", {Uid = item.Uid})
+            else
+                local rarityLabel = Config.RarityIcons[item.Rarity] .. " " .. Config.Rarities[item.Rarity]
+                UI.label(frame, rarityLabel .. " · " .. Config.Conditions[item.Condition] .. " · " .. money(item.Value), 16, Color3.fromHex(Config.RarityColors[item.Rarity]))
+                UI.label(frame, (item.Style or definition.Style) .. " · " .. (if item.Slot then "Display " .. item.Slot else "In your bag"), 14, UI.Colors.Muted)
+                if displaySlot then
+                    button(frame, "Place on display " .. displaySlot, "Display", {Uid = item.Uid, Slot = displaySlot})
+                elseif item.Slot then
+                    button(frame, "Return to bag", "Display", {Uid = item.Uid, Remove = true}, true)
+                else
+                    if item.Condition &lt; 5 then
+                        navigate(frame, "Restore at workbench", "Restore", {Uid = item.Uid})
+                    end
+                    navigate(frame, "Choose a display", "Slots", {Uid = item.Uid})
+                end
+            end
+        end
+    end
+    if count == 0 then UI.label(card(), "Nothing here yet. Find something wonderful in Dumpster Alley!", 18) end
+end
+local function sourcePage(source)
+    local tuning = Config.Sources[source]
+    local frame = card(if source == "Dumpster" then "Someone's junk. Your next treasure." elseif source == "Estate" then "A yard full of forgotten stories." else "A little something, just for you.")
+    UI.label(frame, "Visit the marked spot in town to collect. Level " .. tuning.Level .. "+ · " .. money(tuning.Cost), 16, UI.Colors.Muted)
+    local odds = {}; for i, weight in ipairs(tuning.Weights) do table.insert(odds, Config.Rarities[i] .. " " .. weight .. "%") end
+    UI.label(frame, "Find odds: " .. table.concat(odds, " · "), 14)
+    if source == "Estate" then UI.label(frame, "Weekend event: 8% of finds move up one rarity (capped at Legendary).", 14) end
+    if source == "Delivery" and state.LastDelivery == state.Day then
+        UI.label(frame, "Today's parcel is claimed. A new one arrives at midnight UTC.", 17)
+    else button(frame, if source == "Delivery" then "Open today's parcel" else "Find a mystery item · " .. money(tuning.Cost), "Source", {Source = source}) end
+    navigate(frame, "Open your bag", "Bag")
+end
+local function auctionPage()
+    local frame = card("The next great find is under the spotlight.")
+    if state.Auction then
+        local auction = state.Auction
+        local definition = Catalog.ById[auction.Item.DefId]
+        UI.label(frame, Config.RarityIcons[auction.Item.Rarity] .. " " .. Config.Rarities[auction.Item.Rarity] .. " " .. definition.Name, 22)
+        UI.label(frame, "Current bid " .. money(auction.Bid) .. " · " .. (if auction.Bidder == player.UserId then "You're leading!" else "Make it yours"), 18)
+        local minimum = auction.Bid + math.max(10, math.floor(auction.Bid * 0.1))
+        button(frame, "Bid " .. money(minimum), "Bid", {Amount = minimum})
+        button(frame, "Bid " .. money(minimum + 100), "Bid", {Amount = minimum + 100}, true)
+        UI.label(frame, "Auction ends at server time " .. auction.Ends .. ". Last-second bids extend by up to 8s. Stay in this server to win; leaving cancels your bid.", 14, UI.Colors.Muted)
+        UI.label(frame, "Your leading bid is reserved cash. You're charged only when you win.", 14)
+    else UI.label(frame, "Next auction in about " .. math.max(0, state.NextAuction - state.ServerTime) .. " seconds. Explore while you wait!", 18) end
+    UI.label(frame, "Visit the auction house to bid. In-game cash only.", 14, UI.Colors.Muted)
+end
+local function questsPage()
+    local definitions = {{"Find", "Find 3 items", "Found", 3, 65}, {"Restore", "Restore 3 items", "Restored", 3, 100}, {"Sell", "Sell 3 items", "Sold", 3, 150}}
+    for _, definition in ipairs(definitions) do
+        local frame = card(definition[2] .. " · " .. math.min(definition[4], state.Daily[definition[3]] or 0) .. "/" .. definition[4])
+        if state.Daily.Claimed[definition[1]] then UI.label(frame, "✓ Claimed", 16, UI.Colors.Teal)
+        else button(frame, "Claim " .. money(definition[5]), "Quest", {Id = definition[1]}) end
+    end
+    local weekly = card("Weekly workshop challenge")
+    UI.label(weekly, "Restored " .. state.Weekly.Restored .. "/20 · Sold " .. state.Weekly.Sold .. "/15", 17)
+    if state.Weekly.Claimed then UI.label(weekly, "✓ Weekly Wonder earned", 16)
+    else button(weekly, "Claim $1200 + title", "Quest", {Id = "Weekly"}) end
+    UI.label(weekly, "Daily quests reset at midnight UTC; weekly quests reset Monday UTC.", 14, UI.Colors.Muted)
+end
+local function visitPage()
+    for _, shop in ipairs(state.Shops) do
+        if not context.Owner or context.Owner == shop.UserId then
+            local frame = card(shop.Name .. " · " .. Config.Tiers[shop.Tier].Name)
+            UI.label(frame, "Shop " .. (shop.Plot or "?") .. " · ★ " .. string.format("%.1f", shop.Rating), 17)
+            if shop.UserId ~= player.UserId then
+                UI.label(frame, "Visit their interior to leave one rating per day.", 15)
+                for stars = 1, 5 do button(frame, string.rep("★", stars), "Rate", {UserId = shop.UserId, Stars = stars}, true) end
+            end
+        end
+    end
+end
+render = function()
+    if not state or session then return end
+    local titles = {Bag = "Your finds", Source = "Dumpster Alley", Estate = "Estate sale", Delivery = "Daily delivery",
+        Workbench = "Restoration workbench", Restore = "Choose your restoration", Display = "Display an item",
+        Slots = "Choose a display", Shop = "Make it yours", Auction = "The auction house", Quests = "A little progress, every day",
+        Collection = "Your collection book", Town = "Explore Thrift Street", Visit = "The neighborhood", Market = "Market square",
+        Showcase = "Weekly designer showcase", Settings = "Your preferences"}
+    ui:clear(titles[page] or "Thrift Flip")
+    if page == "Bag" then inventory()
+    elseif page == "Source" then sourcePage("Dumpster")
+    elseif page == "Estate" then sourcePage("Estate")
+    elseif page == "Delivery" then sourcePage("Delivery")
+    elseif page == "Workbench" then inventory(function(item) return item.Inspected and not item.Slot and item.Condition &lt; 5 end)
+    elseif page == "Restore" then
+        local frame = card("Visit your own workbench, then choose a technique.")
+        for _, kind in ipairs({"Scrub", "Polish", "Rewire", "Repaint", "Assemble"}) do
+            button(frame, kind .. (if kind == "Repaint" then " · changes style" else ""), "BeginRestore", {Uid = context.Uid, Kind = kind})
+        end
+    elseif page == "Display" then inventory(function(item) return item.Inspected and not item.Slot end, context.Slot)
+    elseif page == "Slots" then
+        local frame = card("Place this find in your shop. Theme matches earn +10% value.")
+        local occupied = {}; for _, item in ipairs(state.Inventory) do if item.Slot then occupied[item.Slot] = true end end
+        for slot = 1, Config.Tiers[state.Tier].Slots do
+            if not occupied[slot] then button(frame, "Display " .. slot, "Display", {Uid = context.Uid, Slot = slot}) end
+        end
+    elseif page == "Shop" then
+        local offer = state.Offer
+        if offer then
+            local frame = card(offer.Customer .. " is browsing!")
+            UI.label(frame, "Offer: " .. money(offer.Amount), 24, UI.Colors.Teal)
+            button(frame, "Accept &amp; sell", "Haggle", {Choice = "Accept"})
+            if not offer.Countered then button(frame, "Counter +12% · 65% chance", "Haggle", {Choice = "Counter"}, true) end
+            button(frame, "No thanks", "Haggle", {Choice = "Decline"}, true)
+        else UI.label(card(), "Display items and customers will visit. Return to your shop to accept offers.", 17) end
+        local upgrades = card(Config.Tiers[state.Tier].Name .. " · " .. Config.Tiers[state.Tier].Slots .. " display slots")
+        local nextTier = Config.Tiers[state.Tier + 1]
+        if nextTier then button(upgrades, nextTier.Name .. " · " .. money(nextTier.Cost) .. " · level " .. nextTier.Level, "Upgrade", {Kind = "Shop"}) end
+        local toolCost = Config.ToolCosts[state.Tool + 1]
+        if toolCost then button(upgrades, "Tool upgrade " .. (state.Tool + 1) .. " · " .. money(toolCost), "Upgrade", {Kind = "Tool"}, true) end
+        for _, theme in ipairs(Config.Themes) do
+            local frame = card(theme.Name .. (if state.Theme == theme.Id then " · selected" else ""))
+            button(frame, if state.Themes[theme.Id] then "Use theme" else "Unlock · " .. money(theme.Cost), "Upgrade", {Kind = "Theme", Theme = theme.Id}, true)
+        end
+        for _, decoration in ipairs(Config.Decorations) do
+            local frame = card(decoration.Name)
+            local label = if state.PlacedDecor[decoration.Id] then "Put away" elseif state.Decorations[decoration.Id] then "Place decoration" else "Buy &amp; place · " .. money(decoration.Cost)
+            button(frame, label, "Upgrade", {Kind = "Decor", Decor = decoration.Id}, true)
+        end
+        navigate(upgrades, "Collection book", "Collection")
+    elseif page == "Auction" then auctionPage()
+    elseif page == "Quests" then questsPage()
+    elseif page == "Collection" then
+        local total = 0; for _ in pairs(state.Collection) do total += 1 end
+        UI.label(card(), total .. " / 400 item-rarity discoveries · +$100 per 10 new finds", 18)
+        for _, category in ipairs(Catalog.Categories) do
+            local frame = card(category)
+            for _, definition in ipairs(Catalog.Items) do
+                if definition.Category == category then
+                    local found = {}; for rarity = 1, 5 do
+                        table.insert(found, if state.Collection[definition.Id .. ":" .. rarity] then Config.RarityIcons[rarity] else "–")
+                    end
+                    UI.label(frame, definition.Name .. "  " .. table.concat(found, " "), 16)
+                end
+            end
+        end
+    elseif page == "Visit" then visitPage()
+    elseif page == "Market" then
+        local frame = card("Meet your neighbors")
+        UI.label(frame, "Player listings and trading are held for a later release while durable transfer protection is built. Your items stay safe in your inventory.", 18)
+        navigate(frame, "Visit &amp; rate shops", "Visit"); navigate(frame, "Designer showcase", "Showcase")
+    elseif page == "Showcase" then
+        local frame = card("This server's weekly showcase · " .. state.Demand .. " inspiration")
+        UI.label(frame, "Show off your shop. One vote per player each week; no voting for yourself. This local contest resets when the server closes. A winner online at the weekly rollover earns a cosmetic title.", 16)
+        button(frame, "Enter my shop", "Showcase", {Choice = "Enter"})
+        for id, entry in pairs(state.Showcase.Entries) do
+            local entryCard = card(entry.Name .. " · " .. entry.Theme .. " · " .. entry.Votes .. " votes")
+            button(entryCard, "Vote", "Showcase", {Choice = "Vote", UserId = tonumber(id)}, true)
+        end
+    elseif page == "Settings" then
+        local frame = card("Comfort comes first")
+        button(frame, "Effects: " .. (if state.Settings.Effects then "on" else "off"), "Settings", {Name = "Effects", Enabled = not state.Settings.Effects}, true)
+        UI.label(frame, "Rarity always uses a shape and a name alongside color. Roblox handles chat filtering. No paid gameplay advantages.", 16)
+        local earnedTitles = {}; for title in pairs(state.Titles) do table.insert(earnedTitles, title) end; table.sort(earnedTitles)
+        UI.label(frame, "Your titles: " .. (if #earnedTitles == 0 then "Keep creating!" else table.concat(earnedTitles, ", ")), 16)
+        UI.label(frame, if state.Ephemeral then "STUDIO PRACTICE MODE · progress will not save" else "Progress saves automatically every 60 seconds and when you leave.", 15)
+    else
+        local frame = card("A cozy street full of second chances.")
+        UI.label(frame, "Walk with the Roblox controls. Use the prompts at stalls and inside shops. Your shop sign shows your name. Today's demand: " .. state.Demand .. " (+20% value).", 17)
+        for _, entry in ipairs({{"Dumpster Alley", "Source"}, {"Estate sale · level 3+", "Estate"}, {"Daily delivery", "Delivery"}, {"Auctions", "Auction"}, {"Neighbor shops", "Visit"}, {"Designer showcase", "Showcase"}, {"Collection book", "Collection"}, {"Settings", "Settings"}}) do navigate(frame, entry[1], entry[2]) end
+    end
+end
+for _, entry in ipairs({{"Bag", "Bag"}, {"Shop", "Shop"}, {"Find", "Source"}, {"Quests", "Quests"}, {"Town", "Town"}}) do
+    UI.button(ui.Nav, entry[1], function() open(entry[2]) end)
+end
+local tutorialHints = {
+    [0] = "① Walk to Dumpster Alley → find your first treasure",
+    [1] = "② Open Bag → inspect your mystery find",
+    [2] = "③ Visit your shop workbench → restore your find",
+    [3] = "④ Choose a display → place your restored find",
+    [4] = "⑤ A friendly customer is coming → accept the offer in Shop",
+}
+local lastOffer
+local function updateHud()
+    ui.Balance.Text = money(state.Cash) .. "  ·  LV " .. state.Level
+    ui.Hint.Text = tutorialHints[state.Tutorial] or ("Today's favorites: " .. state.Demand .. " · Reputation " .. state.Reputation)
+    if state.AvailableCash &lt; state.Cash then ui.Hint.Text ..= " · " .. money(state.Cash - state.AvailableCash) .. " reserved for auction" end
+end
+event.OnClientEvent:Connect(function(kind, payload)
+    if kind == "State" then
+        local wasVisible = ui.Panel.Visible
+        state = payload; updateHud()
+        if state.Offer and state.Offer.Uid ~= lastOffer then
+            ui:notice(state.Offer.Customer .. " has an offer! Open Shop.")
+            if not session then page = "Shop"; wasVisible = true end
+        end
+        lastOffer = if state.Offer then state.Offer.Uid else nil
+        if wasVisible and not session then render() end
+    elseif kind == "Notice" then ui:notice(payload)
+    elseif kind == "Open" then
+        if payload.Page == "Visit" then open("Visit", {Owner = payload.Owner})
+        elseif payload.Page == "Display" then open("Display", {Slot = payload.Slot})
+        else open(payload.Page) end
+    elseif kind == "Minigame" then
+        Minigames.stop(session); session = Minigames.start(ui, UI, payload, send, Config)
+    elseif kind == "MinigameProgress" then Minigames.progress(session, payload, UI)
+    elseif kind == "MinigameDone" then
+        Minigames.stop(session); session = nil
+        ui:notice(if payload.Cancelled then "Restoration cancelled." else payload.Quality .. " restoration! Now " .. payload.Condition .. ".")
+        page = "Bag"; if state then render() end
+    end
+end)
+-- Retry sync only until the asynchronous save load has completed.
+task.spawn(function()
+    while not state do send("Sync", {}); task.wait(2) end
+end)
+-- Small action feedback respects the effects preference; no camera shake.
+local lastCash = 0
+RunService.Heartbeat:Connect(function()
+    if not state then return end
+    if state.Cash &gt; lastCash and lastCash &gt; 0 and state.Settings.Effects then
+        ui.Balance.TextColor3 = UI.Colors.Gold
+        task.delay(0.5, function() ui.Balance.TextColor3 = UI.Colors.Teal end)
+    end
+    lastCash = state.Cash
+end)
+
+-- A local tutorial marker remains available even when distant shop parts stream out.
+local marker = Instance.new("Part"); marker.Name = "TutorialGuide"; marker.Size = Vector3.one
+marker.Anchored = true; marker.CanCollide = false; marker.CanTouch = false; marker.CanQuery = false; marker.Transparency = 1; marker.Parent = workspace
+local billboard = Instance.new("BillboardGui"); billboard.Size = UDim2.fromOffset(230, 65); billboard.AlwaysOnTop = true; billboard.Parent = marker
+local guideText = UI.label(billboard, "▼ START HERE", 22, UI.Colors.Gold); guideText.Size = UDim2.fromScale(1, 1); guideText.TextXAlignment = Enum.TextXAlignment.Center
+local lastGuide = 0
+RunService.Heartbeat:Connect(function()
+    if not state or os.clock() - lastGuide &lt; 0.5 then return end
+    lastGuide = os.clock()
+    billboard.Enabled = state.Tutorial == 0 or (state.Tutorial &gt;= 2 and state.Tutorial &lt;= 4)
+    if state.Tutorial == 0 then marker.Position = Vector3.new(-40, 8, -120); guideText.Text = "▼ YOUR FIRST FIND"
+    elseif state.Tutorial &gt;= 2 and state.Tutorial &lt;= 4 then
+        for _, shop in ipairs(state.Shops) do
+            if shop.UserId == player.UserId and shop.Plot then
+                local row = math.ceil(shop.Plot / 2)
+                local side = if shop.Plot % 2 == 1 then -1 else 1
+                marker.Position = Vector3.new(side * 52, 12, -83 + (row - 1) * 35)
+                guideText.Text = "▼ YOUR SHOP"
+            end
+        end
+    end
+end)
+</ProtectedString>
+          </Properties>
+        </Item>
+        <Item class="ModuleScript" referent="RBX20">
+          <Properties>
+            <string name="Name">Minigames</string>
+            <ProtectedString name="Source">local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local Minigames = {}
+local descriptions = {
+    Scrub = "Swipe over every dirty tile to scrub away the grime.",
+    Polish = "Trace the shine: follow the numbered path, one tile at a time.",
+    Rewire = "Connect pairs of matching wire symbols. Tap one end, then its matching partner.",
+    Repaint = "Choose the requested paint, then swipe to fill every tile.",
+    Assemble = "Pick a numbered piece from the tray, then fit it in the matching outline.",
+}
+function Minigames.start(ui, UI, challenge, send, config)
+    ui.Locked = true
+    ui:clear(challenge.Kind .. " · restoration")
+    local card = UI.card(ui.Content)
+    UI.label(card, descriptions[challenge.Kind], 17)
+    UI.label(card, "8–20 seconds · every result improves condition", 14, UI.Colors.Muted)
+    local meter = UI.label(card, "0 / 16 · Take your time", 18, UI.Colors.Teal)
+    local clock = UI.label(card, "20s left", 16)
+    if challenge.Kind == "Repaint" then
+        UI.label(card, "Requested paint: " .. config.Styles[challenge.RequiredPalette], 18)
+        for index, style in ipairs(config.Styles) do
+            UI.button(card, style, function() send("RestoreInput", {Token = challenge.Token, Palette = index}) end, true)
+        end
+    end
+    local selectedLabel
+    local pieceTray
+    if challenge.Kind == "Assemble" then
+        selectedLabel = UI.label(card, "Select a piece from the tray", 17)
+        pieceTray = Instance.new("Frame"); pieceTray.Size = UDim2.new(1, 0, 0, 170); pieceTray.BackgroundTransparency = 1; pieceTray.Parent = card
+        local trayGrid = Instance.new("UIGridLayout"); trayGrid.CellSize = UDim2.new(0.25, -5, 0.25, -4); trayGrid.CellPadding = UDim2.fromOffset(5, 4); trayGrid.Parent = pieceTray
+    end
+    local board = Instance.new("Frame"); board.Size = UDim2.new(1, 0, 0, 250); board.BackgroundTransparency = 1; board.Parent = card
+    local grid = Instance.new("UIGridLayout"); grid.CellSize = UDim2.new(0.25, -6, 0.25, -6); grid.CellPadding = UDim2.fromOffset(6, 6); grid.SortOrder = Enum.SortOrder.LayoutOrder; grid.Parent = board
+    local buttons, ranks = {}, {}
+    for rank, cell in ipairs(challenge.Targets) do ranks[cell] = rank end
+    local session = {Ui = ui, Token = challenge.Token, Buttons = buttons, Meter = meter, Active = true, Connections = {}}
+    if pieceTray then
+        for piece = 1, 16 do
+            UI.button(pieceTray, tostring(piece), function()
+                session.Piece = piece; selectedLabel.Text = "Piece " .. piece .. " selected → tap its outline"
+            end, true)
+        end
+    end
+    local dragging = false
+    local lastCell, lastAt = nil, 0
+    local function hit(index)
+        if not session.Active then return end
+        if buttons[index] and buttons[index].Text == "✓" then return end
+        if lastCell == index and os.clock() - lastAt &lt; 0.2 then return end
+        lastCell = index; lastAt = os.clock()
+        send("RestoreInput", {Token = challenge.Token, Cell = index, Piece = session.Piece})
+    end
+    for cell = 1, 16 do
+        local text = if challenge.Kind == "Scrub" then "✦" elseif challenge.Kind == "Repaint" then "□" else tostring(ranks[cell])
+        if challenge.Kind == "Rewire" then
+            local symbols = {"●", "▲", "■", "◆", "★", "✚", "○", "☀"}
+            text = symbols[math.ceil(ranks[cell] / 2)]
+        end
+        local button = UI.button(board, text, function() hit(cell) end, true); button.LayoutOrder = cell
+        button.TextSize = 24; buttons[cell] = button
+        button.InputBegan:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then dragging = true; hit(cell) end
+        end)
+        button.MouseEnter:Connect(function() if dragging then hit(cell) end end)
+    end
+    table.insert(session.Connections, UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then dragging = false end
+    end))
+    table.insert(session.Connections, UserInputService.TouchMoved:Connect(function(input)
+        if not dragging then return end
+        for index, button in ipairs(buttons) do
+            local p, s = button.AbsolutePosition, button.AbsoluteSize
+            if input.Position.X &gt;= p.X and input.Position.X &lt;= p.X + s.X and input.Position.Y &gt;= p.Y and input.Position.Y &lt;= p.Y + s.Y then hit(index); break end
+        end
+    end))
+    local started = os.clock()
+    local finish = UI.button(card, "Finish (available after 8s)", function()
+        if os.clock() - started &gt;= 8 then send("FinishRestore", {Token = challenge.Token}) end
+    end)
+    UI.button(card, "Cancel", function() send("CancelRestore", {}) end, true)
+    table.insert(session.Connections, RunService.Heartbeat:Connect(function()
+        if not session.Active then return end
+        local elapsed = os.clock() - started
+        clock.Text = tostring(math.max(0, math.ceil(challenge.Duration - elapsed))) .. "s left"
+        finish.Text = if elapsed &gt;= 8 then "Finish restoration" else "Ready in " .. math.ceil(8 - elapsed) .. "s"
+    end))
+    return session
+end
+function Minigames.progress(session, data, UI)
+    if not session or not session.Active then return end
+    session.Meter.Text = data.Progress .. " / 16 · " .. data.Mistakes .. " slips"
+    if data.Selected then
+        session.Buttons[data.Cell].BackgroundColor3 = UI.Colors.Gold
+        return
+    end
+    if data.Other and session.Buttons[data.Other] then
+        local other = session.Buttons[data.Other]
+        other.BackgroundColor3 = if data.Valid then UI.Colors.Teal else Color3.fromRGB(232, 230, 211)
+        if data.Valid then other.Text = "✓"; other.TextColor3 = UI.Colors.Panel end
+    end
+    if data.Valid and session.Buttons[data.Cell] then
+        session.Buttons[data.Cell].BackgroundColor3 = UI.Colors.Teal
+        session.Buttons[data.Cell].TextColor3 = UI.Colors.Panel
+        session.Buttons[data.Cell].Text = "✓"
+    end
+end
+function Minigames.stop(session)
+    if not session then return end
+    session.Active = false
+    session.Ui.Locked = false
+    for _, connection in ipairs(session.Connections) do connection:Disconnect() end
+end
+return Minigames
+</ProtectedString>
+          </Properties>
+        </Item>
+        <Item class="ModuleScript" referent="RBX21">
+          <Properties>
+            <string name="Name">UI</string>
+            <ProtectedString name="Source">local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local UI = {}
+UI.Colors = {Cream = Color3.fromRGB(249, 242, 225), Panel = Color3.fromRGB(255, 251, 240),
+    Ink = Color3.fromRGB(45, 64, 59), Teal = Color3.fromRGB(79, 139, 122),
+    Muted = Color3.fromRGB(112, 126, 116), Rose = Color3.fromRGB(198, 113, 125), Gold = Color3.fromRGB(229, 178, 78)}
+function UI.corner(object, radius)
+    local corner = Instance.new("UICorner"); corner.CornerRadius = UDim.new(0, radius or 12); corner.Parent = object
+end
+function UI.label(parent, text, size, color)
+    local label = Instance.new("TextLabel"); label.Text = text; label.TextSize = size or 18
+    label.Font = Enum.Font.GothamMedium; label.TextColor3 = color or UI.Colors.Ink
+    label.TextXAlignment = Enum.TextXAlignment.Left; label.TextYAlignment = Enum.TextYAlignment.Center
+    label.BackgroundTransparency = 1; label.Size = UDim2.new(1, 0, 0, 32); label.TextWrapped = true; label.AutomaticSize = Enum.AutomaticSize.Y
+    label.Parent = parent; return label
+end
+function UI.button(parent, text, callback, secondary)
+    local button = Instance.new("TextButton"); button.Text = text; button.Font = Enum.Font.GothamBold
+    button.TextSize = 16; button.TextWrapped = true; button.TextColor3 = if secondary then UI.Colors.Ink else UI.Colors.Panel
+    button.BackgroundColor3 = if secondary then Color3.fromRGB(232, 230, 211) else UI.Colors.Teal
+    button.Size = UDim2.new(1, 0, 0, 48); button.AutoButtonColor = true; button.Parent = parent; UI.corner(button)
+    local pad = Instance.new("UIPadding"); pad.PaddingLeft = UDim.new(0, 8); pad.PaddingRight = UDim.new(0, 8); pad.Parent = button
+    button.Activated:Connect(callback); return button
+end
+function UI.list(parent, gap)
+    local layout = Instance.new("UIListLayout"); layout.Padding = UDim.new(0, gap or 10)
+    layout.SortOrder = Enum.SortOrder.LayoutOrder; layout.Parent = parent; return layout
+end
+function UI.card(parent)
+    local frame = Instance.new("Frame"); frame.Size = UDim2.new(1, -4, 0, 0); frame.AutomaticSize = Enum.AutomaticSize.Y
+    frame.BackgroundColor3 = UI.Colors.Panel; frame.Parent = parent; UI.corner(frame)
+    local padding = Instance.new("UIPadding"); padding.PaddingTop = UDim.new(0, 12); padding.PaddingBottom = UDim.new(0, 12)
+    padding.PaddingLeft = UDim.new(0, 12); padding.PaddingRight = UDim.new(0, 12); padding.Parent = frame
+    UI.list(frame, 8); return frame
+end
+function UI.new()
+    local self = setmetatable({}, {__index = UI})
+    local gui = Instance.new("ScreenGui"); gui.Name = "ThriftFlip"; gui.ResetOnSpawn = false
+    gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling; gui.ScreenInsets = Enum.ScreenInsets.CoreUISafeInsets
+    gui.Parent = Players.LocalPlayer:WaitForChild("PlayerGui"); self.Gui = gui
+    local hud = Instance.new("Frame"); hud.Position = UDim2.fromOffset(12, 8); hud.Size = UDim2.new(1, -24, 0, 66)
+    hud.BackgroundColor3 = UI.Colors.Panel; hud.Parent = gui; UI.corner(hud)
+    self.Brand = UI.label(hud, "THRIFT FLIP", 20); self.Brand.Position = UDim2.fromOffset(14, 4); self.Brand.Size = UDim2.new(0.44, -14, 0, 30)
+    self.Balance = UI.label(hud, "Connecting…", 18, UI.Colors.Teal); self.Balance.Position = UDim2.new(0.44, 0, 0, 4); self.Balance.Size = UDim2.new(0.56, -12, 0, 30); self.Balance.TextXAlignment = Enum.TextXAlignment.Right
+    self.Hint = UI.label(hud, "Find. Restore. Make it yours.", 14, UI.Colors.Muted); self.Hint.Position = UDim2.fromOffset(14, 35); self.Hint.Size = UDim2.new(1, -28, 0, 25)
+    local nav = Instance.new("Frame"); nav.AnchorPoint = Vector2.new(0.5, 1); nav.Position = UDim2.new(0.5, 0, 1, -8)
+    nav.Size = UDim2.new(1, -24, 0, 56); nav.BackgroundTransparency = 1; nav.Parent = gui; self.Nav = nav
+    local grid = Instance.new("UIGridLayout"); grid.CellSize = UDim2.new(0.2, -5, 1, 0); grid.CellPadding = UDim2.fromOffset(6, 0); grid.Parent = nav
+    local panel = Instance.new("Frame"); panel.AnchorPoint = Vector2.new(0.5, 0.5); panel.Position = UDim2.new(0.5, 0, 0.5, 8)
+    panel.Size = UDim2.new(0.93, 0, 0.70, 0); panel.BackgroundColor3 = UI.Colors.Cream; panel.Visible = false; panel.Parent = gui; UI.corner(panel, 18)
+    local limit = Instance.new("UISizeConstraint"); limit.MaxSize = Vector2.new(760, 700); limit.MinSize = Vector2.new(260, 150); limit.Parent = panel
+    self.Panel = panel
+    self.Title = UI.label(panel, "Your bag", 23); self.Title.Position = UDim2.fromOffset(18, 8); self.Title.Size = UDim2.new(1, -85, 0, 36)
+    local close = UI.button(panel, "×", function() if self.Locked then self:notice("Finish or cancel the restoration first.") else panel.Visible = false end end, true)
+    close.Size = UDim2.fromOffset(44, 40); close.Position = UDim2.new(1, -54, 0, 8)
+    local scroll = Instance.new("ScrollingFrame"); scroll.Position = UDim2.fromOffset(14, 58); scroll.Size = UDim2.new(1, -28, 1, -72)
+    scroll.BackgroundTransparency = 1; scroll.BorderSizePixel = 0; scroll.ScrollBarThickness = 5; scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+    scroll.CanvasSize = UDim2.new(); scroll.ScrollingDirection = Enum.ScrollingDirection.Y; scroll.Parent = panel
+    UI.list(scroll, 12); self.Content = scroll
+    local toast = Instance.new("TextLabel"); toast.AnchorPoint = Vector2.new(0.5, 0)
+    toast.Position = UDim2.new(0.5, 0, 0, 83); toast.Size = UDim2.new(0.9, 0, 0, 54)
+    toast.BackgroundColor3 = UI.Colors.Ink; toast.TextColor3 = UI.Colors.Panel; toast.TextWrapped = true
+    toast.Font = Enum.Font.GothamBold; toast.TextSize = 17; toast.Visible = false; toast.ZIndex = 20
+    toast.Parent = gui; UI.corner(toast); self.Toast = toast; self.ToastVersion = 0
+    return self
+end
+function UI:clear(title)
+    for _, child in ipairs(self.Content:GetChildren()) do if child:IsA("GuiObject") then child:Destroy() end end
+    self.Title.Text = title; self.Content.CanvasPosition = Vector2.zero; self.Panel.Visible = true
+end
+function UI:notice(text)
+    self.ToastVersion += 1; local version = self.ToastVersion
+    self.Toast.Text = text; self.Toast.Visible = true; self.Toast.TextTransparency = 0
+    task.delay(4, function()
+        if self.ToastVersion == version then
+            TweenService:Create(self.Toast, TweenInfo.new(0.4), {TextTransparency = 1}):Play()
+            task.wait(0.4); if self.ToastVersion == version then self.Toast.Visible = false end
+        end
+    end)
+end
+return UI
+</ProtectedString>
+          </Properties>
+        </Item>
+      </Item>
+    </Item>
+  </Item>
+</roblox>

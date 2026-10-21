@@ -1,0 +1,10 @@
+{
+  "name": "ThriftFlip",
+  "tree": {
+    "$className": "DataModel",
+    "Workspace": {"$properties": {"StreamingEnabled": true}},
+    "ReplicatedStorage": {"Shared": {"$path": "src/shared"}},
+    "ServerScriptService": {"Server": {"$path": "src/server"}},
+    "StarterPlayer": {"StarterPlayerScripts": {"Client": {"$path": "src/client"}}}
+  }
+}
