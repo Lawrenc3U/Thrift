@@ -651,3 +651,175 @@ local function mirrors(g)
         g.box("HeartGlint", {0.05, 0.65, 0.03}, {-0.45, 2.05, -0.22}, "Ivory", {0, 0, -0.3})
     end
 end
+
+local function cameras(g)
+    local v, tint = g.Variant, g.Theme
+    local widths = {2.25, 2.05, 2.35, 1.55, 2.15, 2.25, 2.45, 2.4, 2.25, 1.8}
+    local w = widths[v] or 2.1
+    if v == 1 then -- Box camera
+        g.box("LeatherBody", {w, 2.15, 1.55}, {0, 1.1, 0}, "Dark", nil, "Fabric")
+        g.box("FrontPlate", {1.7, 1.65, 0.12}, {0, 1.15, -0.84}, "Black", nil, "Metal")
+        g.disc("LargeLens", 0.78, 0.5, {0, 1.25, -1.08}, "Silver", "Metal")
+        g.disc("LensGlass", 0.55, 0.54, {0, 1.25, -1.36}, "Glass", "Glass").Reflectance = 0.4
+        g.box("Finder", {0.48, 0.48, 0.24}, {0.62, 1.78, -0.92}, "Glass", nil, "Glass")
+    elseif v == 2 then -- Instant camera
+        g.box("InstantBody", {w, 1.85, 1.15}, {0, 1.2, 0}, "Ivory")
+        g.wedge("InstantChin", {w, 0.65, 1.15}, {0, 0.45, 0}, tint, {0, pi, 0})
+        g.disc("InstantLens", 0.72, 0.35, {-0.35, 1.35, -0.75}, "Dark", "Metal")
+        g.box("Flash", {0.58, 0.36, 0.12}, {0.55, 1.58, -0.64}, "Cream")
+        g.box("PhotoSlot", {1.2, 0.1, 0.08}, {0, 0.55, -0.64}, "Dark")
+    elseif v == 3 then -- Twin lens reflex
+        g.box("LeatherCase", {w, 2.75, 1.35}, {0, 1.4, 0}, "Black", nil, "Fabric")
+        for y = 1, 2 do
+            g.disc("TwinLens", 0.78, 0.42, {0, 0.85 + y * 0.72, -0.88}, "Silver", "Metal")
+            g.disc("TwinGlass", 0.52, 0.46, {0, 0.85 + y * 0.72, -1.1}, "Glass", "Glass").Reflectance = 0.45
+        end
+        g.box("WaistFinder", {1.6, 0.18, 1.1}, {0, 2.86, 0}, "Dark")
+    elseif v == 4 then -- Pocket camera
+        g.box("PocketBody", {w, 1.05, 0.62}, {0, 0.72, 0}, tint, nil, "Metal")
+        g.disc("PocketLens", 0.57, 0.25, {-0.28, 0.74, -0.45}, "Dark", "Metal")
+        g.box("PocketFlash", {0.4, 0.27, 0.09}, {0.46, 0.8, -0.36}, "Cream")
+        g.box("Shutter", {0.28, 0.12, 0.25}, {-0.45, 1.32, 0}, "Silver", nil, "Metal")
+    elseif v == 5 then -- Bellows camera
+        g.box("WoodBack", {w, 2.1, 0.35}, {0, 1.15, 0.65}, "Wood", nil, "Wood")
+        for i = 0, 5 do
+            local scale = 1 - i * 0.07
+            g.box("BellowsFold", {1.65 * scale, 1.45 * scale, 0.18}, {0, 1.25, 0.42 - i * 0.22}, if i % 2 == 0 then "Dark" else "Black", nil, "Fabric")
+        end
+        g.box("BrassFront", {1.32, 1.25, 0.18}, {0, 1.25, -0.92}, "Brass", nil, "Metal")
+        g.disc("BellowsLens", 0.63, 0.45, {0, 1.25, -1.17}, "Glass", "Glass").Reflectance = 0.4
+    elseif v == 6 then -- Rangefinder
+        g.box("RangeBody", {w, 1.25, 0.82}, {0, 0.82, 0}, "Silver", nil, "Metal")
+        g.box("LeatherGrip", {w - 0.15, 0.68, 0.88}, {0, 0.68, 0}, "Dark", nil, "Fabric")
+        g.disc("RangeLens", 0.74, 0.52, {-0.28, 0.78, -0.68}, "Black", "Metal")
+        g.disc("RangeGlass", 0.48, 0.56, {-0.28, 0.78, -0.97}, "Glass", "Glass").Reflectance = 0.45
+        for x = -1, 1, 2 do g.box("FinderWindow", {0.32, 0.22, 0.08}, {x * 0.65, 1.18, -0.46}, "Glass", nil, "Glass") end
+    elseif v == 7 then -- Studio camera
+        g.box("StudioBody", {w, 1.8, 1.5}, {0, 2.35, 0}, "Dark", nil, "Metal")
+        g.disc("StudioLens", 1.15, 0.85, {0, 2.35, -1.18}, "Black", "Metal")
+        g.disc("StudioGlass", 0.77, 0.9, {0, 2.35, -1.64}, "Glass", "Glass").Reflectance = 0.5
+        g.cyl("TripodHub", 0.45, 0.35, {0, 1.15, 0}, "Silver", "Metal")
+        for x = -1, 0, 1 do g.rod("TripodLeg", {0, 1.2, 0}, {x * 1.05, 0.08, if x == 0 then -0.85 else 0.55}, 0.12, "Silver", "Metal") end
+    elseif v == 8 then -- Movie camera
+        g.box("MovieBody", {w, 1.45, 1.18}, {0, 1.35, 0}, tint, nil, "Metal")
+        for x = -1, 1, 2 do g.disc("FilmReel", 1.25, 0.22, {x * 0.62, 2.35, 0}, "Silver", "Metal") end
+        g.disc("MovieLens", 0.54, 0.65, {0, 1.35, -0.92}, "Dark", "Metal")
+        g.rod("Handle", {-0.65, 0.82, 0}, {0.65, 0.82, 0}, 0.12, "Dark")
+    elseif v == 9 then -- Underwater camera
+        g.box("WaterHousing", {w, 1.65, 1.2}, {0, 1, 0}, "Mustard", nil, "Metal")
+        g.box("RubberBumper", {w + 0.18, 0.25, 1.35}, {0, 0.3, 0}, "Black")
+        g.disc("DiveLens", 0.95, 0.58, {0, 1.05, -0.9}, "Dark", "Metal")
+        g.disc("DiveGlass", 0.65, 0.62, {0, 1.05, -1.22}, "Glass", "Glass").Reflectance = 0.45
+        for x = -1, 1, 2 do g.box("Latch", {0.24, 0.55, 0.2}, {x * 0.92, 1.75, -0.1}, "Silver", nil, "Metal") end
+    else -- Toy camera
+        g.ball("ToyBody", {w, 1.45, 1.1}, {0, 0.95, 0}, tint)
+        g.disc("FriendlyLens", 0.72, 0.34, {0, 0.98, -0.73}, "Dark")
+        g.disc("LensSpark", 0.24, 0.37, {-0.1, 1.08, -0.93}, "Cream")
+        for x = -1, 1, 2 do g.ball("Eye", {0.2, 0.2, 0.12}, {x * 0.55, 1.35, -0.56}, "Black") end
+        g.box("RainbowButton", {0.38, 0.22, 0.38}, {0.55, 1.75, 0}, "Mustard")
+    end
+end
+
+local function vases(g)
+    local v, tint = g.Variant, g.Theme
+    local colors = {tint, "Blue", "Wood", "Rose", "Teal", "Cream", "Lilac", "Coral", "Mint", "Dark"}
+    local color = colors[v] or tint
+    if v == 1 then
+        g.ball("BudBody", {1.25, 1.55, 1.25}, {0, 0.82, 0}, color, "Ceramic")
+        g.cyl("BudNeck", 0.52, 1.28, {0, 1.85, 0}, color, "Ceramic")
+        g.cyl("BudLip", 0.72, 0.16, {0, 2.52, 0}, "Gold", "Metal")
+    elseif v == 2 then
+        g.ball("GingerBody", {2.05, 2.15, 2.05}, {0, 1.12, 0}, "Blue", "Ceramic")
+        g.cyl("GingerNeck", 0.85, 0.55, {0, 2.4, 0}, "Ivory", "Ceramic")
+        g.ball("GingerLid", {1.08, 0.5, 1.08}, {0, 2.76, 0}, "Blue", "Ceramic")
+        g.ball("LidFinial", {0.3, 0.3, 0.3}, {0, 3.12, 0}, "Gold")
+    elseif v == 3 then
+        g.ball("AmphoraBody", {1.85, 2.15, 1.85}, {0, 1.15, 0}, "Wood", "Ceramic")
+        g.cyl("AmphoraNeck", 0.68, 1.2, {0, 2.45, 0}, "Wood", "Ceramic")
+        for x = -1, 1, 2 do g.rod("AmphoraHandle", {x * 0.34, 2.8, 0}, {x * 1.05, 1.55, 0}, 0.16, "Gold", "Metal") end
+        g.cyl("AmphoraFoot", 0.95, 0.18, {0, 0.09, 0}, "Dark")
+    elseif v == 4 then
+        g.ball("BubbleBase", {2.25, 1.65, 2.25}, {0, 0.88, 0}, color, "Glass").Transparency = 0.18
+        g.ball("BubbleTop", {1.55, 1.65, 1.55}, {0, 1.9, 0}, color, "Glass").Transparency = 0.18
+        g.cyl("BubbleLip", 0.88, 0.18, {0, 2.78, 0}, "Cream", "Glass")
+    elseif v == 5 then
+        g.cyl("FlutedBody", 1.55, 2.75, {0, 1.4, 0}, color, "Ceramic")
+        for i = 1, 10 do
+            local a = i * pi / 5
+            g.rod("Flute", {math.cos(a) * 0.72, 0.25, math.sin(a) * 0.72}, {math.cos(a) * 0.72, 2.55, math.sin(a) * 0.72}, 0.07, "Cream")
+        end
+        g.cyl("FlaredLip", 1.95, 0.3, {0, 2.88, 0}, color, "Ceramic")
+    elseif v == 6 then
+        g.ball("SwanBody", {2.3, 1.45, 1.35}, {0, 0.82, 0}, "White", "Ceramic")
+        g.rod("SwanNeck", {0.55, 1.15, 0}, {0.25, 2.75, 0}, 0.34, "White", "Ceramic")
+        g.ball("SwanHead", {0.72, 0.55, 0.55}, {0.05, 2.92, -0.1}, "White", "Ceramic")
+        g.wedge("SwanBeak", {0.28, 0.24, 0.55}, {0, 2.9, -0.55}, "Mustard", {0, 0, 0})
+        g.ball("SwanEye", {0.1, 0.1, 0.08}, {-0.22, 3.03, -0.3}, "Black")
+    elseif v == 7 then
+        g.box("GeoLower", {1.7, 1.4, 1.7}, {0, 0.72, 0}, color, {0, pi / 4, 0}, "Metal")
+        g.wedge("GeoUpperA", {1.7, 1.3, 1.7}, {0, 2.05, 0}, tint, {0, 0, 0})
+        g.wedge("GeoUpperB", {1.7, 1.3, 1.7}, {0, 2.05, 0}, tint, {0, pi, 0})
+        g.cyl("GeoMouth", 0.72, 0.24, {0, 2.82, 0}, "Gold", "Metal")
+    elseif v == 8 then
+        g.ball("RoseBody", {1.8, 1.95, 1.8}, {0, 1.02, 0}, "Rose", "Ceramic")
+        g.cyl("RoseNeck", 0.66, 1.05, {0, 2.3, 0}, "Rose", "Ceramic")
+        for i = 1, 7 do
+            local a = i * 2 * pi / 7
+            g.ball("RosePetal", {0.55, 0.25, 0.35}, {math.cos(a) * 0.62, 1.2 + math.sin(a) * 0.18, math.sin(a) * 0.72}, if i % 2 == 0 then "Cream" else "Coral")
+        end
+    elseif v == 9 then
+        g.ball("CeladonBody", {2.05, 2.35, 2.05}, {0, 1.2, 0}, "Mint", "Ceramic")
+        g.cyl("CeladonNeck", 0.78, 0.72, {0, 2.7, 0}, "Mint", "Ceramic")
+        for y = 0, 3 do g.cyl("CeladonRing", 1.65 - y * 0.18, 0.07, {0, 0.58 + y * 0.52, 0}, "Gold", "Metal") end
+    else
+        g.ball("MoonCrescent", {2.4, 2.8, 0.85}, {0, 1.48, 0}, "Dark", "Ceramic")
+        g.ball("MoonCutout", {1.95, 2.3, 0.95}, {0.65, 1.72, -0.03}, "Cream").Transparency = 1
+        g.cyl("MoonMouth", 0.55, 0.55, {-0.45, 2.78, 0}, "Gold", "Metal")
+        for i = 1, 5 do g.ball("Star", {0.14, 0.14, 0.08}, {-0.7 + (i % 3) * 0.35, 0.7 + i * 0.28, -0.47}, "Gold") end
+    end
+end
+
+local builders = {Lamps = lamps, Radios = radios, Clocks = clocks, Chairs = chairs, Toys = toys,
+    Mirrors = mirrors, Cameras = cameras, Vases = vases}
+
+function ItemModels.describe(definition, item)
+    assert(type(definition) == "table" and builders[definition.Category], "Unknown item category")
+    local parts, g = builder(definition, item or {})
+    builders[definition.Category](g)
+    return parts
+end
+
+function ItemModels.bounds(definition, item)
+    local min = {math.huge, math.huge, math.huge}; local max = {-math.huge, -math.huge, -math.huge}
+    for _, part in ipairs(ItemModels.describe(definition, item)) do
+        for axis = 1, 3 do
+            local half = part.Size[axis] / 2
+            min[axis] = math.min(min[axis], part.Position[axis] - half)
+            max[axis] = math.max(max[axis], part.Position[axis] + half)
+        end
+    end
+    return {Min = min, Max = max, Size = {max[1]-min[1], max[2]-min[2], max[3]-min[3]},
+        Center = {(min[1]+max[1])/2, (min[2]+max[2])/2, (min[3]+max[3])/2}}
+end
+
+function ItemModels.create(parent, definition, item, cf, config)
+    local model = Instance.new("Model"); model.Name = definition.Name; model.Parent = parent
+    for index, descriptor in ipairs(ItemModels.describe(definition, item)) do
+        local part = Instance.new(descriptor.Class or "Part")
+        part.Name = descriptor.Name .. tostring(index); part.Size = Vector3.new(unpack(descriptor.Size))
+        part.CFrame = (cf or CFrame.new()) * CFrame.new(unpack(descriptor.Position)) * CFrame.Angles(unpack(descriptor.Rotation))
+        part.Color = Color3.new(unpack(descriptor.Color)); part.Material = Enum.Material[descriptor.Material] or Enum.Material.SmoothPlastic
+        part.Transparency = descriptor.Transparency or 0; part.Reflectance = descriptor.Reflectance or 0
+        if part:IsA("Part") and descriptor.Shape then part.Shape = Enum.PartType[descriptor.Shape] end
+        part.Anchored = true; part.CanCollide = false; part.CanTouch = false; part.CanQuery = false
+        part.CastShadow = (descriptor.Transparency or 0) < 0.5; part.Parent = model
+    end
+    local rarity = item and item.Rarity
+    if rarity and rarity >= 4 and config and config.RarityColors then
+        local glow = Instance.new("Highlight"); glow.Name = "RarityGlow"; glow.FillTransparency = 0.93
+        glow.OutlineColor = Color3.fromHex(config.RarityColors[rarity]); glow.OutlineTransparency = 0.25; glow.DepthMode = Enum.HighlightDepthMode.Occluded; glow.Parent = model
+    end
+    return model
+end
+
+return ItemModels

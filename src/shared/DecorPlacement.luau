@@ -2,7 +2,7 @@
 local Placement = {}
 Placement.Bounds = {MinX = -12, MaxX = 12, MinZ = -12, MaxZ = 9}
 Placement.Footprints = {Rug = {X = 14, Z = 11, Flat = true}, Plant = {X = 2.4, Z = 2.4}, Trophy = {X = 2.6, Z = 2.6}}
-Placement.Defaults = {Rug = {X = 0, Z = -1, Rotation = 0}, Plant = {X = -10, Z = -9, Rotation = 0}, Trophy = {X = 10, Z = 7, Rotation = 0}}
+Placement.Defaults = {Rug = {X = 0, Z = -1, Rotation = 0}, Plant = {X = -10, Z = -9, Rotation = 0}, Trophy = {X = 0, Z = 7, Rotation = 0}}
 local function finite(value) return type(value) == "number" and value == value and math.abs(value) < math.huge end
 local function extent(footprint, rotation)
     if rotation == 90 or rotation == 270 then return footprint.Z / 2, footprint.X / 2 end
@@ -20,12 +20,15 @@ function Placement.validate(id, proposed, layout, placed, slots)
     local bounds = Placement.Bounds
     if proposed.X - hx < bounds.MinX or proposed.X + hx > bounds.MaxX or proposed.Z - hz < bounds.MinZ or proposed.Z + hz > bounds.MaxZ then return false, "Keep the whole decoration inside the floor plan." end
     if not footprint.Flat then
-        for slot = 1, slots do
-            local col, row = (slot - 1) % 4, math.floor((slot - 1) / 4)
-            if overlap(proposed, hx, hz, {X = -9 + col * 6, Z = -4 + row * 3.5}, 2.1, 1.35) then return false, "Leave room around the display furniture." end
+        for slot = 1, math.min(slots, 8) do
+            local index = (slot - 1) % 4
+            local x = (if index % 2 == 0 then -1 else 1) * (if slot <= 4 then 5 else 10.7)
+            local z = if index < 2 then (if slot <= 4 then 0.5 else -0.5) else 6
+            local hxDisplay = if slot <= 4 then 2.2 else 1.15
+            if overlap(proposed, hx, hz, {X = x, Z = z}, hxDisplay, 1.8) then return false, "Leave room around the display furniture." end
         end
         -- Service counter; workbench is behind the editable area.
-        if overlap(proposed, hx, hz, {X = 8, Z = -8}, 3.5, 1.5) then return false, "Keep the counter clear." end
+        if overlap(proposed, hx, hz, {X = 8, Z = -9}, 3.25, 1.75) then return false, "Keep the counter clear." end
         for other, otherFootprint in pairs(Placement.Footprints) do
             if other ~= id and not otherFootprint.Flat and placed[other] then
                 local position = layout[other] or Placement.Defaults[other]

@@ -249,7 +249,7 @@ function ExchangeService:invite(player, payload)
     local profile = self:_eligible(player)
     if not profile or not Economy.validAmount(payload.UserId, 1, 9007199254740991) or payload.UserId == player.UserId then return end
     if self.PlayerTrades[player.UserId] or self.PlayerTrades[payload.UserId] then return self:_notice(player, "One of you is already considering a trade.") end
-    if self.Clock() < (self.Cooldowns[player.UserId] or 0) then return self:_notice(player, "Give your last trade a moment before starting another.") end
+    if self.Clock() < (self.Cooldowns[player.UserId] or 0) or self.Clock() < (self.Cooldowns[payload.UserId] or 0) then return self:_notice(player, "Give your last trade a moment before starting another.") end
     local other = Players:GetPlayerByUserId(payload.UserId)
     local otherProfile = other and self.Service:profile(other)
     if not otherProfile or Economy.level(otherProfile.XP) < MIN_LEVEL or otherProfile.Tutorial < 5
@@ -265,7 +265,7 @@ function ExchangeService:invite(player, payload)
 end
 function ExchangeService:respond(player, payload)
     local trade = self:_tradeFor(player, payload.TradeId)
-    if not trade or trade.Status ~= "Invited" or trade.InviterId == player.UserId then return end
+    if not trade or trade.Status ~= "Invited" or trade.InviterId == player.UserId or trade.Ends <= self.Clock() then return end
     if payload.Accept ~= true then return self:cancelTrade(player, payload) end
     if not self:_eligible(player) then return end
     trade.Status = "Open"; trade.Ends = self.Clock() + 180; self:_resetConfirmations(trade); self:_broadcast()
@@ -273,7 +273,7 @@ end
 function ExchangeService:offer(player, payload)
     local trade = self:_tradeFor(player, payload.TradeId)
     local profile = self:_eligible(player)
-    if not trade or not profile or trade.Status ~= "Open" then return end
+    if not trade or not profile or trade.Status ~= "Open" or trade.Ends <= self.Clock() then return end
     local offer = trade.Offers[tostring(player.UserId)]
     if payload.Cash ~= nil then
         if not Economy.validAmount(payload.Cash, 0, CASH_CAP) or payload.Cash > self.Service:spendable(player, profile) + offer.Cash then
@@ -304,7 +304,10 @@ function ExchangeService:cancelTrade(player, payload)
 end
 function ExchangeService:confirm(player, payload)
     local trade = self:_tradeFor(player, payload.TradeId)
-    if not trade or trade.Status ~= "Open" or not self:_eligible(player) then return end
+    if not trade or trade.Status ~= "Open" or trade.Ends <= self.Clock() or not self:_eligible(player) then return end
+    if not Economy.validAmount(payload.Revision, 1, 1000000) or payload.Revision ~= trade.Revision then
+        return self:_notice(player, "The offer changed. Review both sides before confirming again.")
+    end
     if self.Clock() < trade.ConfirmAfter then return self:_notice(player, "Review both sides for three seconds after the last change.") end
     local own = trade.Offers[tostring(player.UserId)]
     own.Confirmed = true

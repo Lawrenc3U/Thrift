@@ -5,6 +5,7 @@ local RunService = game:GetService("RunService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Kit = require(script.Parent.WorldKit)
 local ItemModels = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("ItemModels"))
+local DecorPlacement = require(ReplicatedStorage.Shared.DecorPlacement)
 local P = Kit.Palette
 local World = {}
 World.__index = World
@@ -438,20 +439,31 @@ function World:render(player, profile, catalog, config)
 end
 function World:decorate(plot, profile)
     local decor = profile.PlacedDecor or {}
+    local layout = profile.DecorLayout or {}
     local keys = {}; for key, enabled in pairs(decor) do if enabled then table.insert(keys, key) end end; table.sort(keys)
-    local signature = table.concat(keys, ":") .. ":" .. tostring(profile.Tier)
+    local positions = {}
+    for _, key in ipairs(keys) do
+        local value = layout[key]
+        if value then table.insert(positions, key .. ":" .. tostring(value.X) .. ":" .. tostring(value.Z) .. ":" .. tostring(value.Rotation)) end
+    end
+    local signature = table.concat(keys, ":") .. ":" .. table.concat(positions, "|") .. ":" .. tostring(profile.Tier)
     if signature == plot.DecorKey then return end
     plot.DecorKey = signature
     local old = plot.Model:FindFirstChild("Decorations"); if old then old:Destroy() end
     local folder = Kit.model(plot.Model, "Decorations"); local cf = plot.CF
     if decor.Rug then
-        Kit.part(folder, "WovenRug", Vector3.new(7, 0.035, 15), cf * CFrame.new(0, 0.53, 0), P.Teal, Enum.Material.Fabric, nil, false)
+        local at = layout.Rug or DecorPlacement.Defaults.Rug
+        local rugCF = cf * CFrame.new(at.X, 0.53, at.Z) * CFrame.Angles(0, math.rad(at.Rotation), 0)
+        Kit.part(folder, "WovenRug", Vector3.new(14, 0.035, 11), rugCF, P.Teal, Enum.Material.Fabric, nil, false)
         for side = -1, 1, 2 do
-            Kit.part(folder, "WovenBorder", Vector3.new(0.15, 0.04, 14.5), cf * CFrame.new(side * 3.25, 0.55, 0), P.Cream, Enum.Material.Fabric, nil, false)
-            for i = 1, 10 do Kit.part(folder, "RugFringe", Vector3.new(0.15, 0.025, 0.45), cf * CFrame.new(-3 + i * 0.55, 0.54, side * 7.6), P.Cream, Enum.Material.Fabric, nil, false) end
+            Kit.part(folder, "WovenBorder", Vector3.new(13.5, 0.04, 0.15), rugCF * CFrame.new(0, 0.02, side * 5.1), P.Cream, Enum.Material.Fabric, nil, false)
+            for i = 1, 14 do Kit.part(folder, "RugFringe", Vector3.new(0.45, 0.025, 0.15), rugCF * CFrame.new(-6.7 + i * 0.9, 0.01, side * 5.6), P.Cream, Enum.Material.Fabric, nil, false) end
         end
     end
-    if decor.Plant then for side = -1, 1, 2 do Kit.plant(folder, cf * CFrame.new(side * 11.5, 0.5, -11.5), 1.25, nil, true) end end
+    if decor.Plant then
+        local at = layout.Plant or DecorPlacement.Defaults.Plant
+        Kit.plant(folder, cf * CFrame.new(at.X, 0.5, at.Z) * CFrame.Angles(0, math.rad(at.Rotation), 0), 1.25, nil, true)
+    end
     if decor.Poster then
         Kit.part(folder, "PosterFrame", Vector3.new(5.3, 6.3, 0.2), cf * CFrame.new(5.2, 6.8, plot.BackZ - 0.55), P.Wood, Enum.Material.Wood, nil, false)
         Kit.sign(folder, "SECOND\nCHANCES\nGOOD THINGS LIVE HERE", cf * CFrame.new(5.2, 6.8, plot.BackZ - 0.7), Vector3.new(4.8, 5.8, 0.1), P.Paper, P.Teal)
@@ -466,11 +478,12 @@ function World:decorate(plot, profile)
         for fold = 1, 4 do Kit.part(folder, "LinenPleat", Vector3.new(0.45, 5.5, 0.35), cf * CFrame.new(side * (12.1 - fold * 0.35), 6.2, -13.3), P.Rose, Enum.Material.Fabric, nil, false) end
     end end
     if decor.Trophy then
-        Kit.part(folder, "TrophyPlinth", Vector3.new(2, 2.5, 2), cf * CFrame.new(11, 1.75, plot.BackZ - 2.5), P.Cream, Enum.Material.Marble)
-        Kit.cylinder(folder, "TrophyFoot", 0.7, 0.2, cf * CFrame.new(11, 3.1, plot.BackZ - 2.5), P.Gold, Enum.Material.Metal, false)
-        Kit.cylinder(folder, "TrophyStem", 0.18, 1, cf * CFrame.new(11, 3.7, plot.BackZ - 2.5), P.Gold, Enum.Material.Metal, false)
-        Kit.ball(folder, "GoldenTreasure", Vector3.new(1.3, 1.6, 1.3), cf * CFrame.new(11, 4.6, plot.BackZ - 2.5), P.Gold, Enum.Material.Metal, false)
-        Kit.sign(folder, "THE FINDER'S TROPHY", cf * CFrame.new(11, 2.2, plot.BackZ - 3.55), Vector3.new(1.8, 0.7, 0.08), P.Gold, P.Ink)
+        local at = layout.Trophy or DecorPlacement.Defaults.Trophy
+        local trophyCF = cf * CFrame.new(at.X, 0.5, at.Z) * CFrame.Angles(0, math.rad(at.Rotation), 0)
+        Kit.part(folder, "TrophyPlinth", Vector3.new(2, 2.5, 2), trophyCF * CFrame.new(0, 1.25, 0), P.Cream, Enum.Material.Marble)
+        Kit.cylinder(folder, "TrophyFoot", 0.7, 0.2, trophyCF * CFrame.new(0, 2.6, 0), P.Gold, Enum.Material.Metal, false)
+        Kit.cylinder(folder, "TrophyStem", 0.18, 1, trophyCF * CFrame.new(0, 3.2, 0), P.Gold, Enum.Material.Metal, false)
+        Kit.ball(folder, "GoldenTreasure", Vector3.new(1.3, 1.6, 1.3), trophyCF * CFrame.new(0, 4.1, 0), P.Gold, Enum.Material.Metal, false)
     end
 end
 function World:makeItem(parent, definition, item, cf, config)

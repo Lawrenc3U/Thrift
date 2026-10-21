@@ -8,9 +8,15 @@ local event = Instance.new("RemoteEvent"); event.Name = "Game"; event.Parent = r
 local DataService = require(script.Parent.DataService)
 local World = require(script.Parent.World)
 local GameService = require(script.Parent.GameService)
+local ExchangeService = require(script.Parent.ExchangeService)
+local LiveService = require(script.Parent.LiveService)
 local data = DataService.new()
 local world = World.new()
 local service = GameService.new(data, world, event)
+service.Exchange = ExchangeService.new(data, service)
+service.Live = LiveService.new(data, service)
+MarketplaceService.ProcessReceipt = function(receipt) return service.Live:processReceipt(receipt) end
+task.spawn(function() service.Live:loadProductInfo() end)
 event.OnServerEvent:Connect(function(player, action, payload) service:request(player, action, payload) end)
 local function connectPrompt(prompt)
     prompt.Triggered:Connect(function(player)
@@ -30,9 +36,7 @@ Players.PlayerAdded:Connect(function(player) service:join(player) end)
 Players.PlayerRemoving:Connect(function(player) service:leave(player) end)
 for _, player in ipairs(Players:GetPlayers()) do task.spawn(function() service:join(player) end) end
 MarketplaceService.PromptGamePassPurchaseFinished:Connect(function(player, passId, purchased)
-    local theme = Config.CosmeticPasses[passId]
-    local profile = service:profile(player)
-    if purchased and theme and profile then profile.Themes[theme] = true; service:snapshot(player) end
+    service.Live:passPurchased(player, passId, purchased)
 end)
 task.spawn(function()
     while not service.Closing do task.wait(1); service:tick() end
@@ -41,8 +45,9 @@ task.spawn(function()
     while not service.Closing do
         task.wait(Config.AutosaveSeconds)
         for _, player in ipairs(Players:GetPlayers()) do
-            if service:profile(player) then
+            if service:profile(player) and not data.Busy[player.UserId] then
                 task.spawn(function()
+                    if not service:profile(player) or data.Busy[player.UserId] then return end
                     if not data:save(player.UserId, false) and player.Parent then
                         -- Stop mutations when the lease cannot be renewed. A failed save
                         -- cannot safely coexist with another server acquiring the profile.

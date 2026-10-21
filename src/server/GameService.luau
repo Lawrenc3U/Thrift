@@ -26,7 +26,7 @@ function GameService.new(data, world, event)
     return setmetatable({Data = data, World = world, Event = event,
         Random = Random.new(), Sessions = {}, Offers = {}, Cooldowns = {}, Buckets = {},
         Auction = nil, NextAuction = os.time() + 45, NextCustomer = {}, Ready = {},
-        Closing = false, Showcase = {Week = Economy.week(os.time()), Entries = {}, Votes = {}}}, GameService)
+        Closing = false, JoinedAt = {}, Showcase = {Week = Economy.week(os.time()), Entries = {}, Votes = {}}}, GameService)
 end
 function GameService:profile(player)
     if not self.Ready[player.UserId] or self.Data.Closing[player.UserId]
@@ -67,6 +67,7 @@ function GameService:resetQuests(profile)
 end
 function GameService:stat(profile, name, amount)
     self:resetQuests(profile)
+    if self.Live then self.Live:recordStat(profile, name, amount) end
     profile.Stats[name] = (profile.Stats[name] or 0) + amount
     profile.Daily[name] = (profile.Daily[name] or 0) + amount
     profile.Weekly[name] = (profile.Weekly[name] or 0) + amount
@@ -74,9 +75,9 @@ function GameService:stat(profile, name, amount)
     if profile.Stats.Restored >= 100 then profile.Titles.Restorer = true end
     if profile.Stats.Earned >= 50000 then profile.Titles.Mogul = true end
 end
-function GameService:analytics(player, name)
+function GameService:analytics(player, name, value)
     -- Custom events require a published experience. Failure must not break gameplay.
-    pcall(function() game:GetService("AnalyticsService"):LogCustomEvent(player, name, 1) end)
+    pcall(function() game:GetService("AnalyticsService"):LogCustomEvent(player, name, value or 1) end)
 end
 function GameService:snapshot(player)
     local profile = self:profile(player)
@@ -86,6 +87,7 @@ function GameService:snapshot(player)
     for _, item in ipairs(profile.Inventory) do
         local view = shallowPublicItem(item)
         if item.Inspected then view.Value = self:value(profile, item) end
+        if self.Exchange and self.Exchange:itemReserved(player.UserId, item.Uid) then view.Locked = true end
         table.insert(inventory, view)
     end
     local shops = {}
@@ -103,6 +105,8 @@ function GameService:snapshot(player)
         auction = {Ends = self.Auction.Ends, Bid = self.Auction.Bid, Bidder = self.Auction.Bidder,
             Item = self.Auction.PublicItem}
     end
+    local market, trade
+    if self.Exchange then market, trade = self.Exchange:snapshot(player) end
     self.Event:FireClient(player, "State", {
         Cash = profile.Cash, AvailableCash = self:spendable(player, profile), XP = profile.XP,
         Level = Economy.level(profile.XP), Tier = profile.Tier, Tool = profile.Tool,
@@ -113,6 +117,7 @@ function GameService:snapshot(player)
         Settings = profile.Settings, Titles = profile.Titles, Shops = shops,
         Demand = self:demandStyle(), Auction = auction, NextAuction = self.NextAuction,
         Offer = self.Offers[player.UserId], Ephemeral = self.Data.Ephemeral,
+        Market = market, Trade = trade, Live = self.Live and self.Live:snapshot(player),
         Showcase = self.Showcase, ServerTime = os.time(),
     })
 end
@@ -457,6 +462,12 @@ function GameService:request(player, action, payload)
         if session then self.Sessions[player.UserId] = nil; self.Event:FireClient(player, "MinigameDone", {Cancelled = true}) end
         return
     end
+    if self.Exchange then
+        local ok, handled = pcall(self.Exchange.request, self.Exchange, player, action, payload)
+        if not ok then warn("Exchange action failed: " .. tostring(handled)); self:notify(player, "That exchange could not finish. Please try again."); return end
+        if handled then return end
+    end
+    if self.Live and self.Live:handle(player, action, payload) then return end
     local handler = handlers[action]
     if handler then
         local ok, err = pcall(handler, self, player, payload)
@@ -466,18 +477,29 @@ end
 function GameService:join(player)
     local profile = self.Data:load(player.UserId)
     if not profile then player:Kick("Your save is unavailable or still open in another server. Please rejoin shortly; no data was overwritten."); return end
+    if self.Exchange and not self.Exchange:recover(player.UserId) then
+        self.Data:release(player.UserId)
+        if player.Parent then player:Kick("A previous exchange needs recovery. Please rejoin shortly; your save is protected.") end
+        return
+    end
     if not player.Parent then self.Data:release(player.UserId); return end
     if self.Closing then self.Data:release(player.UserId); player:Kick("Server closing. Please rejoin."); return end
     if not self.World:assign(player) then self.Data:release(player.UserId); player:Kick("This town is full. Please join another server."); return end
-    self.Ready[player.UserId] = true; self:resetQuests(profile)
+    self.Ready[player.UserId] = true; self.JoinedAt[player.UserId] = os.clock(); self:resetQuests(profile)
     self.NextCustomer[player.UserId] = os.time() + 10
     local leaderstats = Instance.new("Folder"); leaderstats.Name = "leaderstats"; leaderstats.Parent = player
     local cash = Instance.new("IntValue"); cash.Name = "Cash"; cash.Value = profile.Cash; cash.Parent = leaderstats
     local level = Instance.new("IntValue"); level.Name = "Level"; level.Value = Economy.level(profile.XP); level.Parent = leaderstats
     self:refresh(player); self:analytics(player, "SessionStart")
+    if self.Live then task.spawn(function() self.Live:join(player) end) end
     self:notify(player, if profile.Tutorial < 5 then "Welcome! Find a mystery item in Dumpster Alley." else "Welcome back to Thrift Street!")
 end
 function GameService:leave(player)
+    local joined = self.JoinedAt[player.UserId]
+    if joined then self:analytics(player, "SessionSeconds", math.floor(os.clock() - joined)) end
+    self.JoinedAt[player.UserId] = nil
+    if self.Exchange then self.Exchange:leave(player.UserId) end
+    if self.Live then self.Live:leave(player) end
     self.Ready[player.UserId] = nil
     if self.Auction and self.Auction.Bidder == player.UserId then self.Auction.Bidder = nil; self.Auction.Bid = 0 end
     self.Sessions[player.UserId] = nil; self.Offers[player.UserId] = nil
@@ -487,7 +509,9 @@ function GameService:leave(player)
 end
 function GameService:tick()
     local now = os.time()
-    if self.Showcase.Week ~= Economy.week(now) then
+    if self.Exchange then self.Exchange:tick() end
+    if self.Live then self.Live:tick() end
+    if not self.Live and self.Showcase.Week ~= Economy.week(now) then
         local winner, votes = nil, 0
         for id, entry in pairs(self.Showcase.Entries) do if entry.Votes > votes then winner = tonumber(id); votes = entry.Votes end end
         local winnerProfile = winner and self.Data.Profiles[winner]
@@ -503,6 +527,9 @@ function GameService:tick()
         local auction = self.Auction
         local winner = auction.Bidder and Players:GetPlayerByUserId(auction.Bidder)
         local profile = winner and self:profile(winner)
+        if winner and self.Ready[winner.UserId] and not profile and (self.Data.ExchangeLocks[winner.UserId] or self.Data.MutationLocks[winner.UserId]) then
+            auction.Ends = now + 1; return
+        end
         if profile and #profile.Inventory < Config.InventoryLimit and profile.Cash >= auction.Bid then
             profile.Cash -= auction.Bid; table.insert(profile.Inventory, auction.Item)
             profile.Collection[auction.Item.DefId .. ":" .. auction.Item.Rarity] = true

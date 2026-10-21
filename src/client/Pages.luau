@@ -373,3 +373,198 @@ function Pages:collectionPage()
         end
     end
 end
+
+function Pages:auctionPage()
+    local auction = self.State.Auction
+    if not auction then
+        local hero = UI.hero(self.UI.Content, "The gavel rests", "The next treasure is on its way", "Explore the street while the auctioneer prepares a special find.")
+        self:timer(hero, "Next auction in ", self.State.NextAuction)
+        self:guideButton(hero, "Auction", "Walk to the auction house")
+        return
+    end
+    local frame = UI.hero(self.UI.Content, "Live at the auction house", "Going once…", "Bid with in-game cash. A late bid extends the clock so everyone gets a fair chance.")
+    self:itemSummary(frame, auction.Item, 205)
+    UI.label(frame, "Current bid  " .. money(auction.Bid), 28, UI.Colors.Panel).Font = Enum.Font.GothamBold
+    self:timer(frame, "Gavel falls in ", auction.Ends)
+    local minimum = auction.Bid + math.max(10, math.floor(auction.Bid * 0.1))
+    if auction.Bidder == player.UserId then UI.eyebrow(frame, "✓ YOU'RE LEADING — " .. money(auction.Bid) .. " RESERVED", UI.Colors.Gold) end
+    self:button(frame, "Bid " .. money(minimum), "Bid", {Amount = minimum})
+    self:button(frame, "Bid " .. money(minimum + math.max(50, math.floor(minimum * 0.2))), "Bid", {Amount = minimum + math.max(50, math.floor(minimum * 0.2))}, true)
+    self:guideButton(frame, "Auction", "Show me the auction house")
+end
+
+function Pages:listingEditor(context)
+    local item = findItem(self.State, context.Uid)
+    if not item or not inspectable(item) then UI.label(self:card(), "That find is no longer available to list.", 17); return end
+    local frame = self:card("List a find for your town")
+    self:itemSummary(frame, item, 180)
+    UI.label(frame, "A 3% fee is charged when you create the listing. Listings expire after 30 minutes or when you leave this server.", 14, UI.Colors.Muted)
+    local suggested = math.max(1, math.floor(item.Value * 1.15))
+    local input = UI.input(frame, "Whole-dollar price", tostring(self.Drafts.ListingPrice or suggested), true)
+    self:button(frame, "List this find", "MarketList", {Uid = item.Uid, Price = tonumber(input.Text) or 0})
+end
+
+function Pages:marketPage()
+    local market = self.State.Market
+    if not market then UI.label(self:card(), "The market is opening…", 18); return end
+    local hero = UI.hero(self.UI.Content, "The makers' market", "Trade stories, find something you love", "Listings and trades happen with players in this server. Both profiles are saved through a recovery journal before anything changes hands.")
+    self:guideButton(hero, "Market", "Walk to Market Square")
+    self:nav(hero, "List one of my finds", "List")
+    self:nav(hero, "Start a direct trade", "Trade")
+    if #market.Listings == 0 then UI.label(self:card(), "No listings yet. Be the first shopkeeper to put a restored find on the market.", 17) end
+    for _, listing in ipairs(market.Listings) do
+        local frame = self:card(listing.SellerName .. "'s find")
+        self:itemSummary(frame, listing.Item, 165)
+        UI.label(frame, money(listing.Price) .. "  •  value estimate " .. money(listing.Item.Value), 19)
+        self:timer(frame, "Listing closes in ", listing.Expires)
+        if listing.SellerId == player.UserId then self:button(frame, "Cancel listing", "MarketCancel", {ListingId = listing.Id}, true)
+        else self:button(frame, "Buy for " .. money(listing.Price), "MarketBuy", {ListingId = listing.Id}) end
+    end
+end
+
+function Pages:listPage()
+    self:inventory({}, "List")
+end
+
+function Pages:tradePage()
+    local trade = self.State.Trade
+    if not trade then
+        local hero = UI.hero(self.UI.Content, "A fair exchange", "Choose a neighbor", "Both players must be at Market Square, level 3, and finished with the first-sale tutorial.")
+        self:guideButton(hero, "Market", "Meet at Market Square")
+        for _, shop in ipairs(self.State.Shops) do
+            if shop.UserId ~= player.UserId then self:button(hero, "Invite " .. shop.Name, "TradeInvite", {UserId = shop.UserId}, true) end
+        end
+        return
+    end
+    local frame = UI.hero(self.UI.Content, "Direct trade", "You and " .. trade.PartnerName, "Every change clears both confirmations. Review the current revision before you confirm.")
+    self:timer(frame, "Trade closes in ", trade.Ends)
+    if trade.Status == "Invited" then
+        if trade.InviterId ~= player.UserId then self:button(frame, "Accept invitation", "TradeRespond", {TradeId = trade.Id, Accept = true})
+        else UI.disabled(frame, "Waiting for " .. trade.PartnerName .. "…") end
+        self:button(frame, "Decline", "TradeCancel", {TradeId = trade.Id}, true); return
+    end
+    local function offerCard(title, offer)
+        local card = self:card(title .. (if offer.Confirmed then "  ✓ CONFIRMED" else ""))
+        UI.label(card, "Cash offered: " .. money(offer.Cash), 18)
+        for _, item in ipairs(offer.Items) do self:itemSummary(card, item, 100) end
+        if #offer.Items == 0 then UI.label(card, "No finds offered", 14, UI.Colors.Muted) end
+        return card
+    end
+    local own = offerCard("You offer", trade.You); offerCard(trade.PartnerName .. " offers", trade.Them)
+    local cash = UI.input(own, "Cash amount", tostring(trade.You.Cash), true)
+    self:button(own, "Update cash", "TradeOffer", {TradeId = trade.Id, Cash = tonumber(cash.Text) or 0}, true)
+    local offered = {}; for _, item in ipairs(trade.You.Items) do offered[item.Uid] = true end
+    for _, item in ipairs(self.State.Inventory) do
+        if item.Inspected and not item.Slot and (not item.Locked or offered[item.Uid]) then
+            self:button(own, (if offered[item.Uid] then "Remove " else "Add ") .. Catalog.ById[item.DefId].Name,
+                "TradeOffer", {TradeId = trade.Id, Uid = item.Uid, Add = not offered[item.Uid]}, true)
+        end
+    end
+    if self:now() >= trade.ConfirmAfter then
+        self:button(frame, if trade.You.Confirmed then "✓ Waiting for partner" else "Confirm revision " .. trade.Revision,
+            "TradeConfirm", {TradeId = trade.Id, Revision = trade.Revision})
+    else self:timer(frame, "Review unlocks in ", trade.ConfirmAfter) end
+    self:button(frame, "Cancel trade", "TradeCancel", {TradeId = trade.Id}, true)
+end
+
+function Pages:showcasePage()
+    local showcase = self.State.Live and self.State.Live.Showcase
+    if not showcase then UI.label(self:card(), "The showcase is loading…", 18); self:button(self.UI.Content, "Refresh", "LiveRefresh", {}); return end
+    local hero = UI.hero(self.UI.Content, "Weekly designer showcase", showcase.Theme .. " week", "Compete with a small persistent neighborhood across servers. One vote per player; winners can collect cosmetic prizes after the week closes.")
+    self:timer(hero, "Voting ends in ", showcase.Ends)
+    if showcase.Entered then UI.disabled(hero, "✓ Your shop is entered") else self:button(hero, "Enter my displayed collection", "Showcase", {Choice = "Enter"}) end
+    self:button(hero, "Collect past prizes", "Showcase", {Choice = "Claim"}, true)
+    self:button(hero, "Refresh results", "Showcase", {Choice = "Refresh"}, true)
+    if #showcase.Entries == 0 then UI.label(self:card(), "No shops entered in your neighborhood yet.", 17) end
+    for place, entry in ipairs(showcase.Entries) do
+        local frame = self:card("#" .. place .. "  " .. entry.Name .. "  •  " .. entry.Votes .. " votes")
+        UI.eyebrow(frame, string.upper(entry.Theme .. " • " .. Config.Tiers[entry.Tier].Name))
+        local previews = UI.grid(frame, 120, 110)
+        for _, item in ipairs(entry.Preview or {}) do self:itemTile(previews, item, "View", function() end) end
+        if entry.UserId ~= player.UserId and not showcase.VotedFor then self:button(frame, "Vote for this shop", "Showcase", {Choice = "Vote", UserId = entry.UserId}) end
+    end
+end
+
+function Pages:eventsPage()
+    local events = self.State.Live and self.State.Live.Events or {}
+    if #events == 0 then UI.hero(self.UI.Content, "Thrift Street seasons", "A quiet week on the street", "New restoration celebrations are scheduled throughout the year."); return end
+    for _, event in ipairs(events) do
+        local frame = UI.hero(self.UI.Content, "Limited seasonal event", event.Name, event.Description)
+        self:timer(frame, "Event ends in ", event.Ends)
+        local complete = true
+        for stat, goal in pairs(event.Goal) do
+            local progress = math.min(goal, event.Progress[stat] or 0); complete = complete and progress >= goal
+            UI.label(frame, stat .. "  " .. progress .. "/" .. goal, 16); UI.progress(frame, progress / goal)
+        end
+        UI.eyebrow(frame, "REWARD • " .. event.RewardName)
+        if event.Claimed then UI.disabled(frame, "✓ Reward collected") elseif complete then self:button(frame, "Collect event reward", "EventClaim", {Id = event.Id}) end
+    end
+end
+
+function Pages:boutiquePage()
+    local shop = self.State.Live and self.State.Live.Shop or {}
+    UI.hero(self.UI.Content, "Cosmetic boutique", "Style with no shortcuts", "Only permanent visual cosmetics appear here. Core progression always stays available through play.")
+    if #shop == 0 then UI.label(self:card(), "No Robux cosmetics are configured for this experience yet. In-game themes and decor remain available in your shop.", 17); return end
+    for _, item in ipairs(shop) do
+        local frame = self:card(item.Name); UI.label(frame, item.Description, 16, UI.Colors.Muted)
+        if item.Owned then UI.disabled(frame, "✓ Owned") elseif item.Price then self:button(frame, "Get for R$" .. item.Price, "ShopPurchase", {Kind = item.Kind, Id = item.Id}) else UI.disabled(frame, "Currently unavailable") end
+    end
+end
+
+function Pages:arrangePage(context)
+    local Placement = require(Shared.DecorPlacement); local id = context.Decor; local footprint = Placement.Footprints[id]
+    if not footprint then UI.label(self:card(), "This piece stays on its wall mount.", 17); return end
+    local current = self.State.DecorLayout[id] or Placement.Defaults[id]
+    local draft = self.Drafts[id] or {X = current.X, Z = current.Z, Rotation = current.Rotation}; self.Drafts[id] = draft
+    local frame = self:card("Arrange " .. id)
+    UI.label(frame, "Position: " .. draft.X .. ", " .. draft.Z .. "  •  rotation " .. draft.Rotation .. "°", 16)
+    local controls = {{"←",-1,0},{"→",1,0},{"↑",0,1},{"↓",0,-1}}
+    for _, control in ipairs(controls) do self:button(frame, control[1] .. " Move", "DecorPlace", {Decor=id,X=draft.X+control[2],Z=draft.Z+control[3],Rotation=draft.Rotation}, true) end
+    self:button(frame, "Rotate 90°", "DecorPlace", {Decor=id,X=draft.X,Z=draft.Z,Rotation=(draft.Rotation+90)%360}, true)
+    self:button(frame, "Reset position", "DecorPlace", {Decor=id,Reset=true}, true)
+    UI.label(frame, "Use the controls, then reopen this page to continue arranging from the saved position.", 14, UI.Colors.Muted)
+end
+
+function Pages:visitPage(context)
+    for _, shop in ipairs(self.State.Shops) do
+        if not context.Owner or context.Owner == shop.UserId then
+            local frame = self:card(shop.Name .. "'s " .. Config.Tiers[shop.Tier].Name)
+            UI.label(frame, "★ " .. string.format("%.1f", shop.Rating) .. "  •  Shop " .. tostring(shop.Plot), 18)
+            if shop.UserId ~= player.UserId then for stars=1,5 do self:button(frame,string.rep("★",stars),"Rate",{UserId=shop.UserId,Stars=stars},true) end end
+        end
+    end
+end
+
+function Pages:settingsPage()
+    local frame = self:card("Comfort and accessibility")
+    self:button(frame, "Music: " .. (if self.State.Settings.Music then "On" else "Off"), "Settings", {Name="Music",Enabled=not self.State.Settings.Music}, true)
+    self:button(frame, "Effects: " .. (if self.State.Settings.Effects then "On" else "Off"), "Settings", {Name="Effects",Enabled=not self.State.Settings.Effects}, true)
+    UI.label(frame, "Rarity always uses a symbol and name alongside color. All controls use large touch targets.", 15, UI.Colors.Muted)
+    local titles = {}; for title in pairs(self.State.Titles) do table.insert(titles,title) end; table.sort(titles)
+    UI.label(frame, "Titles: " .. (if #titles == 0 then "Your story is just beginning" else table.concat(titles, ", ")), 16)
+end
+
+function Pages:townPage()
+    local hero = UI.hero(self.UI.Content, "Welcome to Thrift Street", "Every treasure deserves a second chance", "Today's favorite style is " .. self.State.Demand .. ", worth 20% more when it finds the right home.")
+    for _, link in ipairs({{"Dumpster Alley","Source"},{"Estate Sale","Estate"},{"Daily delivery","Delivery"},{"Auction House","Auction"},{"Makers' Market","Market"},{"Designer Showcase","Showcase"},{"Visit neighbors","Visit"},{"Settings","Settings"}}) do self:nav(hero,link[1],link[2]) end
+end
+
+function Pages:render(page, context)
+    context = context or {}; self.UI:clear(page == "Bag" and "Your finds" or page, "THRIFT STREET")
+    local handlers = {
+        Bag=function() self:inventory(context,"Bag") end, Item=function() self:itemPage(context) end,
+        Source=function() self:sourcePage("Dumpster") end, Estate=function() self:sourcePage("Estate") end,
+        Delivery=function() self:sourcePage("Delivery") end, Workbench=function() self:inventory(context,"Workbench") end,
+        Restore=function() self:restorePage(context) end, Display=function() self:inventory(context,"Display") end,
+        Slots=function() self:slotsPage(context) end, Shop=function() self:shopPage() end, Displays=function() self:displaysPage() end,
+        Themes=function() self:themesPage() end, Decor=function() self:decorPage() end, Arrange=function() self:arrangePage(context) end,
+        Quests=function() self:questsPage() end, Collection=function() self:collectionPage() end, Auction=function() self:auctionPage() end,
+        Market=function() self:marketPage() end, List=function() self:listPage() end, ListingEditor=function() self:listingEditor(context) end,
+        Trade=function() self:tradePage() end, Showcase=function() self:showcasePage() end, Events=function() self:eventsPage() end,
+        Boutique=function() self:boutiquePage() end, Visit=function() self:visitPage(context) end, Settings=function() self:settingsPage() end,
+        Town=function() self:townPage() end,
+    }
+    (handlers[page] or handlers.Town)()
+end
+
+return Pages

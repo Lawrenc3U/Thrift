@@ -2,7 +2,7 @@
 
 A Roblox restore-and-resell game built in Luau. Find forgotten treasures, reveal their rarity, restore them, decorate your shop, and sell to customers in a cozy shared town.
 
-**Status: an implemented, unplaytested development build—not a complete or launch-ready game.** The cloud environment compiles the code and runs headless server tests; it cannot run Roblox Studio. See [release status](docs/RELEASE.md) for the remaining work against the full [game plan](docs/game-design.md).
+**Status: a feature-complete development build that still needs final Roblox Studio and device QA before public release.** The cloud environment compiles the code and runs headless server tests; it cannot run Roblox Studio. See [release status](docs/RELEASE.md) for the publishing checklist.
 
 ## Open the game
 
@@ -15,12 +15,12 @@ Optional Rojo workflow: install Rojo 7, run `rojo serve default.project.json`, a
 
 ## Implemented systems
 
-- 80 catalog definitions in eight categories; five rarities and conditions; procedural category models with size variants, rarity outlines, and condition tinting.
+- 80 individually authored, reusable item models in eight categories; five rarities and conditions; distinct silhouettes, condition wear, materials, rarity outlines, 3D inventory previews, and an exported `.rbxmx` model pack.
 - Server-owned inventory, currency, value, demand, progression, sourcing costs/cooldowns, daily delivery, collections, and milestone rewards.
 - Five restoration interactions: swipe scrub, trace polish, match rewiring pairs, paint palette/fill, and piece/outline assembly. Server validates tokens, targets, input rate, duration, ownership, and result quality.
-- 16 generated shops, four capacity tiers with architectural trim upgrades, themes, six buyable decorations, display slots, and eight customer personalities with budgets, preferences, offers, counters, and sales.
-- Same-server auctions with reserved cash, anti-sniping extensions, and single-profile settlement; visiting and daily ratings; daily and weekly quests; titles and a **server-local** showcase.
-- Touch-compatible responsive panels, keyboard/mouse support through Roblox movement and proximity prompts, tutorial hints/markers, rarity symbols plus color, settings, and basic action feedback.
+- A rebuilt cozy town with authored storefronts, estate yard, dumpster alley, market, auction interior, landscaping, 16 generated shops, four visual tiers, movable floor decorations, display slots, and eight customer personalities.
+- Same-server auctions with reserved cash and anti-sniping; durable same-server market listings and confirmed two-sided trades; persistent weekly showcase neighborhoods; seasonal events, visiting, ratings, quests, titles, and cosmetic-only commerce hooks.
+- Responsive mobile/desktop journal UI, real-time 3D item previews, filtered inventory and collection pages, market/trade review, seasonal pages, tutorial guidance, rarity symbols plus color, settings, and polished action feedback.
 - UpdateAsync persistence with expiring session leases, retries, periodic saves, shutdown release, recovery copies, and refusal to overwrite unavailable saves. These protections are implemented and mocked in tests; live DataStore reliability still requires Studio/published-server validation.
 
 ## Development checks
@@ -31,6 +31,9 @@ Install/build Luau **0.699**, commit `994b6416f1a2d16ac06c52b4e574bad5d8749053`,
 git clone --branch 0.699 --depth 1 https://github.com/luau-lang/luau.git /workspace/tooling/luau
 make -C /workspace/tooling/luau config=release luau luau-compile -j2
 python3 tools/test.py
+python3 tools/test_exchange.py
+python3 tools/generate_audio.py
+python3 tools/export_models.py
 python3 tools/build.py
 ```
 
@@ -40,7 +43,7 @@ python3 tools/build.py
 
 Live servers always require working Roblox DataStores. To test real persistence in Studio, publish a **separate test experience**, enable Studio API access in its security settings, and set `Config.StudioPracticeMode = false`. Do not enable Studio access to your production saves. Test leave/rejoin, two-server overlap, network failures, and shutdown. Missing data access kicks players with an explanation; it never falls back to a disposable live profile.
 
-Publishing, pass creation, branding, licensed audio, and release configuration happen in your Roblox account. No Roblox credentials are needed for the cloud build. Cosmetic pass mappings in `Config.CosmeticPasses` are deliberately empty; no purchases are offered until valid owned IDs and entitlement testing exist. There are no paid random finds or paid progression boosts.
+Publishing, pass creation, and release configuration happen in your Roblox account. The repository includes original generated WAV music/effects under `assets/audio`, a reusable 80-item model pack under `assets/models`, and an asset-ID manifest in `src/shared/AssetConfig.luau`. Upload the WAV files through your experience's Asset Manager and paste the resulting IDs into that manifest. Cosmetic purchase configuration is deliberately empty until creator-owned IDs exist. There are no paid random finds or paid progression boosts.
 
 ## Layout
 

@@ -126,7 +126,9 @@ local function preview(parent, challenge, config)
         local cf, size = model:GetBoundingBox()
         local extent = math.max(size.X, size.Y, size.Z, 1)
         local center = cf.Position
-        camera.CFrame = CFrame.lookAt(center + Vector3.new(extent * 0.85, extent * 0.45, extent * 1.7), center)
+        -- Authored item fronts face -Z, so restoration should show the controls,
+        -- clock faces and camera lenses rather than their backs.
+        camera.CFrame = CFrame.lookAt(center + Vector3.new(extent * 0.85, extent * 0.45, -extent * 1.7), center)
     end)
     if not ok then viewport:Destroy(); return nil end
     return viewport
