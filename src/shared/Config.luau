@@ -1,6 +1,6 @@
 -- Central tuning. No paid power or randomized Robux purchases.
 local Config = {
-    Version = 1,
+    Version = 2,
     StudioPracticeMode = true, -- Studio only; never disables live-server persistence.
     StartingCash = 75,
     InventoryLimit = 100,
@@ -29,9 +29,9 @@ local Config = {
     CustomerSeconds = 18,
     AuctionInterval = 240,
     AuctionDuration = 45,
-    -- Peer transfers need a durable transaction journal before release. Never risk saves.
-    EnablePlayerMarket = false,
-    EnableTrading = false,
+    -- Same-server listings and trades use a durable recovery journal.
+    EnablePlayerMarket = true,
+    EnableTrading = true,
     Decorations = {
         {Id = "Rug", Name = "Woven welcome rug", Cost = 120},
         {Id = "Plant", Name = "Happy houseplants", Cost = 180},

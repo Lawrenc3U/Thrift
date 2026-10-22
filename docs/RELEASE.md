@@ -1,6 +1,6 @@
 # Release status and required Studio checks
 
-The user's target is the full game in `game-design.md`. This build implements much of the core, progression, and same-server social gameplay, but **does not fulfill the full production plan yet**. Automated passes do not replace playtesting.
+The user's target is the full game in `game-design.md`. The code now implements the complete planned gameplay framework. It still requires Roblox Studio validation, creator-owned asset upload, performance profiling, and real-player tuning before a public launch. Automated passes do not replace playtesting.
 
 ## Required before calling this playable or ready to release
 
@@ -16,20 +16,20 @@ The user's target is the full game in `game-design.md`. This build implements mu
 
 | Area | Current implementation | Remaining production work |
 | --- | --- | --- |
-| World/art | Procedural shared street and 16 modular open shops | Custom authored town buildings, a proper auction interior, varied sourcing props, distinct 80-item silhouettes, thumbnails, icon, logo, animation polish |
-| Shop tiers | Four slot capacities, signs and architectural details | Increasing room sizes and separate per-player interior instances |
-| Restoration | Five functioning grid-based interaction implementations | Bespoke item-centered visual minigames, polish path tolerance, richer one-thumb assembly and accessibility options |
-| Customers | Eight personalities, budgets/preferences, animated approach/exit, haggling | Rigged NPC art, walk cycles, actual route/pathfinding and browse choices |
-| Market and trading | Explicitly unavailable in UI | Durable idempotent transfer journal, cross-profile crash recovery, escrow, confirmations, cooldowns, caps, fees and exploit testing; config flags do not enable nonexistent handlers |
-| Showcase | Weekly server-local entries/votes; title for an online winner at rollover | Persistent global entries and votes, moderation, offline rewards, real theme scheduling and ranked results |
+| World/art | Authored modular town, auction interior, market, sourcing sets, 16 shops and 80 original item models | Final Studio lighting pass, optional custom Blender meshes, icon/thumbnail upload |
+| Shop tiers | Four capacities with changing architecture, themes and movable floor decor | Final collision and mobile placement QA |
+| Restoration | Five item-centered touch/mouse interactions with server validation | Tune tolerance and timing from device playtests |
+| Customers | Eight personalities, budgets/preferences, animated arrival/exit and haggling | Optional rigged walk cycles and expanded browsing animations |
+| Market and trading | Same-server listings and two-sided trades with durable journal recovery, fees, caps, review delay and confirmations | Published-server fault injection and exploit testing |
+| Showcase | Persistent weekly neighborhood contests, bounded voting, offline cosmetic claims and themes | Moderation operations and live-scale monitoring |
 | Events | Daily style demand and estate-sale weekend rarity promotion | Scheduled seasonal content, limited cosmetics and event UI |
 | Monetization | Empty cosmetic-pass configuration and purchase-completion hook | Returning-player entitlement reconciliation, actual creator-owned passes, previews and entitlement tests; no developer products or receipts are implemented |
-| Audio | No audio assets | Licensed original shop/town/auction music, action sounds, settings and device checks |
+| Audio | Original generated shop/town/auction music and action WAVs | Upload in Asset Manager, paste owned IDs, and mix on devices |
 | Analytics | Best-effort custom events for several core actions | Complete funnel IDs/steps, session duration, commerce instrumentation, dashboards and measured targets |
 | Data | Session-locked version-1 profiles and backup copies | Migration framework, operator recovery tooling, fault-injection in live infrastructure, monitoring and load tests |
 | Decorations | Fixed-location rugs/plants/poster/sign/curtains/trophy plus themes | Free-placement editor, rotation, collision checks, more themed sets |
 
-The showcase is intentionally described as local. Do not present it as a persistent global weekly contest. Player market and trading are intentionally unavailable rather than claiming safe transfers before their transaction system exists. Paid gameplay advantages from the draft plan are omitted to honor its no-pay-to-win pillar.
+The showcase uses 32 persistent weekly neighborhoods rather than one unbounded global hot key. Market listings and direct trades are same-server by design; durable journal recovery protects interrupted transfers. Paid gameplay advantages from the draft plan remain omitted to honor its no-pay-to-win pillar.
 
 ## Studio smoke-test record
 

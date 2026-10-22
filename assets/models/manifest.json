@@ -1,0 +1,482 @@
+{
+  "lamps_1": {
+    "name": "Tulip Lamp",
+    "category": "Lamps",
+    "variant": 1,
+    "parts": 9
+  },
+  "lamps_2": {
+    "name": "Banker Lamp",
+    "category": "Lamps",
+    "variant": 2,
+    "parts": 8
+  },
+  "lamps_3": {
+    "name": "Mushroom Lamp",
+    "category": "Lamps",
+    "variant": 3,
+    "parts": 9
+  },
+  "lamps_4": {
+    "name": "Arc Lamp",
+    "category": "Lamps",
+    "variant": 4,
+    "parts": 6
+  },
+  "lamps_5": {
+    "name": "Lantern Lamp",
+    "category": "Lamps",
+    "variant": 5,
+    "parts": 13
+  },
+  "lamps_6": {
+    "name": "Desk Lamp",
+    "category": "Lamps",
+    "variant": 6,
+    "parts": 7
+  },
+  "lamps_7": {
+    "name": "Lava Lamp",
+    "category": "Lamps",
+    "variant": 7,
+    "parts": 7
+  },
+  "lamps_8": {
+    "name": "Tiffany Lamp",
+    "category": "Lamps",
+    "variant": 8,
+    "parts": 12
+  },
+  "lamps_9": {
+    "name": "Studio Lamp",
+    "category": "Lamps",
+    "variant": 9,
+    "parts": 9
+  },
+  "lamps_10": {
+    "name": "Moon Lamp",
+    "category": "Lamps",
+    "variant": 10,
+    "parts": 7
+  },
+  "radios_1": {
+    "name": "Pocket Radio",
+    "category": "Radios",
+    "variant": 1,
+    "parts": 11
+  },
+  "radios_2": {
+    "name": "Bakelite Radio",
+    "category": "Radios",
+    "variant": 2,
+    "parts": 13
+  },
+  "radios_3": {
+    "name": "Boombox Radio",
+    "category": "Radios",
+    "variant": 3,
+    "parts": 18
+  },
+  "radios_4": {
+    "name": "Cathedral Radio",
+    "category": "Radios",
+    "variant": 4,
+    "parts": 11
+  },
+  "radios_5": {
+    "name": "Transistor Radio",
+    "category": "Radios",
+    "variant": 5,
+    "parts": 13
+  },
+  "radios_6": {
+    "name": "Space Radio",
+    "category": "Radios",
+    "variant": 6,
+    "parts": 15
+  },
+  "radios_7": {
+    "name": "Kitchen Radio",
+    "category": "Radios",
+    "variant": 7,
+    "parts": 14
+  },
+  "radios_8": {
+    "name": "Travel Radio",
+    "category": "Radios",
+    "variant": 8,
+    "parts": 18
+  },
+  "radios_9": {
+    "name": "Jukebox Radio",
+    "category": "Radios",
+    "variant": 9,
+    "parts": 16
+  },
+  "radios_10": {
+    "name": "Crystal Radio",
+    "category": "Radios",
+    "variant": 10,
+    "parts": 13
+  },
+  "clocks_1": {
+    "name": "Cuckoo Clock",
+    "category": "Clocks",
+    "variant": 1,
+    "parts": 18
+  },
+  "clocks_2": {
+    "name": "Mantel Clock",
+    "category": "Clocks",
+    "variant": 2,
+    "parts": 14
+  },
+  "clocks_3": {
+    "name": "Alarm Clock",
+    "category": "Clocks",
+    "variant": 3,
+    "parts": 16
+  },
+  "clocks_4": {
+    "name": "Sunburst Clock",
+    "category": "Clocks",
+    "variant": 4,
+    "parts": 21
+  },
+  "clocks_5": {
+    "name": "Pendulum Clock",
+    "category": "Clocks",
+    "variant": 5,
+    "parts": 15
+  },
+  "clocks_6": {
+    "name": "Flip Clock",
+    "category": "Clocks",
+    "variant": 6,
+    "parts": 15
+  },
+  "clocks_7": {
+    "name": "Station Clock",
+    "category": "Clocks",
+    "variant": 7,
+    "parts": 18
+  },
+  "clocks_8": {
+    "name": "Carriage Clock",
+    "category": "Clocks",
+    "variant": 8,
+    "parts": 18
+  },
+  "clocks_9": {
+    "name": "Orbital Clock",
+    "category": "Clocks",
+    "variant": 9,
+    "parts": 27
+  },
+  "clocks_10": {
+    "name": "Kitten Clock",
+    "category": "Clocks",
+    "variant": 10,
+    "parts": 19
+  },
+  "chairs_1": {
+    "name": "Rocking Chair",
+    "category": "Chairs",
+    "variant": 1,
+    "parts": 17
+  },
+  "chairs_2": {
+    "name": "Windsor Chair",
+    "category": "Chairs",
+    "variant": 2,
+    "parts": 16
+  },
+  "chairs_3": {
+    "name": "Tulip Chair",
+    "category": "Chairs",
+    "variant": 3,
+    "parts": 6
+  },
+  "chairs_4": {
+    "name": "School Chair",
+    "category": "Chairs",
+    "variant": 4,
+    "parts": 9
+  },
+  "chairs_5": {
+    "name": "Lounge Chair",
+    "category": "Chairs",
+    "variant": 5,
+    "parts": 12
+  },
+  "chairs_6": {
+    "name": "Bistro Chair",
+    "category": "Chairs",
+    "variant": 6,
+    "parts": 11
+  },
+  "chairs_7": {
+    "name": "Velvet Chair",
+    "category": "Chairs",
+    "variant": 7,
+    "parts": 12
+  },
+  "chairs_8": {
+    "name": "Rattan Chair",
+    "category": "Chairs",
+    "variant": 8,
+    "parts": 18
+  },
+  "chairs_9": {
+    "name": "Rocket Chair",
+    "category": "Chairs",
+    "variant": 9,
+    "parts": 9
+  },
+  "chairs_10": {
+    "name": "Doll Chair",
+    "category": "Chairs",
+    "variant": 10,
+    "parts": 10
+  },
+  "toys_1": {
+    "name": "Robot Toy",
+    "category": "Toys",
+    "variant": 1,
+    "parts": 19
+  },
+  "toys_2": {
+    "name": "Train Toy",
+    "category": "Toys",
+    "variant": 2,
+    "parts": 20
+  },
+  "toys_3": {
+    "name": "Teddy Toy",
+    "category": "Toys",
+    "variant": 3,
+    "parts": 16
+  },
+  "toys_4": {
+    "name": "Rocket Toy",
+    "category": "Toys",
+    "variant": 4,
+    "parts": 9
+  },
+  "toys_5": {
+    "name": "Carousel Toy",
+    "category": "Toys",
+    "variant": 5,
+    "parts": 24
+  },
+  "toys_6": {
+    "name": "Dollhouse Toy",
+    "category": "Toys",
+    "variant": 6,
+    "parts": 19
+  },
+  "toys_7": {
+    "name": "Racecar Toy",
+    "category": "Toys",
+    "variant": 7,
+    "parts": 14
+  },
+  "toys_8": {
+    "name": "Duck Toy",
+    "category": "Toys",
+    "variant": 8,
+    "parts": 12
+  },
+  "toys_9": {
+    "name": "Airplane Toy",
+    "category": "Toys",
+    "variant": 9,
+    "parts": 13
+  },
+  "toys_10": {
+    "name": "Dinosaur Toy",
+    "category": "Toys",
+    "variant": 10,
+    "parts": 14
+  },
+  "mirrors_1": {
+    "name": "Oval Mirror",
+    "category": "Mirrors",
+    "variant": 1,
+    "parts": 6
+  },
+  "mirrors_2": {
+    "name": "Sun Mirror",
+    "category": "Mirrors",
+    "variant": 2,
+    "parts": 20
+  },
+  "mirrors_3": {
+    "name": "Vanity Mirror",
+    "category": "Mirrors",
+    "variant": 3,
+    "parts": 10
+  },
+  "mirrors_4": {
+    "name": "Arch Mirror",
+    "category": "Mirrors",
+    "variant": 4,
+    "parts": 10
+  },
+  "mirrors_5": {
+    "name": "Pocket Mirror",
+    "category": "Mirrors",
+    "variant": 5,
+    "parts": 8
+  },
+  "mirrors_6": {
+    "name": "Gilded Mirror",
+    "category": "Mirrors",
+    "variant": 6,
+    "parts": 14
+  },
+  "mirrors_7": {
+    "name": "Cloud Mirror",
+    "category": "Mirrors",
+    "variant": 7,
+    "parts": 18
+  },
+  "mirrors_8": {
+    "name": "Star Mirror",
+    "category": "Mirrors",
+    "variant": 8,
+    "parts": 9
+  },
+  "mirrors_9": {
+    "name": "Shell Mirror",
+    "category": "Mirrors",
+    "variant": 9,
+    "parts": 12
+  },
+  "mirrors_10": {
+    "name": "Heart Mirror",
+    "category": "Mirrors",
+    "variant": 10,
+    "parts": 7
+  },
+  "cameras_1": {
+    "name": "Box Camera",
+    "category": "Cameras",
+    "variant": 1,
+    "parts": 5
+  },
+  "cameras_2": {
+    "name": "Instant Camera",
+    "category": "Cameras",
+    "variant": 2,
+    "parts": 5
+  },
+  "cameras_3": {
+    "name": "Twin Lens Camera",
+    "category": "Cameras",
+    "variant": 3,
+    "parts": 6
+  },
+  "cameras_4": {
+    "name": "Pocket Camera",
+    "category": "Cameras",
+    "variant": 4,
+    "parts": 4
+  },
+  "cameras_5": {
+    "name": "Bellows Camera",
+    "category": "Cameras",
+    "variant": 5,
+    "parts": 9
+  },
+  "cameras_6": {
+    "name": "Rangefinder Camera",
+    "category": "Cameras",
+    "variant": 6,
+    "parts": 6
+  },
+  "cameras_7": {
+    "name": "Studio Camera",
+    "category": "Cameras",
+    "variant": 7,
+    "parts": 6
+  },
+  "cameras_8": {
+    "name": "Movie Camera",
+    "category": "Cameras",
+    "variant": 8,
+    "parts": 5
+  },
+  "cameras_9": {
+    "name": "Underwater Camera",
+    "category": "Cameras",
+    "variant": 9,
+    "parts": 6
+  },
+  "cameras_10": {
+    "name": "Toy Camera",
+    "category": "Cameras",
+    "variant": 10,
+    "parts": 6
+  },
+  "vases_1": {
+    "name": "Bud Vase",
+    "category": "Vases",
+    "variant": 1,
+    "parts": 3
+  },
+  "vases_2": {
+    "name": "Ginger Vase",
+    "category": "Vases",
+    "variant": 2,
+    "parts": 4
+  },
+  "vases_3": {
+    "name": "Amphora Vase",
+    "category": "Vases",
+    "variant": 3,
+    "parts": 5
+  },
+  "vases_4": {
+    "name": "Bubble Vase",
+    "category": "Vases",
+    "variant": 4,
+    "parts": 3
+  },
+  "vases_5": {
+    "name": "Fluted Vase",
+    "category": "Vases",
+    "variant": 5,
+    "parts": 12
+  },
+  "vases_6": {
+    "name": "Swan Vase",
+    "category": "Vases",
+    "variant": 6,
+    "parts": 5
+  },
+  "vases_7": {
+    "name": "Geometric Vase",
+    "category": "Vases",
+    "variant": 7,
+    "parts": 4
+  },
+  "vases_8": {
+    "name": "Rose Vase",
+    "category": "Vases",
+    "variant": 8,
+    "parts": 9
+  },
+  "vases_9": {
+    "name": "Celadon Vase",
+    "category": "Vases",
+    "variant": 9,
+    "parts": 6
+  },
+  "vases_10": {
+    "name": "Moon Vase",
+    "category": "Vases",
+    "variant": 10,
+    "parts": 8
+  }
+}
