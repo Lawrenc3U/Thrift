@@ -3034,8 +3034,6 @@ function World.new()
     self:landscape()
     self:square()
     self:sourcing()
-    self:auctionHouse()
-    self:market()
     self:districtLandmarks()
     self:wayfinding()
     for i = 1, 16 do
@@ -3141,7 +3139,7 @@ function World:square()
     for i = 1, 3 do Kit.sign(notice, ({"FIND\n3 treasures", "RESTORE\n3 keepsakes", "SELL\n3 stories"})[i], noticeCF * CFrame.new(-3.6 + (i - 1) * 3.6, 2.2, -0.4) * CFrame.Angles(0, 0, (i - 2) * 0.06), Vector3.new(3, 2.4, 0.1), P.Paper, P.Ink) end
     self.Destinations = {Source = Vector3.new(-46, 2, -165), Estate = Vector3.new(48, 2, -165),
         Delivery = Vector3.new(46, 2, -185), Quests = Vector3.new(-24, 2, -145), Flea = Vector3.new(-78, 2, -215),
-        Auction = Vector3.new(-48, 2, 55), Market = Vector3.new(-48, 2, -95), Workbench = Vector3.new(48, 2, 55)}
+        Auction = Vector3.new(-48, 2, 28), Market = Vector3.new(-48, 2, -80), Workbench = Vector3.new(48, 2, 25)}
     local travel = Kit.model(square, "FastTravelHub")
     local stops = {
         {"FINDS", "Source", -16, -147, P.Coral}, {"ESTATE", "Estate", -8, -147, P.Gold},
@@ -3280,26 +3278,114 @@ function World:market()
     market:PivotTo(transform * pivot)
 end
 function World:districtLandmarks()
-    local district = Kit.model(self.Root, "ThriftStreetLandmarks")
-    local function storefront(name, subtitle, position, side, color)
-        local facing = if side &lt; 0 then -math.pi / 2 else math.pi / 2
-        local cf = CFrame.new(position) * CFrame.Angles(0, facing, 0)
-        local building = Kit.model(district, string.gsub(name, " ", ""))
-        Kit.part(building, "Foundation", Vector3.new(32, 0.7, 25), cf * CFrame.new(0, 0.15, 0), P.Cream, Enum.Material.Marble)
-        Kit.part(building, "Facade", Vector3.new(30, 15, 1), cf * CFrame.new(0, 7.5, -11.5), color, Enum.Material.Brick)
-        Kit.part(building, "Roof", Vector3.new(32, 1, 27), cf * CFrame.new(0, 15.5, 0), P.Ink, Enum.Material.Slate)
-        for x = -1, 1, 2 do window(building, cf * CFrame.new(x * 8.5, 8, -12.1), 6.2, 7.2, Color3.fromRGB(183, 224, 226)) end
-        awning(building, cf * CFrame.new(0, 5.7, -13), 11, 4, color)
-        Kit.sign(building, name .. "\n" .. subtitle, cf * CFrame.new(0, 12.7, -12.2), Vector3.new(24, 4, 0.3), P.Ink, P.Paper)
-        for x = -1, 1, 2 do Kit.plant(building, cf * CFrame.new(x * 11, 0.4, -14), 1.1, nil, true) end
-        return building, cf
+    local district = Kit.model(self.Root, "HTMLPreviewDistrict")
+    district:SetAttribute("Source", "Thrift Street 3D Preview.html")
+    local glassColor = Color3.fromRGB(207, 233, 230)
+    local stone = Color3.fromRGB(232, 226, 212)
+    local charcoal = Color3.fromRGB(43, 43, 51)
+    local steel = Color3.fromRGB(138, 146, 154)
+    local function building(name, position, side, width, height, depth, wall, floor, roof)
+        local cf = CFrame.new(position) * CFrame.Angles(0, if side &lt; 0 then -math.pi / 2 else math.pi / 2, 0)
+        local model = Kit.model(district, name)
+        Kit.part(model, "Floor", Vector3.new(width, 0.5, depth), cf * CFrame.new(0, 0.25, 0), floor, Enum.Material.WoodPlanks)
+        Kit.part(model, "BackWall", Vector3.new(width, height, 1), cf * CFrame.new(0, height / 2, depth / 2 - 0.5), wall, Enum.Material.Brick)
+        for x = -1, 1, 2 do Kit.part(model, "SideWall", Vector3.new(1, height, depth - 2), cf * CFrame.new(x * (width / 2 - 0.5), height / 2, 0), wall, Enum.Material.Brick) end
+        Kit.part(model, "Roof", Vector3.new(width + 2, 1, depth + 2), cf * CFrame.new(0, height + 0.5, 0), roof, Enum.Material.Slate)
+        return model, cf
     end
-    storefront("THRIFT SHOP", "CURATED SECOND CHANCES", Vector3.new(-52, 0, -20), -1, P.Coral)
-    storefront("DESIGNER SHOWCASE", "THIS WEEK'S BEST WINDOWS", Vector3.new(52, 0, -95), 1, P.Lavender)
-    storefront("ANTIQUE CORNER", "HISTORY WORTH KEEPING", Vector3.new(52, 0, -20), 1, P.Gold)
-    local workshop, wcf = storefront("RESTORE WORKSHOP", "BRING GREAT FINDS BACK", Vector3.new(52, 0, 55), 1, P.Teal)
-    local bench = Kit.part(workshop, "PublicWorkbench", Vector3.new(9, 3, 3), wcf * CFrame.new(0, 2, -15), P.Wood, Enum.Material.Wood)
-    prompt(bench, "Restore a treasure", "Workbench")
+    local function displayWindow(model, cf, x, y, width, height, frameColor)
+        local pane = Kit.part(model, "DisplayGlass", Vector3.new(width, height, 0.18), cf * CFrame.new(x, y, -14.05), glassColor, Enum.Material.Glass, nil, false)
+        pane.Transparency = 0.35; pane.Reflectance = 0.12
+        for side = -1, 1, 2 do Kit.part(model, "WindowPost", Vector3.new(0.45, height + 0.8, 0.55), cf * CFrame.new(x + side * width / 2, y, -14.2), frameColor, Enum.Material.Metal) end
+        Kit.part(model, "WindowTop", Vector3.new(width + 0.8, 0.45, 0.55), cf * CFrame.new(x, y + height / 2, -14.2), frameColor, Enum.Material.Metal)
+        Kit.part(model, "WindowBase", Vector3.new(width + 1.4, 0.6, 1.2), cf * CFrame.new(x, y - height / 2, -14.5), frameColor)
+    end
+    local function shelf(model, cf, x, z, width, levels, colors)
+        for level = 0, levels do Kit.part(model, "Shelf", Vector3.new(width, 0.22, 1.8), cf * CFrame.new(x, 0.6 + level * 2.35, z), P.Oak, Enum.Material.Wood) end
+        for side = -1, 1, 2 do Kit.part(model, "ShelfSide", Vector3.new(0.25, levels * 2.4, 1.8), cf * CFrame.new(x + side * width / 2, levels * 1.2 + 0.5, z), P.Wood, Enum.Material.Wood) end
+        for level = 1, levels do for item = 1, math.floor(width / 1.6) do
+            local h = 0.8 + ((item + level) % 3) * 0.35
+            Kit.part(model, "ShelfFind", Vector3.new(0.9, h, 0.9), cf * CFrame.new(x - width / 2 + item * 1.6 - 0.7, 0.75 + (level - 1) * 2.35 + h / 2, z), colors[(item + level) % #colors + 1])
+        end end
+    end
+    local colors = {P.Coral, P.Gold, P.Teal, P.Lavender, P.Cream}
+    -- Port of thrift(): cream shell, teal glass frames, striped canopy, racks and checkout.
+    local thrift, tcf = building("ThriftShop", Vector3.new(-52, 0, -25), -1, 36, 14, 28, Color3.fromRGB(244, 227, 193), P.Oak, P.Ink)
+    Kit.part(thrift, "FrontFascia", Vector3.new(36, 4, 1), tcf * CFrame.new(0, 12, -13.5), Color3.fromRGB(244, 227, 193))
+    displayWindow(thrift, tcf, -10.5, 6, 8.5, 6, P.Teal); displayWindow(thrift, tcf, 10.5, 6, 8.5, 6, P.Teal)
+    Kit.part(thrift, "Door", Vector3.new(5, 8, 0.7), tcf * CFrame.new(0, 4, -14), P.Teal)
+    awning(thrift, tcf * CFrame.new(0, 10.5, -15.8), 36, 4, P.Teal)
+    Kit.sign(thrift, "THRIFT SHOP", tcf * CFrame.new(0, 12.6, -14.2), Vector3.new(20, 3.2, 0.35), P.Teal, P.Cream)
+    for x = -1, 1, 2 do Kit.part(thrift, "FlowerBox", Vector3.new(8.5, 1.2, 1.2), tcf * CFrame.new(x * 10.5, 2.1, -15), P.Wood, Enum.Material.Wood) end
+    shelf(thrift, tcf, -10, 11.5, 12, 3, colors); shelf(thrift, tcf, 10, 11.5, 12, 3, colors)
+    local thriftCounter = Kit.part(thrift, "Checkout", Vector3.new(9, 3, 2.4), tcf * CFrame.new(10, 2, -4), P.Teal)
+    prompt(thriftCounter, "Browse the thrift shop", "Market")
+    -- Port of market(): three open striped stalls with counters and visible stock.
+    local market = Kit.model(district, "Market")
+    local mcf = CFrame.new(-52, 0, -80) * CFrame.Angles(0, -math.pi / 2, 0)
+    Kit.part(market, "MarketFloor", Vector3.new(36, 0.4, 28), mcf * CFrame.new(0, 0.2, 0), stone, Enum.Material.Pavement)
+    for stallIndex, stall in ipairs({{"ANTIQUES", P.Rose}, {"CLOTHES", P.Teal}, {"COLLECTIBLES", P.Gold}}) do
+        local x = -11 + (stallIndex - 1) * 11
+        for sx = -1, 1, 2 do for sz = -1, 1, 2 do Kit.part(market, "StallPost", Vector3.new(0.45, 8, 0.45), mcf * CFrame.new(x + sx * 4, 4.2, -4 + sz * 3), P.Wood, Enum.Material.Wood) end end
+        awning(market, mcf * CFrame.new(x, 8.4, -4), 9, 7.4, stall[2])
+        local counter = Kit.part(market, "MarketCounter", Vector3.new(8, 2.6, 2.4), mcf * CFrame.new(x, 1.8, -6), P.Wood, Enum.Material.Wood)
+        prompt(counter, "Browse " .. string.lower(stall[1]), "Market")
+        Kit.sign(market, stall[1], mcf * CFrame.new(x, 6.6, -7.5), Vector3.new(8, 1.6, 0.25), stall[2], P.Cream)
+        for item = 1, 6 do Kit.part(market, "MarketFind", Vector3.new(0.8, 0.8 + item % 3 * 0.35, 0.8), mcf * CFrame.new(x - 3.5 + (item - 1) * 1.4, 4, -6.4), colors[item % #colors + 1]) end
+    end
+    Kit.sign(market, "MARKET", mcf * CFrame.new(0, 11, -12), Vector3.new(20, 3, 0.4), P.Gold, P.Ink)
+    -- Port of designer(): charcoal shell, gold framing, runway and mannequins.
+    local designer, dcf = building("DesignerShowcase", Vector3.new(52, 0, -80), 1, 36, 16, 28, P.Ink, P.Cream, charcoal)
+    Kit.part(designer, "FrontFascia", Vector3.new(36, 4.5, 1), dcf * CFrame.new(0, 13.75, -13.5), P.Ink)
+    displayWindow(designer, dcf, -11, 6.5, 9, 8, P.Gold); displayWindow(designer, dcf, 11, 6.5, 9, 8, P.Gold)
+    Kit.part(designer, "GoldDoor", Vector3.new(6, 9.5, 0.7), dcf * CFrame.new(0, 4.75, -14), P.Gold)
+    Kit.sign(designer, "DESIGNER SHOWCASE", dcf * CFrame.new(0, 13.4, -14.2), Vector3.new(24, 3, 0.4), P.Cream, P.Ink)
+    Kit.part(designer, "Runway", Vector3.new(6, 0.15, 20), dcf * CFrame.new(0, 0.58, -3), P.Rose, Enum.Material.Fabric)
+    for x = -1, 1, 2 do
+        Kit.cylinder(designer, "MannequinStand", 1.25, 0.3, dcf * CFrame.new(x * 11, 0.8, -10), steel, Enum.Material.Metal)
+        Kit.part(designer, "MannequinDress", Vector3.new(3, 3.8, 1.8), dcf * CFrame.new(x * 11, 4.3, -10), if x &lt; 0 then P.Coral else P.Gold, Enum.Material.Fabric)
+        Kit.ball(designer, "MannequinHead", Vector3.new(1.4, 1.4, 1.4), dcf * CFrame.new(x * 11, 7.7, -10), P.Cream)
+    end
+    local showcaseDoor = designer:FindFirstChild("GoldDoor"); prompt(showcaseDoor, "Open designer showcase", "Showcase")
+    -- Antique Corner complements the supplied five models in the map's sixth lot.
+    local antique, acf = building("AntiqueCorner", Vector3.new(52, 0, -27), 1, 36, 14, 28, P.Wood, P.Oak, P.Ink)
+    Kit.part(antique, "FrontFascia", Vector3.new(36, 5, 1), acf * CFrame.new(0, 11.5, -13.5), P.Wood)
+    displayWindow(antique, acf, -10, 6, 9, 7, P.Gold); displayWindow(antique, acf, 10, 6, 9, 7, P.Gold)
+    Kit.sign(antique, "ANTIQUE CORNER", acf * CFrame.new(0, 12.5, -14.2), Vector3.new(23, 3, 0.35), P.Gold, P.Ink)
+    shelf(antique, acf, -9, 10.5, 13, 3, {P.Gold, P.Wood, P.Rose}); shelf(antique, acf, 9, 10.5, 13, 3, {P.Oak, P.Teal, P.Cream})
+    local antiqueDesk = Kit.part(antique, "EstateDesk", Vector3.new(8, 3, 3), acf * CFrame.new(0, 2, -8), P.Oak, Enum.Material.Wood); prompt(antiqueDesk, "Open collector journal", "Collection")
+    -- Port of restore(): brick workshop, open bay, steel header, tool wall and two benches.
+    local workshop, wcf = building("RestoreWorkshop", Vector3.new(52, 0, 25), 1, 36, 15, 28, P.Brick, charcoal, charcoal)
+    Kit.part(workshop, "BrickFascia", Vector3.new(36, 5, 1), wcf * CFrame.new(0, 12.5, -13.5), P.Brick, Enum.Material.Brick)
+    Kit.part(workshop, "OpenBay", Vector3.new(17, 9.5, 0.25), wcf * CFrame.new(0, 4.75, -14), charcoal, Enum.Material.Metal, nil, false)
+    Kit.cylinder(workshop, "SteelHeader", 1.1, 16, wcf * CFrame.new(0, 10.2, -14.5) * CFrame.Angles(0, 0, math.pi / 2), steel, Enum.Material.Metal)
+    Kit.sign(workshop, "RESTORE SHOP", wcf * CFrame.new(0, 13, -14.2), Vector3.new(18, 3, 0.4), P.Cream, P.Brick)
+    for x = -1, 1, 2 do
+        local bench = Kit.part(workshop, "RestoreBench", Vector3.new(12, 0.45, 3.2), wcf * CFrame.new(x * 9, 3.6, -2), P.Oak, Enum.Material.Wood)
+        prompt(bench, "Restore a treasure", "Workbench")
+        for lx = -1, 1, 2 do for lz = -1, 1, 2 do Kit.part(workshop, "BenchLeg", Vector3.new(0.5, 3.1, 0.5), wcf * CFrame.new(x * 9 + lx * 5.5, 2, -2 + lz * 1.3), P.Wood, Enum.Material.Wood) end end
+    end
+    shelf(workshop, wcf, 10, 11.5, 12, 3, {P.Rose, steel, P.Gold, P.Teal})
+    Kit.part(workshop, "ToolBoard", Vector3.new(15, 7, 0.3), wcf * CFrame.new(-9, 6, 12.7), P.Oak, Enum.Material.Wood)
+    for tool = 1, 7 do Kit.part(workshop, "HangingTool", Vector3.new(0.25, 2.2, 0.25), wcf * CFrame.new(-15.5 + tool * 2.1, 6 + tool % 2, 12.4), steel, Enum.Material.Metal, nil, false) end
+    -- Port of auction(): stone frontage, six columns, stepped roof, clock and seating.
+    local auction, ucf = building("AuctionHouse", Vector3.new(-52, 0, 28), -1, 36, 18, 32, stone, P.Wood, charcoal)
+    Kit.part(auction, "FrontFascia", Vector3.new(36, 7, 1), ucf * CFrame.new(0, 14.5, -15.5), stone, Enum.Material.Marble)
+    for column = 1, 6 do
+        local x = -12.5 + (column - 1) * 5
+        Kit.cylinder(auction, "MarbleColumn", 1.1, 11, ucf * CFrame.new(x, 7.1, -23.5), P.Cream, Enum.Material.Marble)
+        Kit.part(auction, "ColumnCap", Vector3.new(3.2, 0.8, 3.2), ucf * CFrame.new(x, 13.1, -23.5), stone, Enum.Material.Marble)
+    end
+    for tier, width in ipairs({33, 27, 21, 15, 9}) do Kit.part(auction, "SteppedRoof", Vector3.new(width, 1.2, 9.6), ucf * CFrame.new(0, 15.5 + tier * 1.2, -20.5), stone, Enum.Material.Marble) end
+    Kit.sign(auction, "AUCTION HOUSE", ucf * CFrame.new(0, 14.8, -25.8), Vector3.new(26, 2.2, 0.4), P.Teal, P.Cream)
+    Kit.cylinder(auction, "ClockFace", 1.7, 0.35, ucf * CFrame.new(0, 18.4, -25.9) * CFrame.Angles(math.pi / 2, 0, 0), P.Gold, Enum.Material.Metal)
+    local podium = Kit.part(auction, "AuctionPodium", Vector3.new(3, 4.5, 2), ucf * CFrame.new(0, 3.4, 11), P.Wood, Enum.Material.Wood); prompt(podium, "Join the auction", "Auction")
+    Kit.sign(auction, "NOW BIDDING", ucf * CFrame.new(0, 10.5, 14.7), Vector3.new(14, 4, 0.3), charcoal, P.Gold)
+    for row = 1, 5 do for side = -1, 1, 2 do for seat = 1, 4 do
+        local x = side * (4.5 + (seat - 1) * 2.8); local z = -9 + (row - 1) * 3.2
+        Kit.part(auction, "BidderSeat", Vector3.new(2.4, 1.2, 1.8), ucf * CFrame.new(x, 1.1, z), P.Cream)
+        Kit.part(auction, "SeatBack", Vector3.new(2.4, 2.2, 0.4), ucf * CFrame.new(x, 2.5, z - 0.8), P.Teal)
+    end end end
     local flea = Kit.model(district, "FleaField")
     local fcf = CFrame.new(-78, 0, -215)
     Kit.part(flea, "Field", Vector3.new(58, 0.3, 42), fcf, Color3.fromRGB(148, 174, 113), Enum.Material.Grass)
@@ -3315,8 +3401,8 @@ function World:wayfinding()
     local route = Kit.model(self.Root, "NewPlayerRoute")
     local stops = {
         {1, "SPAWN", Vector3.new(0, 0.5, -145)}, {2, "QUESTS", Vector3.new(-24, 0.5, -145)},
-        {3, "DIG", Vector3.new(-46, 0.5, -165)}, {4, "RESTORE", Vector3.new(35, 0.5, 55)},
-        {5, "SELL", Vector3.new(-35, 0.5, -95)},
+        {3, "DIG", Vector3.new(-46, 0.5, -165)}, {4, "RESTORE", Vector3.new(35, 0.5, 25)},
+        {5, "SELL", Vector3.new(-35, 0.5, -80)},
     }
     for index, stop in ipairs(stops) do
         local pad = Kit.cylinder(route, "Stop" .. stop[1], 2.1, 0.16, CFrame.new(stop[3]), P.Teal, Enum.Material.Neon, false)
@@ -3926,7 +4012,7 @@ billboard.Name = "Guide"; billboard.Size = UDim2.fromOffset(230, 62); billboard.
 local guideText = UI.label(billboard, "▼ YOUR NEXT STEP", 20, UI.Colors.Gold)
 guideText.Size = UDim2.fromScale(1, 1); guideText.AutomaticSize = Enum.AutomaticSize.None; guideText.TextXAlignment = Enum.TextXAlignment.Center
 local locations = {Source=Vector3.new(-46,8,-165),Estate=Vector3.new(48,8,-165),Delivery=Vector3.new(46,8,-185),
-    Auction=Vector3.new(-48,12,55),Market=Vector3.new(-48,9,-95),Quests=Vector3.new(-24,8,-145),Workbench=Vector3.new(48,8,55)}
+    Auction=Vector3.new(-48,12,28),Market=Vector3.new(-48,9,-80),Quests=Vector3.new(-24,8,-145),Workbench=Vector3.new(48,8,25)}
 local guideExpires = 0
 local function guide(location)
     local target = locations[location]
