@@ -27,7 +27,11 @@ local function connectPrompt(prompt)
         if owner ~= 0 and owner ~= player.UserId then
             event:FireClient(player, "Open", {Page = "Visit", Owner = owner}); return
         end
-        event:FireClient(player, "Open", {Page = action, Slot = prompt:GetAttribute("Slot")})
+        if action == "Teleport" then
+            service:request(player, "Teleport", {Destination = prompt:GetAttribute("Destination")})
+        else
+            event:FireClient(player, "Open", {Page = action, Slot = prompt:GetAttribute("Slot")})
+        end
     end)
 end
 for _, prompt in ipairs(CollectionService:GetTagged("ThriftInteractable")) do connectPrompt(prompt) end

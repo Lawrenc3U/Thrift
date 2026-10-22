@@ -10,10 +10,11 @@ local P = Kit.Palette
 local World = {}
 World.__index = World
 local shopColors = {P.Teal, P.Rose, P.Gold, P.Lavender, P.Coral, Color3.fromRGB(137, 166, 190)}
-local function prompt(parent, text, action, owner, slot)
+local function prompt(parent, text, action, owner, slot, destination)
     local p = Instance.new("ProximityPrompt"); p.ActionText = text; p.ObjectText = "Thrift Flip"
     p.MaxActivationDistance = 12; p.RequiresLineOfSight = false; p.HoldDuration = 0.15
     p:SetAttribute("Action", action); p:SetAttribute("Owner", owner or 0); p:SetAttribute("Slot", slot or 0)
+    if destination then p:SetAttribute("Destination", destination) end
     p.Parent = parent; CollectionService:AddTag(p, "ThriftInteractable")
     return p
 end
@@ -79,6 +80,9 @@ function World:landscape()
     local terrain = Kit.model(self.Root, "VillageLandscape")
     Kit.part(terrain, "Meadow", Vector3.new(520, 2, 650), CFrame.new(0, -1.5, -15), P.Grass, Enum.Material.Grass)
     Kit.part(terrain, "CobblestoneHighStreet", Vector3.new(34, 0.5, 410), CFrame.new(0, -0.3, 20), Color3.fromRGB(185, 178, 158), Enum.Material.Cobblestone)
+    for z = -170, 210, 18 do
+        Kit.part(terrain, "RoadMarker", Vector3.new(0.45, 0.08, 8), CFrame.new(0, 0.01, z), P.Gold, Enum.Material.Neon, nil, false)
+    end
     for side = -1, 1, 2 do
         Kit.part(terrain, "PavedWalkway", Vector3.new(11, 0.5, 410), CFrame.new(side * 22.5, 0, 20), P.Cream, Enum.Material.Pavement)
         Kit.part(terrain, "Curb", Vector3.new(0.6, 0.8, 410), CFrame.new(side * 17.4, 0.1, 20), Color3.fromRGB(213, 205, 180))
@@ -144,6 +148,19 @@ function World:square()
     self.Destinations = {Source = Vector3.new(-40, 2, -120), Estate = Vector3.new(42, 2, -120),
         Delivery = Vector3.new(-40, 2, -175), Quests = Vector3.new(40, 2, -175),
         Auction = Vector3.new(0, 2, -233), Market = Vector3.new(0, 2, 210)}
+    local travel = Kit.model(square, "FastTravelHub")
+    local stops = {
+        {"FINDS", "Source", -16, -147, P.Coral}, {"ESTATE", "Estate", -8, -147, P.Gold},
+        {"AUCTION", "Auction", 8, -147, P.Rose}, {"MARKET", "Market", 16, -147, P.Lavender},
+    }
+    for _, stop in ipairs(stops) do
+        local pad = Kit.cylinder(travel, stop[1] .. "TravelPad", 3.1, 0.35, CFrame.new(stop[3], 0.42, stop[4]), stop[5], Enum.Material.Neon)
+        pad.Transparency = 0.08
+        Kit.cylinder(travel, "PadRing", 3.75, 0.16, CFrame.new(stop[3], 0.25, stop[4]), P.Ink, Enum.Material.Metal)
+        Kit.sign(travel, stop[1], CFrame.new(stop[3], 3.4, stop[4] + 2.8), Vector3.new(6.5, 1.5, 0.18), P.Ink, P.Paper)
+        prompt(pad, "Fast travel", "Teleport", 0, 0, stop[2])
+    end
+    Kit.sign(travel, "FAST TRAVEL", CFrame.new(0, 5.8, -144.2), Vector3.new(14, 2.1, 0.3), P.Teal, P.Paper)
     local delivery = Kit.model(square, "ParcelPost")
     local dcf = CFrame.new(-40, 0.2, -175)
     Kit.part(delivery, "PostalCabinet", Vector3.new(9, 5, 4), dcf * CFrame.new(0, 2.5, 0), P.Teal)
@@ -276,6 +293,10 @@ function World:buildPlot(index, cf)
     end
     Kit.part(front, "SignFascia", Vector3.new(29, 3.5, 1), cf * CFrame.new(0, 11.2, -14), color)
     Kit.part(front, "Cornice", Vector3.new(30, 0.6, 1.8), cf * CFrame.new(0, 13.2, -14), P.Cream)
+    for side = -1, 1, 2 do
+        local lightBar = Kit.part(front, "StorefrontGlow", Vector3.new(0.22, 9.5, 0.25), cf * CFrame.new(side * 14.15, 6.2, -14.7), color, Enum.Material.Neon, nil, false)
+        lightBar.Transparency = 0.1
+    end
     local label = Kit.sign(front, "YOUR NEXT CHAPTER", cf * CFrame.new(0, 11.2, -14.6), Vector3.new(26, 2.6, 0.15), color)
     awning(front, cf * CFrame.new(0, 8.8, -15.4), 17, 4.5, color)
     Kit.sign(front, string.format("%02d", index), cf * CFrame.new(-8.2, 5.8, -14.6), Vector3.new(1.4, 1.8, 0.12), P.Ink)
@@ -325,6 +346,12 @@ function World:buildInterior(plot, tier)
     Kit.part(model, "TillDisplay", Vector3.new(1.3, 0.75, 0.3), cf * CFrame.new(9.3, 4.6, -8.3), P.Ink)
     Kit.sign(model, "THANK YOU", cf * CFrame.new(6.8, 4.1, -9.3), Vector3.new(2.3, 0.8, 0.1), P.Cream, P.Ink)
     prompt(counter, "Sales, decor & upgrades", "Shop", plot.Owner)
+    local managementPad = Kit.cylinder(model, "TycoonManagementPad", 2.7, 0.24, cf * CFrame.new(8, 0.62, -4.5), plot.Color, Enum.Material.Neon)
+    managementPad.Transparency = 0.12
+    Kit.cylinder(model, "ManagementPadRing", 3.15, 0.12, cf * CFrame.new(8, 0.5, -4.5), P.Ink, Enum.Material.Metal)
+    prompt(managementPad, "Manage shop", "Shop", plot.Owner)
+    local padLabel = Kit.sign(model, "UPGRADES", cf * CFrame.new(8, 1.15, -1.8), Vector3.new(5.8, 1.1, 0.12), P.Ink, P.Paper)
+    padLabel.TextScaled = true
     for slot = 1, 16 do
         local position, surface, shelf
         if slot <= 4 then
@@ -411,6 +438,19 @@ function World:near(player, action)
     local plot = self.Owners[player.UserId]; if not plot then return false end
     local position = plot.CF:PointToObjectSpace(root.Position)
     return math.abs(position.X) < 15.5 and position.Z > -18 and position.Z < plot.BackZ + 1 and position.Y > -3 and position.Y < 14
+end
+function World:teleportCFrame(player, destination)
+    local target = self.Destinations[destination]
+    if target then return CFrame.new(target + Vector3.new(0, 3.5, 6), target) end
+    if destination ~= "Shop" and destination ~= "Workbench" then return nil end
+    local plot = self.Owners[player.UserId]
+    if not plot then return nil end
+    local localPosition = if destination == "Workbench"
+        then Vector3.new(-7.5, 4, plot.BackZ - 8)
+        else Vector3.new(0, 4, -8)
+    local position = plot.CF:PointToWorldSpace(localPosition)
+    local lookAt = plot.CF:PointToWorldSpace(if destination == "Workbench" then Vector3.new(-7.5, 3, plot.BackZ - 3.5) else Vector3.new(0, 3, 0))
+    return CFrame.lookAt(position, lookAt)
 end
 function World:render(player, profile, catalog, config)
     local plot = self.Owners[player.UserId]; if not plot then return end

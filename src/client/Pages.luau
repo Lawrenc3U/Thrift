@@ -98,9 +98,11 @@ function Pages:itemSummary(parent, item, height)
     else UI.label(parent, "Your mystery " .. definition.Category, 23).Font = Enum.Font.GothamBold end
 end
 function Pages:guideButton(parent, location, label)
-    return UI.button(parent, label or "Show me the way", function()
-        self.Guide(location); self.UI:hide()
-    end, true)
+    return UI.button(parent, "⚡  " .. (label or "Teleport there"), function()
+        self.Send("Teleport", {Destination = location})
+        self.Guide(location)
+        self.UI:hide()
+    end, false)
 end
 function Pages:inventory(context, mode)
     local state = self.State
@@ -401,7 +403,10 @@ function Pages:listingEditor(context)
     UI.label(frame, "A 3% fee is charged when you create the listing. Listings expire after 30 minutes or when you leave this server.", 14, UI.Colors.Muted)
     local suggested = math.max(1, math.floor(item.Value * 1.15))
     local input = UI.input(frame, "Whole-dollar price", tostring(self.Drafts.ListingPrice or suggested), true)
-    self:button(frame, "List this find", "MarketList", {Uid = item.Uid, Price = tonumber(input.Text) or 0})
+    UI.button(frame, "List this find", function()
+        self.Drafts.ListingPrice = tonumber(input.Text) or 0
+        self.Send("MarketList", {Uid = item.Uid, Price = self.Drafts.ListingPrice})
+    end)
 end
 
 function Pages:marketPage()
@@ -452,7 +457,9 @@ function Pages:tradePage()
     end
     local own = offerCard("You offer", trade.You); offerCard(trade.PartnerName .. " offers", trade.Them)
     local cash = UI.input(own, "Cash amount", tostring(trade.You.Cash), true)
-    self:button(own, "Update cash", "TradeOffer", {TradeId = trade.Id, Cash = tonumber(cash.Text) or 0}, true)
+    UI.button(own, "Update cash", function()
+        self.Send("TradeOffer", {TradeId = trade.Id, Cash = tonumber(cash.Text) or 0})
+    end, true)
     local offered = {}; for _, item in ipairs(trade.You.Items) do offered[item.Uid] = true end
     for _, item in ipairs(self.State.Inventory) do
         if item.Inspected and not item.Slot and (not item.Locked or offered[item.Uid]) then

@@ -6,12 +6,12 @@ local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UI = {}
 UI.Colors = {
-    Cream = Color3.fromRGB(244, 237, 221), Panel = Color3.fromRGB(255, 252, 242),
-    Ink = Color3.fromRGB(42, 62, 55), Teal = Color3.fromRGB(57, 119, 103),
-    Muted = Color3.fromRGB(110, 122, 110), Rose = Color3.fromRGB(194, 106, 103),
-    Gold = Color3.fromRGB(218, 168, 65), Line = Color3.fromRGB(216, 216, 195),
-    Light = Color3.fromRGB(231, 237, 218), White = Color3.fromRGB(255, 255, 255),
-    Wood = Color3.fromRGB(146, 103, 72), Night = Color3.fromRGB(28, 43, 38),
+    Cream = Color3.fromRGB(241, 245, 249), Panel = Color3.fromRGB(255, 255, 255),
+    Ink = Color3.fromRGB(22, 30, 48), Teal = Color3.fromRGB(20, 190, 164),
+    Muted = Color3.fromRGB(100, 116, 139), Rose = Color3.fromRGB(246, 96, 114),
+    Gold = Color3.fromRGB(255, 190, 55), Line = Color3.fromRGB(218, 226, 238),
+    Light = Color3.fromRGB(235, 241, 248), White = Color3.fromRGB(255, 255, 255),
+    Wood = Color3.fromRGB(146, 103, 72), Night = Color3.fromRGB(12, 18, 32),
 }
 local Models, SharedConfig
 local function tween(object, properties, duration)
@@ -26,6 +26,10 @@ function UI.stroke(object, color, thickness, transparency)
     local stroke = Instance.new("UIStroke"); stroke.Color = color or UI.Colors.Line; stroke.Thickness = thickness or 1
     stroke.Transparency = transparency or 0; stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border; stroke.Parent = object
     return stroke
+end
+function UI.gradient(object, first, second, rotation)
+    local gradient = Instance.new("UIGradient"); gradient.Color = ColorSequence.new(first, second)
+    gradient.Rotation = rotation or 0; gradient.Parent = object; return gradient
 end
 function UI.padding(object, horizontal, vertical)
     local p = Instance.new("UIPadding")
@@ -50,8 +54,10 @@ function UI.button(parent, text, callback, secondary)
     button.Font = Enum.Font.GothamBold; button.TextSize = 16; button.TextWrapped = true
     button.TextColor3 = if secondary then UI.Colors.Ink else UI.Colors.Panel
     button.BackgroundColor3 = if secondary then UI.Colors.Light else UI.Colors.Teal
-    button.Size = UDim2.new(1, 0, 0, 48); button.AutoButtonColor = false; button.Parent = parent
-    UI.corner(button, 11); UI.padding(button, 10, 3)
+    button.Size = UDim2.new(1, 0, 0, 50); button.AutoButtonColor = false; button.Parent = parent
+    UI.corner(button, 14); UI.padding(button, 10, 3)
+    UI.stroke(button, if secondary then UI.Colors.Line else UI.Colors.White, 1, if secondary then 0.15 else 0.72)
+    if not secondary then UI.gradient(button, Color3.fromRGB(16, 202, 171), Color3.fromRGB(20, 154, 213), 15) end
     local baseColor = button.BackgroundColor3
     button.MouseEnter:Connect(function() tween(button, {BackgroundColor3 = baseColor:Lerp(UI.Colors.Gold, 0.12)}) end)
     button.MouseLeave:Connect(function() tween(button, {BackgroundColor3 = baseColor}) end)
@@ -102,12 +108,13 @@ end
 function UI.card(parent)
     local frame = Instance.new("Frame"); frame.Name = "Card"
     frame.Size = UDim2.new(1, -2, 0, 0); frame.AutomaticSize = Enum.AutomaticSize.Y
-    frame.BackgroundColor3 = UI.Colors.Panel; frame.Parent = parent; UI.corner(frame, 15)
-    UI.stroke(frame, UI.Colors.Line, 1, 0.3); UI.padding(frame, 16, 14); UI.list(frame, 9)
+    frame.BackgroundColor3 = UI.Colors.Panel; frame.Parent = parent; UI.corner(frame, 18)
+    UI.stroke(frame, UI.Colors.Line, 1, 0.08); UI.padding(frame, 18, 16); UI.list(frame, 10)
     return frame
 end
 function UI.hero(parent, kicker, title, body, color)
-    local frame = UI.card(parent); frame.BackgroundColor3 = color or UI.Colors.Teal
+    local frame = UI.card(parent); frame.BackgroundColor3 = color or UI.Colors.Ink
+    if not color then UI.gradient(frame, Color3.fromRGB(19, 31, 55), Color3.fromRGB(25, 95, 109), 20) end
     UI.eyebrow(frame, kicker, UI.Colors.Cream)
     local heading = UI.label(frame, title, 28, UI.Colors.Panel); heading.Font = Enum.Font.GothamBold
     if body and body ~= "" then UI.label(frame, body, 16, UI.Colors.Cream) end
@@ -207,27 +214,28 @@ function UI.new()
     gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling; gui.ScreenInsets = Enum.ScreenInsets.CoreUISafeInsets
     gui.Parent = Players.LocalPlayer:WaitForChild("PlayerGui"); self.Gui = gui
     local hud = Instance.new("Frame"); hud.Name = "TownHUD"; hud.Position = UDim2.fromOffset(14, 10)
-    hud.Size = UDim2.new(1, -28, 0, 80); hud.BackgroundColor3 = UI.Colors.Panel; hud.Parent = gui
-    UI.corner(hud, 16); UI.stroke(hud, UI.Colors.Line, 1, 0.15)
-    local badge = Instance.new("Frame"); badge.Size = UDim2.fromOffset(44, 44); badge.Position = UDim2.fromOffset(12, 10)
-    badge.BackgroundColor3 = UI.Colors.Teal; badge.Parent = hud; UI.corner(badge, 12)
-    local icon = UI.label(badge, "✦", 29, UI.Colors.Gold); icon.Size = UDim2.fromScale(1, 1); icon.TextXAlignment = Enum.TextXAlignment.Center
+    hud.Size = UDim2.new(1, -28, 0, 76); hud.BackgroundColor3 = UI.Colors.Night; hud.BackgroundTransparency = 0.05; hud.Parent = gui
+    UI.corner(hud, 19); UI.stroke(hud, UI.Colors.White, 1, 0.82); UI.gradient(hud, Color3.fromRGB(13, 21, 38), Color3.fromRGB(23, 63, 75), 10)
+    local badge = Instance.new("Frame"); badge.Size = UDim2.fromOffset(48, 48); badge.Position = UDim2.fromOffset(12, 10)
+    badge.BackgroundColor3 = UI.Colors.Teal; badge.Parent = hud; UI.corner(badge, 15); UI.gradient(badge, UI.Colors.Teal, Color3.fromRGB(19, 151, 215), 45)
+    local icon = UI.label(badge, "♻", 28, UI.Colors.White); icon.Size = UDim2.fromScale(1, 1); icon.TextXAlignment = Enum.TextXAlignment.Center
     icon.AutomaticSize = Enum.AutomaticSize.None
     self.Brand = UI.label(hud, "THRIFT FLIP", 19); self.Brand.Font = Enum.Font.GothamBlack
-    self.Brand.Position = UDim2.fromOffset(65, 8); self.Brand.Size = UDim2.new(0.54, -65, 0, 28); self.Brand.TextWrapped = false
+    self.Brand.TextColor3 = UI.Colors.White; self.Brand.Position = UDim2.fromOffset(70, 8); self.Brand.Size = UDim2.new(0.54, -70, 0, 28); self.Brand.TextWrapped = false
     self.Brand.AutomaticSize = Enum.AutomaticSize.None
-    self.Balance = UI.label(hud, "Connecting…", 21, UI.Colors.Teal); self.Balance.Font = Enum.Font.GothamBold
+    self.Balance = UI.label(hud, "Connecting…", 21, UI.Colors.Gold); self.Balance.Font = Enum.Font.GothamBold
     self.Balance.Position = UDim2.new(0.54, 0, 0, 8); self.Balance.Size = UDim2.new(0.46, -14, 0, 28)
     self.Balance.TextXAlignment = Enum.TextXAlignment.Right; self.Balance.AutomaticSize = Enum.AutomaticSize.None
     self.Level = UI.label(hud, "EVERY FIND HAS A STORY", 11, UI.Colors.Muted); self.Level.Font = Enum.Font.GothamBold
-    self.Level.Position = UDim2.fromOffset(65, 37); self.Level.Size = UDim2.new(1, -79, 0, 17)
+    self.Level.TextColor3 = Color3.fromRGB(174, 209, 215); self.Level.Position = UDim2.fromOffset(70, 37); self.Level.Size = UDim2.new(1, -84, 0, 17)
     self.Level.AutomaticSize = Enum.AutomaticSize.None; self.Level.TextWrapped = false
-    self.Hint = UI.label(hud, "Find. Restore. Make it yours.", 13, UI.Colors.Muted)
-    self.Hint.Position = UDim2.fromOffset(14, 58); self.Hint.Size = UDim2.new(1, -28, 0, 19)
+    self.Hint = UI.label(hud, "Find. Restore. Make it yours.", 12, Color3.fromRGB(181, 196, 215))
+    self.Hint.Position = UDim2.fromOffset(14, 56); self.Hint.Size = UDim2.new(1, -28, 0, 17)
     self.Hint.AutomaticSize = Enum.AutomaticSize.None; self.Hint.TextTruncate = Enum.TextTruncate.AtEnd; self.Hint.TextWrapped = false
     local nav = Instance.new("Frame"); nav.Name = "Navigation"; nav.AnchorPoint = Vector2.new(0.5, 1)
     nav.Position = UDim2.new(0.5, 0, 1, -9); nav.Size = UDim2.new(1, -24, 0, 62)
-    nav.BackgroundColor3 = UI.Colors.Panel; nav.Parent = gui; nav.ZIndex = 12; UI.corner(nav, 16); UI.padding(nav, 5, 5)
+    nav.BackgroundColor3 = UI.Colors.Night; nav.BackgroundTransparency = 0.04; nav.Parent = gui; nav.ZIndex = 12; UI.corner(nav, 20); UI.padding(nav, 6, 6)
+    UI.stroke(nav, UI.Colors.White, 1, 0.82)
     local navLimit = Instance.new("UISizeConstraint"); navLimit.MaxSize = Vector2.new(650, 62); navLimit.Parent = nav
     local grid = Instance.new("UIGridLayout"); grid.CellSize = UDim2.new(0.2, -4, 1, 0); grid.CellPadding = UDim2.fromOffset(5, 0)
     grid.SortOrder = Enum.SortOrder.LayoutOrder; grid.Parent = nav; self.Nav = nav; self.NavButtons = {}
@@ -237,11 +245,11 @@ function UI.new()
     local panel = Instance.new("Frame"); panel.Name = "Journal"; panel.AnchorPoint = Vector2.new(0.5, 0.5)
     panel.Position = UDim2.new(0.5, 0, 0.5, -22); panel.Size = UDim2.new(1, -24, 1, -100)
     panel.BackgroundColor3 = UI.Colors.Cream; panel.Visible = false; panel.Parent = gui; panel.ZIndex = 5
-    UI.corner(panel, 20); UI.stroke(panel, UI.Colors.Panel, 2, 0.1)
+    UI.corner(panel, 24); UI.stroke(panel, UI.Colors.White, 2, 0.05)
     local limit = Instance.new("UISizeConstraint"); limit.MaxSize = Vector2.new(860, 730); limit.MinSize = Vector2.new(270, 170); limit.Parent = panel
     self.Panel = panel
     local accent = Instance.new("Frame"); accent.Position = UDim2.fromOffset(17, 17); accent.Size = UDim2.fromOffset(5, 39)
-    accent.BackgroundColor3 = UI.Colors.Gold; accent.Parent = panel; UI.corner(accent, 3)
+    accent.BackgroundColor3 = UI.Colors.Teal; accent.Parent = panel; UI.corner(accent, 3); UI.gradient(accent, UI.Colors.Teal, Color3.fromRGB(24, 147, 222), 90)
     self.Title = UI.label(panel, "Your finds", 25); self.Title.Font = Enum.Font.GothamBold
     self.Title.Position = UDim2.fromOffset(32, 11); self.Title.Size = UDim2.new(1, -100, 0, 31); self.Title.AutomaticSize = Enum.AutomaticSize.None
     self.Title.TextTruncate = Enum.TextTruncate.AtEnd; self.Title.TextWrapped = false
@@ -270,13 +278,14 @@ function UI.new()
 end
 function UI:addNav(name, symbol, callback)
     local button = UI.button(self.Nav, symbol .. "\n" .. name, callback, true)
-    button.TextSize = 14; button.BackgroundColor3 = UI.Colors.Panel; button.ZIndex = 13
+    button.TextSize = 14; button.BackgroundColor3 = UI.Colors.Night; button.TextColor3 = Color3.fromRGB(202, 215, 231); button.ZIndex = 13
     self.NavButtons[name] = button; return button
 end
 function UI:selectNav(name)
     for label, button in pairs(self.NavButtons) do
-        button.BackgroundColor3 = if label == name then UI.Colors.Teal else UI.Colors.Panel
-        button.TextColor3 = if label == name then UI.Colors.Panel else UI.Colors.Ink
+        local selected = label == name or (label == "Find" and name == "Source")
+        button.BackgroundColor3 = if selected then UI.Colors.Teal else UI.Colors.Night
+        button.TextColor3 = if selected then UI.Colors.White else Color3.fromRGB(202, 215, 231)
     end
 end
 function UI:setSubtitle(text) self.Subtitle.Text = string.upper(text) end
