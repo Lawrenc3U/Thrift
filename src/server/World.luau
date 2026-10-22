@@ -158,6 +158,8 @@ function World:square()
         pad.Transparency = 0.08
         Kit.cylinder(travel, "PadRing", 3.75, 0.16, CFrame.new(stop[3], 0.25, stop[4]), P.Ink, Enum.Material.Metal)
         Kit.sign(travel, stop[1], CFrame.new(stop[3], 3.4, stop[4] + 2.8), Vector3.new(6.5, 1.5, 0.18), P.Ink, P.Paper)
+        local beacon = Kit.part(travel, "TravelBeacon", Vector3.new(0.35, 8, 0.35), CFrame.new(stop[3], 4.3, stop[4]), stop[5], Enum.Material.Neon, nil, false)
+        beacon.Transparency = 0.32
         prompt(pad, "Fast travel", "Teleport", 0, 0, stop[2])
     end
     Kit.sign(travel, "FAST TRAVEL", CFrame.new(0, 5.8, -144.2), Vector3.new(14, 2.1, 0.3), P.Teal, P.Paper)
@@ -284,6 +286,11 @@ function World:buildPlot(index, cf)
     local model = Kit.model(self.Root, "Shop" .. index)
     local color = shopColors[(index - 1) % #shopColors + 1]
     local front = Kit.model(model, "Storefront")
+    local zone = Kit.part(front, "OwnedPlot", Vector3.new(32, 0.16, 33), cf * CFrame.new(0, 0.35, 0), color, Enum.Material.SmoothPlastic, nil, false)
+    zone.Transparency = 0.76
+    for side = -1, 1, 2 do
+        Kit.part(front, "PlotRail", Vector3.new(0.24, 0.2, 33), cf * CFrame.new(side * 15.8, 0.48, 0), color, Enum.Material.Neon, nil, false)
+    end
     Kit.part(front, "FrontStep", Vector3.new(29, 0.6, 5), cf * CFrame.new(0, 0, -15), P.Cream, Enum.Material.Pavement)
     for side = -1, 1, 2 do
         Kit.part(front, "FrontPanel", Vector3.new(6, 12, 0.7), cf * CFrame.new(side * 11, 6, -14), color)
@@ -298,6 +305,10 @@ function World:buildPlot(index, cf)
         lightBar.Transparency = 0.1
     end
     local label = Kit.sign(front, "YOUR NEXT CHAPTER", cf * CFrame.new(0, 11.2, -14.6), Vector3.new(26, 2.6, 0.15), color)
+    for side = -1, 1, 2 do
+        Kit.part(front, "BrandPylon", Vector3.new(0.7, 15, 0.7), cf * CFrame.new(side * 15, 7.5, -13.8), P.Ink, Enum.Material.Metal)
+    end
+    Kit.part(front, "BrandArch", Vector3.new(30.7, 0.7, 0.7), cf * CFrame.new(0, 14.7, -13.8), P.Ink, Enum.Material.Metal)
     awning(front, cf * CFrame.new(0, 8.8, -15.4), 17, 4.5, color)
     Kit.sign(front, string.format("%02d", index), cf * CFrame.new(-8.2, 5.8, -14.6), Vector3.new(1.4, 1.8, 0.12), P.Ink)
     local plot = {Model = model, CF = cf, Label = label, Slots = {}, Items = {}, Index = index,
@@ -346,12 +357,15 @@ function World:buildInterior(plot, tier)
     Kit.part(model, "TillDisplay", Vector3.new(1.3, 0.75, 0.3), cf * CFrame.new(9.3, 4.6, -8.3), P.Ink)
     Kit.sign(model, "THANK YOU", cf * CFrame.new(6.8, 4.1, -9.3), Vector3.new(2.3, 0.8, 0.1), P.Cream, P.Ink)
     prompt(counter, "Sales, decor & upgrades", "Shop", plot.Owner)
-    local managementPad = Kit.cylinder(model, "TycoonManagementPad", 2.7, 0.24, cf * CFrame.new(8, 0.62, -4.5), plot.Color, Enum.Material.Neon)
-    managementPad.Transparency = 0.12
-    Kit.cylinder(model, "ManagementPadRing", 3.15, 0.12, cf * CFrame.new(8, 0.5, -4.5), P.Ink, Enum.Material.Metal)
-    prompt(managementPad, "Manage shop", "Shop", plot.Owner)
-    local padLabel = Kit.sign(model, "UPGRADES", cf * CFrame.new(8, 1.15, -1.8), Vector3.new(5.8, 1.1, 0.12), P.Ink, P.Paper)
-    padLabel.TextScaled = true
+    local upgradePads = {{"EXPAND", 4.5, P.Teal}, {"TOOLS", 8, P.Gold}, {"STYLE", 11.5, P.Rose}}
+    for _, upgrade in ipairs(upgradePads) do
+        local managementPad = Kit.cylinder(model, upgrade[1] .. "Pad", 1.45, 0.24, cf * CFrame.new(upgrade[2], 0.62, -4.5), upgrade[3], Enum.Material.Neon)
+        managementPad.Transparency = 0.08
+        Kit.cylinder(model, "ManagementPadRing", 1.72, 0.12, cf * CFrame.new(upgrade[2], 0.5, -4.5), P.Ink, Enum.Material.Metal)
+        prompt(managementPad, "Open " .. string.lower(upgrade[1]), "Shop", plot.Owner)
+        local padLabel = Kit.sign(model, upgrade[1], cf * CFrame.new(upgrade[2], 1.05, -2.95), Vector3.new(3.1, 0.72, 0.1), P.Ink, P.Paper)
+        padLabel.TextScaled = true
+    end
     for slot = 1, 16 do
         local position, surface, shelf
         if slot <= 4 then
