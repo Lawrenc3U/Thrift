@@ -543,7 +543,13 @@ function World:decorate(plot, profile)
     end
 end
 function World:makeItem(parent, definition, item, cf, config)
-    return ItemModels.create(parent, definition, item, cf, config)
+    local model = ItemModels.create(parent, definition, item, cf, config)
+    local anchor = model:FindFirstChildWhichIsA("BasePart", true)
+    if anchor then
+        local light = Instance.new("PointLight"); light.Name = "DisplayLight"; light.Color = Color3.fromRGB(255, 224, 177)
+        light.Brightness = 0.22; light.Range = 6; light.Shadows = false; light.Parent = anchor
+    end
+    return model
 end
 function World:customer(userId, name)
     local plot = self.Owners[userId]; if not plot then return end

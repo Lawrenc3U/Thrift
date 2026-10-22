@@ -1098,20 +1098,30 @@ end
 
 function ItemModels.create(parent, definition, item, cf, config)
     local model = Instance.new("Model"); model.Name = definition.Name; model.Parent = parent
+    model:SetAttribute("Category", definition.Category); model:SetAttribute("Variant", definition.Variant or 1)
+    local addedLight = false
     for index, descriptor in ipairs(ItemModels.describe(definition, item)) do
         local part = Instance.new(descriptor.Class or "Part")
         part.Name = descriptor.Name .. tostring(index); part.Size = Vector3.new(unpack(descriptor.Size))
         part.CFrame = (cf or CFrame.new()) * CFrame.new(unpack(descriptor.Position)) * CFrame.Angles(unpack(descriptor.Rotation))
         part.Color = Color3.new(unpack(descriptor.Color)); part.Material = Enum.Material[descriptor.Material] or Enum.Material.SmoothPlastic
         part.Transparency = descriptor.Transparency or 0; part.Reflectance = descriptor.Reflectance or 0
+        if descriptor.Material == "Metal" then part.Reflectance = math.max(part.Reflectance, 0.12)
+        elseif descriptor.Material == "Glass" then part.Reflectance = math.max(part.Reflectance, 0.22)
+        elseif descriptor.Material == "Ceramic" then part.Reflectance = math.max(part.Reflectance, 0.045) end
         if part:IsA("Part") and descriptor.Shape then part.Shape = Enum.PartType[descriptor.Shape] end
         part.Anchored = true; part.CanCollide = false; part.CanTouch = false; part.CanQuery = false
         part.CastShadow = (descriptor.Transparency or 0) &lt; 0.5; part.Parent = model
+        if descriptor.Material == "Neon" and not addedLight then
+            local light = Instance.new("PointLight"); light.Name = "ProductGlow"; light.Color = part.Color
+            light.Brightness = 0.32; light.Range = 5; light.Shadows = false; light.Parent = part; addedLight = true
+        end
     end
     local rarity = item and item.Rarity
-    if rarity and rarity &gt;= 4 and config and config.RarityColors then
+    if rarity and rarity &gt;= 3 and config and config.RarityColors then
         local glow = Instance.new("Highlight"); glow.Name = "RarityGlow"; glow.FillTransparency = 0.93
-        glow.OutlineColor = Color3.fromHex(config.RarityColors[rarity]); glow.OutlineTransparency = 0.25; glow.DepthMode = Enum.HighlightDepthMode.Occluded; glow.Parent = model
+        glow.OutlineColor = Color3.fromHex(config.RarityColors[rarity]); glow.OutlineTransparency = if rarity &gt;= 4 then 0.25 else 0.58
+        glow.DepthMode = Enum.HighlightDepthMode.Occluded; glow.Parent = model
     end
     return model
 end
@@ -3479,7 +3489,13 @@ function World:decorate(plot, profile)
     end
 end
 function World:makeItem(parent, definition, item, cf, config)
-    return ItemModels.create(parent, definition, item, cf, config)
+    local model = ItemModels.create(parent, definition, item, cf, config)
+    local anchor = model:FindFirstChildWhichIsA("BasePart", true)
+    if anchor then
+        local light = Instance.new("PointLight"); light.Name = "DisplayLight"; light.Color = Color3.fromRGB(255, 224, 177)
+        light.Brightness = 0.22; light.Range = 6; light.Shadows = false; light.Parent = anchor
+    end
+    return model
 end
 function World:customer(userId, name)
     local plot = self.Owners[userId]; if not plot then return end
@@ -5317,8 +5333,9 @@ end
 function UI.preview(parent, definition, item, height, hidden)
     local viewport = Instance.new("ViewportFrame"); viewport.Name = "ItemPreview"
     viewport.Size = UDim2.new(1, 0, 0, height or 180); viewport.BackgroundColor3 = UI.Colors.Light
-    viewport.Ambient = Color3.fromRGB(197, 199, 183); viewport.LightColor = Color3.fromRGB(255, 239, 211)
-    viewport.LightDirection = Vector3.new(-1, -1, -1); viewport.Parent = parent; UI.corner(viewport, 12)
+    viewport.Ambient = Color3.fromRGB(128, 143, 159); viewport.LightColor = Color3.fromRGB(255, 242, 216)
+    viewport.LightDirection = Vector3.new(-1.4, -1.8, -1); viewport.Parent = parent; UI.corner(viewport, 12)
+    UI.gradient(viewport, Color3.fromRGB(247, 241, 228), Color3.fromRGB(203, 225, 224), 35)
     local world = Instance.new("WorldModel"); world.Parent = viewport
     local camera = Instance.new("Camera"); camera.FieldOfView = 35; camera.Parent = viewport; viewport.CurrentCamera = camera
     if hidden then
@@ -5343,7 +5360,13 @@ function UI.preview(parent, definition, item, height, hidden)
     if ok and model then
         local cf, size = model:GetBoundingBox()
         local diameter = math.max(size.X, size.Y, size.Z, 1)
-        camera.CFrame = CFrame.lookAt(cf.Position + Vector3.new(diameter * 1.25, diameter * 0.7, -diameter * 1.85), cf.Position)
+        local shadow = Instance.new("Part"); shadow.Name = "ProductShadow"; shadow.Shape = Enum.PartType.Cylinder
+        shadow.Size = Vector3.new(0.025, diameter * 1.15, diameter * 1.15)
+        shadow.CFrame = CFrame.new(cf.Position.X, cf.Position.Y - size.Y / 2 - 0.04, cf.Position.Z) * CFrame.Angles(0, 0, math.pi / 2)
+        shadow.Color = Color3.fromRGB(45, 58, 64); shadow.Material = Enum.Material.SmoothPlastic
+        shadow.Transparency = 0.72; shadow.Anchored = true; shadow.CanCollide = false; shadow.CanQuery = false; shadow.Parent = world
+        camera.FieldOfView = 30
+        camera.CFrame = CFrame.lookAt(cf.Position + Vector3.new(diameter * 1.35, diameter * 0.78, -diameter * 2.05), cf.Position + Vector3.new(0, size.Y * 0.05, 0))
         -- Rotate only while the player drags the preview, never in a render loop.
         local rotating, lastX = false, 0
         viewport.Active = true

@@ -159,8 +159,9 @@ end
 function UI.preview(parent, definition, item, height, hidden)
     local viewport = Instance.new("ViewportFrame"); viewport.Name = "ItemPreview"
     viewport.Size = UDim2.new(1, 0, 0, height or 180); viewport.BackgroundColor3 = UI.Colors.Light
-    viewport.Ambient = Color3.fromRGB(197, 199, 183); viewport.LightColor = Color3.fromRGB(255, 239, 211)
-    viewport.LightDirection = Vector3.new(-1, -1, -1); viewport.Parent = parent; UI.corner(viewport, 12)
+    viewport.Ambient = Color3.fromRGB(128, 143, 159); viewport.LightColor = Color3.fromRGB(255, 242, 216)
+    viewport.LightDirection = Vector3.new(-1.4, -1.8, -1); viewport.Parent = parent; UI.corner(viewport, 12)
+    UI.gradient(viewport, Color3.fromRGB(247, 241, 228), Color3.fromRGB(203, 225, 224), 35)
     local world = Instance.new("WorldModel"); world.Parent = viewport
     local camera = Instance.new("Camera"); camera.FieldOfView = 35; camera.Parent = viewport; viewport.CurrentCamera = camera
     if hidden then
@@ -185,7 +186,13 @@ function UI.preview(parent, definition, item, height, hidden)
     if ok and model then
         local cf, size = model:GetBoundingBox()
         local diameter = math.max(size.X, size.Y, size.Z, 1)
-        camera.CFrame = CFrame.lookAt(cf.Position + Vector3.new(diameter * 1.25, diameter * 0.7, -diameter * 1.85), cf.Position)
+        local shadow = Instance.new("Part"); shadow.Name = "ProductShadow"; shadow.Shape = Enum.PartType.Cylinder
+        shadow.Size = Vector3.new(0.025, diameter * 1.15, diameter * 1.15)
+        shadow.CFrame = CFrame.new(cf.Position.X, cf.Position.Y - size.Y / 2 - 0.04, cf.Position.Z) * CFrame.Angles(0, 0, math.pi / 2)
+        shadow.Color = Color3.fromRGB(45, 58, 64); shadow.Material = Enum.Material.SmoothPlastic
+        shadow.Transparency = 0.72; shadow.Anchored = true; shadow.CanCollide = false; shadow.CanQuery = false; shadow.Parent = world
+        camera.FieldOfView = 30
+        camera.CFrame = CFrame.lookAt(cf.Position + Vector3.new(diameter * 1.35, diameter * 0.78, -diameter * 2.05), cf.Position + Vector3.new(0, size.Y * 0.05, 0))
         -- Rotate only while the player drags the preview, never in a render loop.
         local rotating, lastX = false, 0
         viewport.Active = true

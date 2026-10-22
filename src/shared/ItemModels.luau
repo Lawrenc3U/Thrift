@@ -804,20 +804,30 @@ end
 
 function ItemModels.create(parent, definition, item, cf, config)
     local model = Instance.new("Model"); model.Name = definition.Name; model.Parent = parent
+    model:SetAttribute("Category", definition.Category); model:SetAttribute("Variant", definition.Variant or 1)
+    local addedLight = false
     for index, descriptor in ipairs(ItemModels.describe(definition, item)) do
         local part = Instance.new(descriptor.Class or "Part")
         part.Name = descriptor.Name .. tostring(index); part.Size = Vector3.new(unpack(descriptor.Size))
         part.CFrame = (cf or CFrame.new()) * CFrame.new(unpack(descriptor.Position)) * CFrame.Angles(unpack(descriptor.Rotation))
         part.Color = Color3.new(unpack(descriptor.Color)); part.Material = Enum.Material[descriptor.Material] or Enum.Material.SmoothPlastic
         part.Transparency = descriptor.Transparency or 0; part.Reflectance = descriptor.Reflectance or 0
+        if descriptor.Material == "Metal" then part.Reflectance = math.max(part.Reflectance, 0.12)
+        elseif descriptor.Material == "Glass" then part.Reflectance = math.max(part.Reflectance, 0.22)
+        elseif descriptor.Material == "Ceramic" then part.Reflectance = math.max(part.Reflectance, 0.045) end
         if part:IsA("Part") and descriptor.Shape then part.Shape = Enum.PartType[descriptor.Shape] end
         part.Anchored = true; part.CanCollide = false; part.CanTouch = false; part.CanQuery = false
         part.CastShadow = (descriptor.Transparency or 0) < 0.5; part.Parent = model
+        if descriptor.Material == "Neon" and not addedLight then
+            local light = Instance.new("PointLight"); light.Name = "ProductGlow"; light.Color = part.Color
+            light.Brightness = 0.32; light.Range = 5; light.Shadows = false; light.Parent = part; addedLight = true
+        end
     end
     local rarity = item and item.Rarity
-    if rarity and rarity >= 4 and config and config.RarityColors then
+    if rarity and rarity >= 3 and config and config.RarityColors then
         local glow = Instance.new("Highlight"); glow.Name = "RarityGlow"; glow.FillTransparency = 0.93
-        glow.OutlineColor = Color3.fromHex(config.RarityColors[rarity]); glow.OutlineTransparency = 0.25; glow.DepthMode = Enum.HighlightDepthMode.Occluded; glow.Parent = model
+        glow.OutlineColor = Color3.fromHex(config.RarityColors[rarity]); glow.OutlineTransparency = if rarity >= 4 then 0.25 else 0.58
+        glow.DepthMode = Enum.HighlightDepthMode.Occluded; glow.Parent = model
     end
     return model
 end
