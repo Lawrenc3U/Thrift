@@ -7,7 +7,12 @@ import xml.etree.ElementTree as ET
 ROOT = Path(__file__).resolve().parents[1]
 
 def build(output: Path) -> tuple[int, int, int]:
-    root = ET.Element('roblox', {'version': '4'})
+    root = ET.Element('roblox', {
+        'xmlns:xmime': 'http://www.w3.org/2005/05/xmlmime',
+        'xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance',
+        'xsi:noNamespaceSchemaLocation': 'http://www.roblox.com/roblox.xsd',
+        'version': '4',
+    })
     ET.SubElement(root, 'External').text = 'null'
     ET.SubElement(root, 'External').text = 'nil'
     count = 0
@@ -53,6 +58,18 @@ def build(output: Path) -> tuple[int, int, int]:
         source_item = source_items[0]
         classes = {node.attrib.get('class') for node in source_item.iter('Item')}
         assert not classes.intersection(forbidden), f'{path.name} contains executable scripts'
+        # Catalog assets can use legacy serialization that ElementTree accepts but
+        # current Studio rejects while opening the complete place. Empty internal
+        # metadata must be omitted, and content IDs must use Roblox's Content tag.
+        for prop in source_item.findall('.//Properties/*'):
+            prop_name = prop.attrib.get('name')
+            assert prop_name not in {'AttributesSerialize', 'Tags'}, (
+                f'{path.name} contains legacy internal property {prop_name}'
+            )
+            if prop_name in {'MeshId', 'TextureId'}:
+                assert prop.tag == 'Content', (
+                    f'{path.name} encodes {prop_name} as {prop.tag}, expected Content'
+                )
         ref_map = {}
         for node in source_item.iter('Item'):
             old_ref = node.attrib.get('referent')
@@ -67,7 +84,10 @@ def build(output: Path) -> tuple[int, int, int]:
         catalog_assets.append(source_item)
     ET.indent(root)
     output.parent.mkdir(parents=True, exist_ok=True)
-    ET.ElementTree(root).write(output, encoding='utf-8', xml_declaration=True)
+    # Roblox's own XML serializer starts directly with the roblox element.
+    # Omitting the declaration also keeps the file compatible with strict
+    # Roblox model parsers used by the build validation.
+    ET.ElementTree(root).write(output, encoding='utf-8', xml_declaration=False)
     # Round-trip every script to catch escaping or accidental omission.
     sources = ET.parse(output).findall('.//ProtectedString[@name="Source"]')
     assert len(sources) == script_count

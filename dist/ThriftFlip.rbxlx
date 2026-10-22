@@ -1,5 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
-<roblox version="4">
+<roblox xmlns:xmime="http://www.w3.org/2005/05/xmlmime" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.roblox.com/roblox.xsd" version="4">
   <External>null</External>
   <External>nil</External>
   <Item class="Workspace" referent="RBX1">
@@ -4889,7 +4888,6 @@ return Profile
       </Item>
       <Item class="Model" referent="RBX99">
         <Properties>
-          <string name="AttributesSerialize" />
           <CoordinateFrame name="ModelInPrimary">
             <X>0</X>
             <Y>0</Y>
@@ -4906,11 +4904,9 @@ return Profile
           </CoordinateFrame>
           <string name="Name">PicnicTable</string>
           <Ref name="PrimaryPart">null</Ref>
-          <string name="Tags" />
         </Properties>
         <Item class="Model" referent="RBX100">
           <Properties>
-            <string name="AttributesSerialize" />
             <CoordinateFrame name="ModelInPrimary">
               <X>0</X>
               <Y>0</Y>
@@ -4927,12 +4923,10 @@ return Profile
             </CoordinateFrame>
             <string name="Name">Model</string>
             <Ref name="PrimaryPart">null</Ref>
-            <string name="Tags" />
           </Properties>
           <Item class="Part" referent="RBX101">
             <Properties>
               <bool name="Anchored">true</bool>
-              <string name="AttributesSerialize" />
               <float name="BackParamA">-0.5</float>
               <float name="BackParamB">0.5</float>
               <token name="BackSurface">0</token>
@@ -4985,7 +4979,6 @@ return Profile
                 <Y>0</Y>
                 <Z>0</Z>
               </Vector3>
-              <string name="Tags" />
               <float name="TopParamA">-0.5</float>
               <float name="TopParamB">0.5</float>
               <token name="TopSurface">3</token>
@@ -5006,10 +4999,11 @@ return Profile
             </Properties>
             <Item class="SpecialMesh" referent="RBX102">
               <Properties>
-                <string name="AttributesSerialize" />
                 <token name="LODX">2</token>
                 <token name="LODY">2</token>
-                <string name="MeshId" />
+                <Content name="MeshId">
+                  <null />
+                </Content>
                 <token name="MeshType">2</token>
                 <string name="Name">Mesh</string>
                 <Vector3 name="Offset">
@@ -5022,8 +5016,9 @@ return Profile
                   <Y>1</Y>
                   <Z>1</Z>
                 </Vector3>
-                <string name="Tags" />
-                <string name="TextureId" />
+                <Content name="TextureId">
+                  <null />
+                </Content>
                 <Vector3 name="VertexColor">
                   <X>1</X>
                   <Y>1</Y>
@@ -5035,7 +5030,6 @@ return Profile
           <Item class="Part" referent="RBX103">
             <Properties>
               <bool name="Anchored">true</bool>
-              <string name="AttributesSerialize" />
               <float name="BackParamA">-0.5</float>
               <float name="BackParamB">0.5</float>
               <token name="BackSurface">0</token>
@@ -5088,7 +5082,6 @@ return Profile
                 <Y>0</Y>
                 <Z>0</Z>
               </Vector3>
-              <string name="Tags" />
               <float name="TopParamA">-0.5</float>
               <float name="TopParamB">0.5</float>
               <token name="TopSurface">3</token>
@@ -5109,10 +5102,11 @@ return Profile
             </Properties>
             <Item class="SpecialMesh" referent="RBX104">
               <Properties>
-                <string name="AttributesSerialize" />
                 <token name="LODX">2</token>
                 <token name="LODY">2</token>
-                <string name="MeshId" />
+                <Content name="MeshId">
+                  <null />
+                </Content>
                 <token name="MeshType">2</token>
                 <string name="Name">Mesh</string>
                 <Vector3 name="Offset">
@@ -5125,8 +5119,9 @@ return Profile
                   <Y>1</Y>
                   <Z>1</Z>
                 </Vector3>
-                <string name="Tags" />
-                <string name="TextureId" />
+                <Content name="TextureId">
+                  <null />
+                </Content>
                 <Vector3 name="VertexColor">
                   <X>1</X>
                   <Y>1</Y>
@@ -5138,7 +5133,6 @@ return Profile
           <Item class="Part" referent="RBX105">
             <Properties>
               <bool name="Anchored">true</bool>
-              <string name="AttributesSerialize" />
               <float name="BackParamA">-0.5</float>
               <float name="BackParamB">0.5</float>
               <token name="BackSurface">0</token>
@@ -5191,7 +5185,6 @@ return Profile
                 <Y>0</Y>
                 <Z>0</Z>
               </Vector3>
-              <string name="Tags" />
               <float name="TopParamA">-0.5</float>
               <float name="TopParamB">0.5</float>
               <token name="TopSurface">3</token>
@@ -5212,10 +5205,11 @@ return Profile
             </Properties>
             <Item class="SpecialMesh" referent="RBX106">
               <Properties>
-                <string name="AttributesSerialize" />
                 <token name="LODX">2</token>
                 <token name="LODY">2</token>
-                <string name="MeshId" />
+                <Content name="MeshId">
+                  <null />
+                </Content>
                 <token name="MeshType">2</token>
                 <string name="Name">Mesh</string>
                 <Vector3 name="Offset">
@@ -5228,8 +5222,9 @@ return Profile
                   <Y>1</Y>
                   <Z>1</Z>
                 </Vector3>
-                <string name="Tags" />
-                <string name="TextureId" />
+                <Content name="TextureId">
+                  <null />
+                </Content>
                 <Vector3 name="VertexColor">
                   <X>1</X>
                   <Y>1</Y>
@@ -5241,7 +5236,6 @@ return Profile
           <Item class="Part" referent="RBX107">
             <Properties>
               <bool name="Anchored">true</bool>
-              <string name="AttributesSerialize" />
               <float name="BackParamA">-0.5</float>
               <float name="BackParamB">0.5</float>
               <token name="BackSurface">0</token>
@@ -5294,7 +5288,6 @@ return Profile
                 <Y>0</Y>
                 <Z>0</Z>
               </Vector3>
-              <string name="Tags" />
               <float name="TopParamA">-0.5</float>
               <float name="TopParamB">0.5</float>
               <token name="TopSurface">3</token>
@@ -5315,10 +5308,11 @@ return Profile
             </Properties>
             <Item class="SpecialMesh" referent="RBX108">
               <Properties>
-                <string name="AttributesSerialize" />
                 <token name="LODX">2</token>
                 <token name="LODY">2</token>
-                <string name="MeshId" />
+                <Content name="MeshId">
+                  <null />
+                </Content>
                 <token name="MeshType">2</token>
                 <string name="Name">Mesh</string>
                 <Vector3 name="Offset">
@@ -5331,8 +5325,9 @@ return Profile
                   <Y>1</Y>
                   <Z>1</Z>
                 </Vector3>
-                <string name="Tags" />
-                <string name="TextureId" />
+                <Content name="TextureId">
+                  <null />
+                </Content>
                 <Vector3 name="VertexColor">
                   <X>1</X>
                   <Y>1</Y>
@@ -5344,7 +5339,6 @@ return Profile
           <Item class="Part" referent="RBX109">
             <Properties>
               <bool name="Anchored">true</bool>
-              <string name="AttributesSerialize" />
               <float name="BackParamA">-0.5</float>
               <float name="BackParamB">0.5</float>
               <token name="BackSurface">0</token>
@@ -5397,7 +5391,6 @@ return Profile
                 <Y>0</Y>
                 <Z>0</Z>
               </Vector3>
-              <string name="Tags" />
               <float name="TopParamA">-0.5</float>
               <float name="TopParamB">0.5</float>
               <token name="TopSurface">3</token>
@@ -5418,10 +5411,11 @@ return Profile
             </Properties>
             <Item class="SpecialMesh" referent="RBX110">
               <Properties>
-                <string name="AttributesSerialize" />
                 <token name="LODX">2</token>
                 <token name="LODY">2</token>
-                <string name="MeshId" />
+                <Content name="MeshId">
+                  <null />
+                </Content>
                 <token name="MeshType">2</token>
                 <string name="Name">Mesh</string>
                 <Vector3 name="Offset">
@@ -5434,8 +5428,9 @@ return Profile
                   <Y>1</Y>
                   <Z>1</Z>
                 </Vector3>
-                <string name="Tags" />
-                <string name="TextureId" />
+                <Content name="TextureId">
+                  <null />
+                </Content>
                 <Vector3 name="VertexColor">
                   <X>1</X>
                   <Y>1</Y>
@@ -5447,7 +5442,6 @@ return Profile
           <Item class="Part" referent="RBX111">
             <Properties>
               <bool name="Anchored">true</bool>
-              <string name="AttributesSerialize" />
               <float name="BackParamA">-0.5</float>
               <float name="BackParamB">0.5</float>
               <token name="BackSurface">0</token>
@@ -5500,7 +5494,6 @@ return Profile
                 <Y>0</Y>
                 <Z>0</Z>
               </Vector3>
-              <string name="Tags" />
               <float name="TopParamA">-0.5</float>
               <float name="TopParamB">0.5</float>
               <token name="TopSurface">3</token>
@@ -5521,10 +5514,11 @@ return Profile
             </Properties>
             <Item class="SpecialMesh" referent="RBX112">
               <Properties>
-                <string name="AttributesSerialize" />
                 <token name="LODX">2</token>
                 <token name="LODY">2</token>
-                <string name="MeshId" />
+                <Content name="MeshId">
+                  <null />
+                </Content>
                 <token name="MeshType">2</token>
                 <string name="Name">Mesh</string>
                 <Vector3 name="Offset">
@@ -5537,8 +5531,9 @@ return Profile
                   <Y>1</Y>
                   <Z>1</Z>
                 </Vector3>
-                <string name="Tags" />
-                <string name="TextureId" />
+                <Content name="TextureId">
+                  <null />
+                </Content>
                 <Vector3 name="VertexColor">
                   <X>1</X>
                   <Y>1</Y>
@@ -5551,7 +5546,6 @@ return Profile
         <Item class="Part" referent="RBX113">
           <Properties>
             <bool name="Anchored">true</bool>
-            <string name="AttributesSerialize" />
             <float name="BackParamA">-0.5</float>
             <float name="BackParamB">0.5</float>
             <token name="BackSurface">0</token>
@@ -5604,7 +5598,6 @@ return Profile
               <Y>0</Y>
               <Z>0</Z>
             </Vector3>
-            <string name="Tags" />
             <float name="TopParamA">-0.5</float>
             <float name="TopParamB">0.5</float>
             <token name="TopSurface">0</token>
@@ -5627,7 +5620,6 @@ return Profile
         <Item class="Part" referent="RBX114">
           <Properties>
             <bool name="Anchored">true</bool>
-            <string name="AttributesSerialize" />
             <float name="BackParamA">-0.5</float>
             <float name="BackParamB">0.5</float>
             <token name="BackSurface">0</token>
@@ -5680,7 +5672,6 @@ return Profile
               <Y>0</Y>
               <Z>0</Z>
             </Vector3>
-            <string name="Tags" />
             <float name="TopParamA">-0.5</float>
             <float name="TopParamB">0.5</float>
             <token name="TopSurface">0</token>
@@ -5701,10 +5692,11 @@ return Profile
           </Properties>
           <Item class="SpecialMesh" referent="RBX115">
             <Properties>
-              <string name="AttributesSerialize" />
               <token name="LODX">2</token>
               <token name="LODY">2</token>
-              <string name="MeshId" />
+              <Content name="MeshId">
+                <null />
+              </Content>
               <token name="MeshType">6</token>
               <string name="Name">Mesh</string>
               <Vector3 name="Offset">
@@ -5717,8 +5709,9 @@ return Profile
                 <Y>1</Y>
                 <Z>0.899999976</Z>
               </Vector3>
-              <string name="Tags" />
-              <string name="TextureId" />
+              <Content name="TextureId">
+                <null />
+              </Content>
               <Vector3 name="VertexColor">
                 <X>1</X>
                 <Y>1</Y>
@@ -5730,7 +5723,6 @@ return Profile
         <Item class="Part" referent="RBX116">
           <Properties>
             <bool name="Anchored">true</bool>
-            <string name="AttributesSerialize" />
             <float name="BackParamA">-0.5</float>
             <float name="BackParamB">0.5</float>
             <token name="BackSurface">0</token>
@@ -5783,7 +5775,6 @@ return Profile
               <Y>0</Y>
               <Z>0</Z>
             </Vector3>
-            <string name="Tags" />
             <float name="TopParamA">-0.5</float>
             <float name="TopParamB">0.5</float>
             <token name="TopSurface">0</token>
@@ -5804,10 +5795,11 @@ return Profile
           </Properties>
           <Item class="SpecialMesh" referent="RBX117">
             <Properties>
-              <string name="AttributesSerialize" />
               <token name="LODX">2</token>
               <token name="LODY">2</token>
-              <string name="MeshId" />
+              <Content name="MeshId">
+                <null />
+              </Content>
               <token name="MeshType">6</token>
               <string name="Name">Mesh</string>
               <Vector3 name="Offset">
@@ -5820,8 +5812,9 @@ return Profile
                 <Y>1</Y>
                 <Z>0.899999976</Z>
               </Vector3>
-              <string name="Tags" />
-              <string name="TextureId" />
+              <Content name="TextureId">
+                <null />
+              </Content>
               <Vector3 name="VertexColor">
                 <X>1</X>
                 <Y>1</Y>
@@ -5833,7 +5826,6 @@ return Profile
         <Item class="Part" referent="RBX118">
           <Properties>
             <bool name="Anchored">true</bool>
-            <string name="AttributesSerialize" />
             <float name="BackParamA">-0.5</float>
             <float name="BackParamB">0.5</float>
             <token name="BackSurface">0</token>
@@ -5886,7 +5878,6 @@ return Profile
               <Y>0</Y>
               <Z>0</Z>
             </Vector3>
-            <string name="Tags" />
             <float name="TopParamA">-0.5</float>
             <float name="TopParamB">0.5</float>
             <token name="TopSurface">0</token>
@@ -5907,10 +5898,11 @@ return Profile
           </Properties>
           <Item class="SpecialMesh" referent="RBX119">
             <Properties>
-              <string name="AttributesSerialize" />
               <token name="LODX">2</token>
               <token name="LODY">2</token>
-              <string name="MeshId" />
+              <Content name="MeshId">
+                <null />
+              </Content>
               <token name="MeshType">6</token>
               <string name="Name">Mesh</string>
               <Vector3 name="Offset">
@@ -5923,8 +5915,9 @@ return Profile
                 <Y>1</Y>
                 <Z>0.899999976</Z>
               </Vector3>
-              <string name="Tags" />
-              <string name="TextureId" />
+              <Content name="TextureId">
+                <null />
+              </Content>
               <Vector3 name="VertexColor">
                 <X>1</X>
                 <Y>1</Y>
@@ -5936,7 +5929,6 @@ return Profile
         <Item class="Part" referent="RBX120">
           <Properties>
             <bool name="Anchored">true</bool>
-            <string name="AttributesSerialize" />
             <float name="BackParamA">-0.5</float>
             <float name="BackParamB">0.5</float>
             <token name="BackSurface">0</token>
@@ -5989,7 +5981,6 @@ return Profile
               <Y>0</Y>
               <Z>0</Z>
             </Vector3>
-            <string name="Tags" />
             <float name="TopParamA">-0.5</float>
             <float name="TopParamB">0.5</float>
             <token name="TopSurface">0</token>
@@ -6010,10 +6001,11 @@ return Profile
           </Properties>
           <Item class="SpecialMesh" referent="RBX121">
             <Properties>
-              <string name="AttributesSerialize" />
               <token name="LODX">2</token>
               <token name="LODY">2</token>
-              <string name="MeshId" />
+              <Content name="MeshId">
+                <null />
+              </Content>
               <token name="MeshType">6</token>
               <string name="Name">Mesh</string>
               <Vector3 name="Offset">
@@ -6026,8 +6018,9 @@ return Profile
                 <Y>1</Y>
                 <Z>0.899999976</Z>
               </Vector3>
-              <string name="Tags" />
-              <string name="TextureId" />
+              <Content name="TextureId">
+                <null />
+              </Content>
               <Vector3 name="VertexColor">
                 <X>1</X>
                 <Y>1</Y>
@@ -6039,7 +6032,6 @@ return Profile
         <Item class="Part" referent="RBX122">
           <Properties>
             <bool name="Anchored">true</bool>
-            <string name="AttributesSerialize" />
             <float name="BackParamA">-0.5</float>
             <float name="BackParamB">0.5</float>
             <token name="BackSurface">0</token>
@@ -6092,7 +6084,6 @@ return Profile
               <Y>0</Y>
               <Z>0</Z>
             </Vector3>
-            <string name="Tags" />
             <float name="TopParamA">-0.5</float>
             <float name="TopParamB">0.5</float>
             <token name="TopSurface">0</token>
@@ -6113,10 +6104,11 @@ return Profile
           </Properties>
           <Item class="SpecialMesh" referent="RBX123">
             <Properties>
-              <string name="AttributesSerialize" />
               <token name="LODX">2</token>
               <token name="LODY">2</token>
-              <string name="MeshId" />
+              <Content name="MeshId">
+                <null />
+              </Content>
               <token name="MeshType">6</token>
               <string name="Name">Mesh</string>
               <Vector3 name="Offset">
@@ -6129,8 +6121,9 @@ return Profile
                 <Y>1</Y>
                 <Z>0.899999976</Z>
               </Vector3>
-              <string name="Tags" />
-              <string name="TextureId" />
+              <Content name="TextureId">
+                <null />
+              </Content>
               <Vector3 name="VertexColor">
                 <X>1</X>
                 <Y>1</Y>
@@ -6142,7 +6135,6 @@ return Profile
         <Item class="Part" referent="RBX124">
           <Properties>
             <bool name="Anchored">true</bool>
-            <string name="AttributesSerialize" />
             <float name="BackParamA">-0.5</float>
             <float name="BackParamB">0.5</float>
             <token name="BackSurface">0</token>
@@ -6195,7 +6187,6 @@ return Profile
               <Y>0</Y>
               <Z>0</Z>
             </Vector3>
-            <string name="Tags" />
             <float name="TopParamA">-0.5</float>
             <float name="TopParamB">0.5</float>
             <token name="TopSurface">0</token>
@@ -6216,10 +6207,11 @@ return Profile
           </Properties>
           <Item class="SpecialMesh" referent="RBX125">
             <Properties>
-              <string name="AttributesSerialize" />
               <token name="LODX">2</token>
               <token name="LODY">2</token>
-              <string name="MeshId" />
+              <Content name="MeshId">
+                <null />
+              </Content>
               <token name="MeshType">6</token>
               <string name="Name">Mesh</string>
               <Vector3 name="Offset">
@@ -6232,8 +6224,9 @@ return Profile
                 <Y>1</Y>
                 <Z>0.899999976</Z>
               </Vector3>
-              <string name="Tags" />
-              <string name="TextureId" />
+              <Content name="TextureId">
+                <null />
+              </Content>
               <Vector3 name="VertexColor">
                 <X>1</X>
                 <Y>1</Y>
@@ -6245,7 +6238,6 @@ return Profile
         <Item class="Part" referent="RBX126">
           <Properties>
             <bool name="Anchored">true</bool>
-            <string name="AttributesSerialize" />
             <float name="BackParamA">-0.5</float>
             <float name="BackParamB">0.5</float>
             <token name="BackSurface">0</token>
@@ -6298,7 +6290,6 @@ return Profile
               <Y>0</Y>
               <Z>0</Z>
             </Vector3>
-            <string name="Tags" />
             <float name="TopParamA">-0.5</float>
             <float name="TopParamB">0.5</float>
             <token name="TopSurface">0</token>
@@ -6319,10 +6310,11 @@ return Profile
           </Properties>
           <Item class="SpecialMesh" referent="RBX127">
             <Properties>
-              <string name="AttributesSerialize" />
               <token name="LODX">2</token>
               <token name="LODY">2</token>
-              <string name="MeshId" />
+              <Content name="MeshId">
+                <null />
+              </Content>
               <token name="MeshType">6</token>
               <string name="Name">Mesh</string>
               <Vector3 name="Offset">
@@ -6335,8 +6327,9 @@ return Profile
                 <Y>1</Y>
                 <Z>0.899999976</Z>
               </Vector3>
-              <string name="Tags" />
-              <string name="TextureId" />
+              <Content name="TextureId">
+                <null />
+              </Content>
               <Vector3 name="VertexColor">
                 <X>1</X>
                 <Y>1</Y>
@@ -6348,7 +6341,6 @@ return Profile
         <Item class="Part" referent="RBX128">
           <Properties>
             <bool name="Anchored">true</bool>
-            <string name="AttributesSerialize" />
             <float name="BackParamA">-0.5</float>
             <float name="BackParamB">0.5</float>
             <token name="BackSurface">0</token>
@@ -6401,7 +6393,6 @@ return Profile
               <Y>0</Y>
               <Z>0</Z>
             </Vector3>
-            <string name="Tags" />
             <float name="TopParamA">-0.5</float>
             <float name="TopParamB">0.5</float>
             <token name="TopSurface">0</token>
@@ -6422,10 +6413,11 @@ return Profile
           </Properties>
           <Item class="SpecialMesh" referent="RBX129">
             <Properties>
-              <string name="AttributesSerialize" />
               <token name="LODX">2</token>
               <token name="LODY">2</token>
-              <string name="MeshId" />
+              <Content name="MeshId">
+                <null />
+              </Content>
               <token name="MeshType">6</token>
               <string name="Name">Mesh</string>
               <Vector3 name="Offset">
@@ -6438,8 +6430,9 @@ return Profile
                 <Y>1</Y>
                 <Z>0.899999976</Z>
               </Vector3>
-              <string name="Tags" />
-              <string name="TextureId" />
+              <Content name="TextureId">
+                <null />
+              </Content>
               <Vector3 name="VertexColor">
                 <X>1</X>
                 <Y>1</Y>
@@ -6450,7 +6443,6 @@ return Profile
         </Item>
         <Item class="Model" referent="RBX130">
           <Properties>
-            <string name="AttributesSerialize" />
             <CoordinateFrame name="ModelInPrimary">
               <X>0</X>
               <Y>0</Y>
@@ -6467,12 +6459,10 @@ return Profile
             </CoordinateFrame>
             <string name="Name">Model</string>
             <Ref name="PrimaryPart">null</Ref>
-            <string name="Tags" />
           </Properties>
           <Item class="Part" referent="RBX131">
             <Properties>
               <bool name="Anchored">true</bool>
-              <string name="AttributesSerialize" />
               <float name="BackParamA">-0.5</float>
               <float name="BackParamB">0.5</float>
               <token name="BackSurface">0</token>
@@ -6525,7 +6515,6 @@ return Profile
                 <Y>0</Y>
                 <Z>0</Z>
               </Vector3>
-              <string name="Tags" />
               <float name="TopParamA">-0.5</float>
               <float name="TopParamB">0.5</float>
               <token name="TopSurface">3</token>
@@ -6546,10 +6535,11 @@ return Profile
             </Properties>
             <Item class="SpecialMesh" referent="RBX132">
               <Properties>
-                <string name="AttributesSerialize" />
                 <token name="LODX">2</token>
                 <token name="LODY">2</token>
-                <string name="MeshId" />
+                <Content name="MeshId">
+                  <null />
+                </Content>
                 <token name="MeshType">2</token>
                 <string name="Name">Mesh</string>
                 <Vector3 name="Offset">
@@ -6562,8 +6552,9 @@ return Profile
                   <Y>1</Y>
                   <Z>1</Z>
                 </Vector3>
-                <string name="Tags" />
-                <string name="TextureId" />
+                <Content name="TextureId">
+                  <null />
+                </Content>
                 <Vector3 name="VertexColor">
                   <X>1</X>
                   <Y>1</Y>
@@ -6575,7 +6566,6 @@ return Profile
           <Item class="Part" referent="RBX133">
             <Properties>
               <bool name="Anchored">true</bool>
-              <string name="AttributesSerialize" />
               <float name="BackParamA">-0.5</float>
               <float name="BackParamB">0.5</float>
               <token name="BackSurface">0</token>
@@ -6628,7 +6618,6 @@ return Profile
                 <Y>0</Y>
                 <Z>0</Z>
               </Vector3>
-              <string name="Tags" />
               <float name="TopParamA">-0.5</float>
               <float name="TopParamB">0.5</float>
               <token name="TopSurface">3</token>
@@ -6649,10 +6638,11 @@ return Profile
             </Properties>
             <Item class="SpecialMesh" referent="RBX134">
               <Properties>
-                <string name="AttributesSerialize" />
                 <token name="LODX">2</token>
                 <token name="LODY">2</token>
-                <string name="MeshId" />
+                <Content name="MeshId">
+                  <null />
+                </Content>
                 <token name="MeshType">2</token>
                 <string name="Name">Mesh</string>
                 <Vector3 name="Offset">
@@ -6665,8 +6655,9 @@ return Profile
                   <Y>1</Y>
                   <Z>1</Z>
                 </Vector3>
-                <string name="Tags" />
-                <string name="TextureId" />
+                <Content name="TextureId">
+                  <null />
+                </Content>
                 <Vector3 name="VertexColor">
                   <X>1</X>
                   <Y>1</Y>
@@ -6678,7 +6669,6 @@ return Profile
           <Item class="Part" referent="RBX135">
             <Properties>
               <bool name="Anchored">true</bool>
-              <string name="AttributesSerialize" />
               <float name="BackParamA">-0.5</float>
               <float name="BackParamB">0.5</float>
               <token name="BackSurface">0</token>
@@ -6731,7 +6721,6 @@ return Profile
                 <Y>0</Y>
                 <Z>0</Z>
               </Vector3>
-              <string name="Tags" />
               <float name="TopParamA">-0.5</float>
               <float name="TopParamB">0.5</float>
               <token name="TopSurface">3</token>
@@ -6752,10 +6741,11 @@ return Profile
             </Properties>
             <Item class="SpecialMesh" referent="RBX136">
               <Properties>
-                <string name="AttributesSerialize" />
                 <token name="LODX">2</token>
                 <token name="LODY">2</token>
-                <string name="MeshId" />
+                <Content name="MeshId">
+                  <null />
+                </Content>
                 <token name="MeshType">2</token>
                 <string name="Name">Mesh</string>
                 <Vector3 name="Offset">
@@ -6768,8 +6758,9 @@ return Profile
                   <Y>1</Y>
                   <Z>1</Z>
                 </Vector3>
-                <string name="Tags" />
-                <string name="TextureId" />
+                <Content name="TextureId">
+                  <null />
+                </Content>
                 <Vector3 name="VertexColor">
                   <X>1</X>
                   <Y>1</Y>
@@ -6781,7 +6772,6 @@ return Profile
           <Item class="Part" referent="RBX137">
             <Properties>
               <bool name="Anchored">true</bool>
-              <string name="AttributesSerialize" />
               <float name="BackParamA">-0.5</float>
               <float name="BackParamB">0.5</float>
               <token name="BackSurface">0</token>
@@ -6834,7 +6824,6 @@ return Profile
                 <Y>0</Y>
                 <Z>0</Z>
               </Vector3>
-              <string name="Tags" />
               <float name="TopParamA">-0.5</float>
               <float name="TopParamB">0.5</float>
               <token name="TopSurface">3</token>
@@ -6855,10 +6844,11 @@ return Profile
             </Properties>
             <Item class="SpecialMesh" referent="RBX138">
               <Properties>
-                <string name="AttributesSerialize" />
                 <token name="LODX">2</token>
                 <token name="LODY">2</token>
-                <string name="MeshId" />
+                <Content name="MeshId">
+                  <null />
+                </Content>
                 <token name="MeshType">2</token>
                 <string name="Name">Mesh</string>
                 <Vector3 name="Offset">
@@ -6871,8 +6861,9 @@ return Profile
                   <Y>1</Y>
                   <Z>1</Z>
                 </Vector3>
-                <string name="Tags" />
-                <string name="TextureId" />
+                <Content name="TextureId">
+                  <null />
+                </Content>
                 <Vector3 name="VertexColor">
                   <X>1</X>
                   <Y>1</Y>
@@ -6884,7 +6875,6 @@ return Profile
           <Item class="Part" referent="RBX139">
             <Properties>
               <bool name="Anchored">true</bool>
-              <string name="AttributesSerialize" />
               <float name="BackParamA">-0.5</float>
               <float name="BackParamB">0.5</float>
               <token name="BackSurface">0</token>
@@ -6937,7 +6927,6 @@ return Profile
                 <Y>0</Y>
                 <Z>0</Z>
               </Vector3>
-              <string name="Tags" />
               <float name="TopParamA">-0.5</float>
               <float name="TopParamB">0.5</float>
               <token name="TopSurface">3</token>
@@ -6958,10 +6947,11 @@ return Profile
             </Properties>
             <Item class="SpecialMesh" referent="RBX140">
               <Properties>
-                <string name="AttributesSerialize" />
                 <token name="LODX">2</token>
                 <token name="LODY">2</token>
-                <string name="MeshId" />
+                <Content name="MeshId">
+                  <null />
+                </Content>
                 <token name="MeshType">2</token>
                 <string name="Name">Mesh</string>
                 <Vector3 name="Offset">
@@ -6974,8 +6964,9 @@ return Profile
                   <Y>1</Y>
                   <Z>1</Z>
                 </Vector3>
-                <string name="Tags" />
-                <string name="TextureId" />
+                <Content name="TextureId">
+                  <null />
+                </Content>
                 <Vector3 name="VertexColor">
                   <X>1</X>
                   <Y>1</Y>
@@ -6987,7 +6978,6 @@ return Profile
           <Item class="Part" referent="RBX141">
             <Properties>
               <bool name="Anchored">true</bool>
-              <string name="AttributesSerialize" />
               <float name="BackParamA">-0.5</float>
               <float name="BackParamB">0.5</float>
               <token name="BackSurface">0</token>
@@ -7040,7 +7030,6 @@ return Profile
                 <Y>0</Y>
                 <Z>0</Z>
               </Vector3>
-              <string name="Tags" />
               <float name="TopParamA">-0.5</float>
               <float name="TopParamB">0.5</float>
               <token name="TopSurface">3</token>
@@ -7061,10 +7050,11 @@ return Profile
             </Properties>
             <Item class="SpecialMesh" referent="RBX142">
               <Properties>
-                <string name="AttributesSerialize" />
                 <token name="LODX">2</token>
                 <token name="LODY">2</token>
-                <string name="MeshId" />
+                <Content name="MeshId">
+                  <null />
+                </Content>
                 <token name="MeshType">2</token>
                 <string name="Name">Mesh</string>
                 <Vector3 name="Offset">
@@ -7077,8 +7067,9 @@ return Profile
                   <Y>1</Y>
                   <Z>1</Z>
                 </Vector3>
-                <string name="Tags" />
-                <string name="TextureId" />
+                <Content name="TextureId">
+                  <null />
+                </Content>
                 <Vector3 name="VertexColor">
                   <X>1</X>
                   <Y>1</Y>
@@ -7091,7 +7082,6 @@ return Profile
         <Item class="Part" referent="RBX143">
           <Properties>
             <bool name="Anchored">true</bool>
-            <string name="AttributesSerialize" />
             <float name="BackParamA">-0.5</float>
             <float name="BackParamB">0.5</float>
             <token name="BackSurface">0</token>
@@ -7144,7 +7134,6 @@ return Profile
               <Y>0</Y>
               <Z>0</Z>
             </Vector3>
-            <string name="Tags" />
             <float name="TopParamA">-0.5</float>
             <float name="TopParamB">0.5</float>
             <token name="TopSurface">0</token>
@@ -7165,10 +7154,11 @@ return Profile
           </Properties>
           <Item class="SpecialMesh" referent="RBX144">
             <Properties>
-              <string name="AttributesSerialize" />
               <token name="LODX">2</token>
               <token name="LODY">2</token>
-              <string name="MeshId" />
+              <Content name="MeshId">
+                <null />
+              </Content>
               <token name="MeshType">6</token>
               <string name="Name">Mesh</string>
               <Vector3 name="Offset">
@@ -7181,8 +7171,9 @@ return Profile
                 <Y>1</Y>
                 <Z>0.899999976</Z>
               </Vector3>
-              <string name="Tags" />
-              <string name="TextureId" />
+              <Content name="TextureId">
+                <null />
+              </Content>
               <Vector3 name="VertexColor">
                 <X>1</X>
                 <Y>1</Y>
@@ -7193,7 +7184,6 @@ return Profile
         </Item>
         <Item class="Model" referent="RBX145">
           <Properties>
-            <string name="AttributesSerialize" />
             <CoordinateFrame name="ModelInPrimary">
               <X>0</X>
               <Y>0</Y>
@@ -7210,12 +7200,10 @@ return Profile
             </CoordinateFrame>
             <string name="Name">Model</string>
             <Ref name="PrimaryPart">null</Ref>
-            <string name="Tags" />
           </Properties>
           <Item class="Part" referent="RBX146">
             <Properties>
               <bool name="Anchored">true</bool>
-              <string name="AttributesSerialize" />
               <float name="BackParamA">-0.5</float>
               <float name="BackParamB">0.5</float>
               <token name="BackSurface">0</token>
@@ -7268,7 +7256,6 @@ return Profile
                 <Y>0</Y>
                 <Z>0</Z>
               </Vector3>
-              <string name="Tags" />
               <float name="TopParamA">-0.5</float>
               <float name="TopParamB">0.5</float>
               <token name="TopSurface">3</token>
@@ -7289,10 +7276,11 @@ return Profile
             </Properties>
             <Item class="SpecialMesh" referent="RBX147">
               <Properties>
-                <string name="AttributesSerialize" />
                 <token name="LODX">2</token>
                 <token name="LODY">2</token>
-                <string name="MeshId" />
+                <Content name="MeshId">
+                  <null />
+                </Content>
                 <token name="MeshType">2</token>
                 <string name="Name">Mesh</string>
                 <Vector3 name="Offset">
@@ -7305,8 +7293,9 @@ return Profile
                   <Y>1</Y>
                   <Z>1</Z>
                 </Vector3>
-                <string name="Tags" />
-                <string name="TextureId" />
+                <Content name="TextureId">
+                  <null />
+                </Content>
                 <Vector3 name="VertexColor">
                   <X>1</X>
                   <Y>1</Y>
@@ -7318,7 +7307,6 @@ return Profile
           <Item class="Part" referent="RBX148">
             <Properties>
               <bool name="Anchored">true</bool>
-              <string name="AttributesSerialize" />
               <float name="BackParamA">-0.5</float>
               <float name="BackParamB">0.5</float>
               <token name="BackSurface">0</token>
@@ -7371,7 +7359,6 @@ return Profile
                 <Y>0</Y>
                 <Z>0</Z>
               </Vector3>
-              <string name="Tags" />
               <float name="TopParamA">-0.5</float>
               <float name="TopParamB">0.5</float>
               <token name="TopSurface">3</token>
@@ -7392,10 +7379,11 @@ return Profile
             </Properties>
             <Item class="SpecialMesh" referent="RBX149">
               <Properties>
-                <string name="AttributesSerialize" />
                 <token name="LODX">2</token>
                 <token name="LODY">2</token>
-                <string name="MeshId" />
+                <Content name="MeshId">
+                  <null />
+                </Content>
                 <token name="MeshType">2</token>
                 <string name="Name">Mesh</string>
                 <Vector3 name="Offset">
@@ -7408,8 +7396,9 @@ return Profile
                   <Y>1</Y>
                   <Z>1</Z>
                 </Vector3>
-                <string name="Tags" />
-                <string name="TextureId" />
+                <Content name="TextureId">
+                  <null />
+                </Content>
                 <Vector3 name="VertexColor">
                   <X>1</X>
                   <Y>1</Y>
@@ -7421,7 +7410,6 @@ return Profile
           <Item class="Part" referent="RBX150">
             <Properties>
               <bool name="Anchored">true</bool>
-              <string name="AttributesSerialize" />
               <float name="BackParamA">-0.5</float>
               <float name="BackParamB">0.5</float>
               <token name="BackSurface">0</token>
@@ -7474,7 +7462,6 @@ return Profile
                 <Y>0</Y>
                 <Z>0</Z>
               </Vector3>
-              <string name="Tags" />
               <float name="TopParamA">-0.5</float>
               <float name="TopParamB">0.5</float>
               <token name="TopSurface">3</token>
@@ -7495,10 +7482,11 @@ return Profile
             </Properties>
             <Item class="SpecialMesh" referent="RBX151">
               <Properties>
-                <string name="AttributesSerialize" />
                 <token name="LODX">2</token>
                 <token name="LODY">2</token>
-                <string name="MeshId" />
+                <Content name="MeshId">
+                  <null />
+                </Content>
                 <token name="MeshType">2</token>
                 <string name="Name">Mesh</string>
                 <Vector3 name="Offset">
@@ -7511,8 +7499,9 @@ return Profile
                   <Y>1</Y>
                   <Z>1</Z>
                 </Vector3>
-                <string name="Tags" />
-                <string name="TextureId" />
+                <Content name="TextureId">
+                  <null />
+                </Content>
                 <Vector3 name="VertexColor">
                   <X>1</X>
                   <Y>1</Y>
@@ -7524,7 +7513,6 @@ return Profile
           <Item class="Part" referent="RBX152">
             <Properties>
               <bool name="Anchored">true</bool>
-              <string name="AttributesSerialize" />
               <float name="BackParamA">-0.5</float>
               <float name="BackParamB">0.5</float>
               <token name="BackSurface">0</token>
@@ -7577,7 +7565,6 @@ return Profile
                 <Y>0</Y>
                 <Z>0</Z>
               </Vector3>
-              <string name="Tags" />
               <float name="TopParamA">-0.5</float>
               <float name="TopParamB">0.5</float>
               <token name="TopSurface">3</token>
@@ -7598,10 +7585,11 @@ return Profile
             </Properties>
             <Item class="SpecialMesh" referent="RBX153">
               <Properties>
-                <string name="AttributesSerialize" />
                 <token name="LODX">2</token>
                 <token name="LODY">2</token>
-                <string name="MeshId" />
+                <Content name="MeshId">
+                  <null />
+                </Content>
                 <token name="MeshType">2</token>
                 <string name="Name">Mesh</string>
                 <Vector3 name="Offset">
@@ -7614,8 +7602,9 @@ return Profile
                   <Y>1</Y>
                   <Z>1</Z>
                 </Vector3>
-                <string name="Tags" />
-                <string name="TextureId" />
+                <Content name="TextureId">
+                  <null />
+                </Content>
                 <Vector3 name="VertexColor">
                   <X>1</X>
                   <Y>1</Y>
@@ -7627,7 +7616,6 @@ return Profile
           <Item class="Part" referent="RBX154">
             <Properties>
               <bool name="Anchored">true</bool>
-              <string name="AttributesSerialize" />
               <float name="BackParamA">-0.5</float>
               <float name="BackParamB">0.5</float>
               <token name="BackSurface">0</token>
@@ -7680,7 +7668,6 @@ return Profile
                 <Y>0</Y>
                 <Z>0</Z>
               </Vector3>
-              <string name="Tags" />
               <float name="TopParamA">-0.5</float>
               <float name="TopParamB">0.5</float>
               <token name="TopSurface">3</token>
@@ -7701,10 +7688,11 @@ return Profile
             </Properties>
             <Item class="SpecialMesh" referent="RBX155">
               <Properties>
-                <string name="AttributesSerialize" />
                 <token name="LODX">2</token>
                 <token name="LODY">2</token>
-                <string name="MeshId" />
+                <Content name="MeshId">
+                  <null />
+                </Content>
                 <token name="MeshType">2</token>
                 <string name="Name">Mesh</string>
                 <Vector3 name="Offset">
@@ -7717,8 +7705,9 @@ return Profile
                   <Y>1</Y>
                   <Z>1</Z>
                 </Vector3>
-                <string name="Tags" />
-                <string name="TextureId" />
+                <Content name="TextureId">
+                  <null />
+                </Content>
                 <Vector3 name="VertexColor">
                   <X>1</X>
                   <Y>1</Y>
@@ -7730,7 +7719,6 @@ return Profile
           <Item class="Part" referent="RBX156">
             <Properties>
               <bool name="Anchored">true</bool>
-              <string name="AttributesSerialize" />
               <float name="BackParamA">-0.5</float>
               <float name="BackParamB">0.5</float>
               <token name="BackSurface">0</token>
@@ -7783,7 +7771,6 @@ return Profile
                 <Y>0</Y>
                 <Z>0</Z>
               </Vector3>
-              <string name="Tags" />
               <float name="TopParamA">-0.5</float>
               <float name="TopParamB">0.5</float>
               <token name="TopSurface">3</token>
@@ -7804,10 +7791,11 @@ return Profile
             </Properties>
             <Item class="SpecialMesh" referent="RBX157">
               <Properties>
-                <string name="AttributesSerialize" />
                 <token name="LODX">2</token>
                 <token name="LODY">2</token>
-                <string name="MeshId" />
+                <Content name="MeshId">
+                  <null />
+                </Content>
                 <token name="MeshType">2</token>
                 <string name="Name">Mesh</string>
                 <Vector3 name="Offset">
@@ -7820,8 +7808,9 @@ return Profile
                   <Y>1</Y>
                   <Z>1</Z>
                 </Vector3>
-                <string name="Tags" />
-                <string name="TextureId" />
+                <Content name="TextureId">
+                  <null />
+                </Content>
                 <Vector3 name="VertexColor">
                   <X>1</X>
                   <Y>1</Y>
@@ -7834,7 +7823,6 @@ return Profile
         <Item class="Part" referent="RBX158">
           <Properties>
             <bool name="Anchored">true</bool>
-            <string name="AttributesSerialize" />
             <float name="BackParamA">-0.5</float>
             <float name="BackParamB">0.5</float>
             <token name="BackSurface">0</token>
@@ -7887,7 +7875,6 @@ return Profile
               <Y>0</Y>
               <Z>0</Z>
             </Vector3>
-            <string name="Tags" />
             <float name="TopParamA">-0.5</float>
             <float name="TopParamB">0.5</float>
             <token name="TopSurface">0</token>
@@ -7910,7 +7897,6 @@ return Profile
         <Item class="Part" referent="RBX159">
           <Properties>
             <bool name="Anchored">true</bool>
-            <string name="AttributesSerialize" />
             <float name="BackParamA">-0.5</float>
             <float name="BackParamB">0.5</float>
             <token name="BackSurface">0</token>
@@ -7963,7 +7949,6 @@ return Profile
               <Y>0</Y>
               <Z>0</Z>
             </Vector3>
-            <string name="Tags" />
             <float name="TopParamA">-0.5</float>
             <float name="TopParamB">0.5</float>
             <token name="TopSurface">0</token>
@@ -7984,10 +7969,11 @@ return Profile
           </Properties>
           <Item class="SpecialMesh" referent="RBX160">
             <Properties>
-              <string name="AttributesSerialize" />
               <token name="LODX">2</token>
               <token name="LODY">2</token>
-              <string name="MeshId" />
+              <Content name="MeshId">
+                <null />
+              </Content>
               <token name="MeshType">6</token>
               <string name="Name">Mesh</string>
               <Vector3 name="Offset">
@@ -8000,8 +7986,9 @@ return Profile
                 <Y>1</Y>
                 <Z>0.899999976</Z>
               </Vector3>
-              <string name="Tags" />
-              <string name="TextureId" />
+              <Content name="TextureId">
+                <null />
+              </Content>
               <Vector3 name="VertexColor">
                 <X>1</X>
                 <Y>1</Y>
@@ -8012,7 +7999,6 @@ return Profile
         </Item>
         <Item class="Model" referent="RBX161">
           <Properties>
-            <string name="AttributesSerialize" />
             <CoordinateFrame name="ModelInPrimary">
               <X>0</X>
               <Y>0</Y>
@@ -8029,12 +8015,10 @@ return Profile
             </CoordinateFrame>
             <string name="Name">Model</string>
             <Ref name="PrimaryPart">null</Ref>
-            <string name="Tags" />
           </Properties>
           <Item class="Part" referent="RBX162">
             <Properties>
               <bool name="Anchored">true</bool>
-              <string name="AttributesSerialize" />
               <float name="BackParamA">-0.5</float>
               <float name="BackParamB">0.5</float>
               <token name="BackSurface">0</token>
@@ -8087,7 +8071,6 @@ return Profile
                 <Y>0</Y>
                 <Z>0</Z>
               </Vector3>
-              <string name="Tags" />
               <float name="TopParamA">-0.5</float>
               <float name="TopParamB">0.5</float>
               <token name="TopSurface">3</token>
@@ -8108,10 +8091,11 @@ return Profile
             </Properties>
             <Item class="SpecialMesh" referent="RBX163">
               <Properties>
-                <string name="AttributesSerialize" />
                 <token name="LODX">2</token>
                 <token name="LODY">2</token>
-                <string name="MeshId" />
+                <Content name="MeshId">
+                  <null />
+                </Content>
                 <token name="MeshType">2</token>
                 <string name="Name">Mesh</string>
                 <Vector3 name="Offset">
@@ -8124,8 +8108,9 @@ return Profile
                   <Y>1</Y>
                   <Z>1</Z>
                 </Vector3>
-                <string name="Tags" />
-                <string name="TextureId" />
+                <Content name="TextureId">
+                  <null />
+                </Content>
                 <Vector3 name="VertexColor">
                   <X>1</X>
                   <Y>1</Y>
@@ -8137,7 +8122,6 @@ return Profile
           <Item class="Part" referent="RBX164">
             <Properties>
               <bool name="Anchored">true</bool>
-              <string name="AttributesSerialize" />
               <float name="BackParamA">-0.5</float>
               <float name="BackParamB">0.5</float>
               <token name="BackSurface">0</token>
@@ -8190,7 +8174,6 @@ return Profile
                 <Y>0</Y>
                 <Z>0</Z>
               </Vector3>
-              <string name="Tags" />
               <float name="TopParamA">-0.5</float>
               <float name="TopParamB">0.5</float>
               <token name="TopSurface">3</token>
@@ -8211,10 +8194,11 @@ return Profile
             </Properties>
             <Item class="SpecialMesh" referent="RBX165">
               <Properties>
-                <string name="AttributesSerialize" />
                 <token name="LODX">2</token>
                 <token name="LODY">2</token>
-                <string name="MeshId" />
+                <Content name="MeshId">
+                  <null />
+                </Content>
                 <token name="MeshType">2</token>
                 <string name="Name">Mesh</string>
                 <Vector3 name="Offset">
@@ -8227,8 +8211,9 @@ return Profile
                   <Y>1</Y>
                   <Z>1</Z>
                 </Vector3>
-                <string name="Tags" />
-                <string name="TextureId" />
+                <Content name="TextureId">
+                  <null />
+                </Content>
                 <Vector3 name="VertexColor">
                   <X>1</X>
                   <Y>1</Y>
@@ -8240,7 +8225,6 @@ return Profile
           <Item class="Part" referent="RBX166">
             <Properties>
               <bool name="Anchored">true</bool>
-              <string name="AttributesSerialize" />
               <float name="BackParamA">-0.5</float>
               <float name="BackParamB">0.5</float>
               <token name="BackSurface">0</token>
@@ -8293,7 +8277,6 @@ return Profile
                 <Y>0</Y>
                 <Z>0</Z>
               </Vector3>
-              <string name="Tags" />
               <float name="TopParamA">-0.5</float>
               <float name="TopParamB">0.5</float>
               <token name="TopSurface">3</token>
@@ -8314,10 +8297,11 @@ return Profile
             </Properties>
             <Item class="SpecialMesh" referent="RBX167">
               <Properties>
-                <string name="AttributesSerialize" />
                 <token name="LODX">2</token>
                 <token name="LODY">2</token>
-                <string name="MeshId" />
+                <Content name="MeshId">
+                  <null />
+                </Content>
                 <token name="MeshType">2</token>
                 <string name="Name">Mesh</string>
                 <Vector3 name="Offset">
@@ -8330,8 +8314,9 @@ return Profile
                   <Y>1</Y>
                   <Z>1</Z>
                 </Vector3>
-                <string name="Tags" />
-                <string name="TextureId" />
+                <Content name="TextureId">
+                  <null />
+                </Content>
                 <Vector3 name="VertexColor">
                   <X>1</X>
                   <Y>1</Y>
@@ -8343,7 +8328,6 @@ return Profile
           <Item class="Part" referent="RBX168">
             <Properties>
               <bool name="Anchored">true</bool>
-              <string name="AttributesSerialize" />
               <float name="BackParamA">-0.5</float>
               <float name="BackParamB">0.5</float>
               <token name="BackSurface">0</token>
@@ -8396,7 +8380,6 @@ return Profile
                 <Y>0</Y>
                 <Z>0</Z>
               </Vector3>
-              <string name="Tags" />
               <float name="TopParamA">-0.5</float>
               <float name="TopParamB">0.5</float>
               <token name="TopSurface">3</token>
@@ -8417,10 +8400,11 @@ return Profile
             </Properties>
             <Item class="SpecialMesh" referent="RBX169">
               <Properties>
-                <string name="AttributesSerialize" />
                 <token name="LODX">2</token>
                 <token name="LODY">2</token>
-                <string name="MeshId" />
+                <Content name="MeshId">
+                  <null />
+                </Content>
                 <token name="MeshType">2</token>
                 <string name="Name">Mesh</string>
                 <Vector3 name="Offset">
@@ -8433,8 +8417,9 @@ return Profile
                   <Y>1</Y>
                   <Z>1</Z>
                 </Vector3>
-                <string name="Tags" />
-                <string name="TextureId" />
+                <Content name="TextureId">
+                  <null />
+                </Content>
                 <Vector3 name="VertexColor">
                   <X>1</X>
                   <Y>1</Y>
@@ -8446,7 +8431,6 @@ return Profile
           <Item class="Part" referent="RBX170">
             <Properties>
               <bool name="Anchored">true</bool>
-              <string name="AttributesSerialize" />
               <float name="BackParamA">-0.5</float>
               <float name="BackParamB">0.5</float>
               <token name="BackSurface">0</token>
@@ -8499,7 +8483,6 @@ return Profile
                 <Y>0</Y>
                 <Z>0</Z>
               </Vector3>
-              <string name="Tags" />
               <float name="TopParamA">-0.5</float>
               <float name="TopParamB">0.5</float>
               <token name="TopSurface">3</token>
@@ -8520,10 +8503,11 @@ return Profile
             </Properties>
             <Item class="SpecialMesh" referent="RBX171">
               <Properties>
-                <string name="AttributesSerialize" />
                 <token name="LODX">2</token>
                 <token name="LODY">2</token>
-                <string name="MeshId" />
+                <Content name="MeshId">
+                  <null />
+                </Content>
                 <token name="MeshType">2</token>
                 <string name="Name">Mesh</string>
                 <Vector3 name="Offset">
@@ -8536,8 +8520,9 @@ return Profile
                   <Y>1</Y>
                   <Z>1</Z>
                 </Vector3>
-                <string name="Tags" />
-                <string name="TextureId" />
+                <Content name="TextureId">
+                  <null />
+                </Content>
                 <Vector3 name="VertexColor">
                   <X>1</X>
                   <Y>1</Y>
@@ -8549,7 +8534,6 @@ return Profile
           <Item class="Part" referent="RBX172">
             <Properties>
               <bool name="Anchored">true</bool>
-              <string name="AttributesSerialize" />
               <float name="BackParamA">-0.5</float>
               <float name="BackParamB">0.5</float>
               <token name="BackSurface">0</token>
@@ -8602,7 +8586,6 @@ return Profile
                 <Y>0</Y>
                 <Z>0</Z>
               </Vector3>
-              <string name="Tags" />
               <float name="TopParamA">-0.5</float>
               <float name="TopParamB">0.5</float>
               <token name="TopSurface">3</token>
@@ -8623,10 +8606,11 @@ return Profile
             </Properties>
             <Item class="SpecialMesh" referent="RBX173">
               <Properties>
-                <string name="AttributesSerialize" />
                 <token name="LODX">2</token>
                 <token name="LODY">2</token>
-                <string name="MeshId" />
+                <Content name="MeshId">
+                  <null />
+                </Content>
                 <token name="MeshType">2</token>
                 <string name="Name">Mesh</string>
                 <Vector3 name="Offset">
@@ -8639,8 +8623,9 @@ return Profile
                   <Y>1</Y>
                   <Z>1</Z>
                 </Vector3>
-                <string name="Tags" />
-                <string name="TextureId" />
+                <Content name="TextureId">
+                  <null />
+                </Content>
                 <Vector3 name="VertexColor">
                   <X>1</X>
                   <Y>1</Y>
