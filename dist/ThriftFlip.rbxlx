@@ -3036,10 +3036,12 @@ function World.new()
     self:sourcing()
     self:auctionHouse()
     self:market()
+    self:districtLandmarks()
+    self:wayfinding()
     for i = 1, 16 do
         local row = math.ceil(i / 2)
         local side = if i % 2 == 1 then -1 else 1
-        local center = Vector3.new(side * 52, 0, -83 + (row - 1) * 35)
+        local center = Vector3.new(side * 95, 0, -83 + (row - 1) * 35)
         local cf = CFrame.new(center) * CFrame.Angles(0, if side == -1 then -math.pi / 2 else math.pi / 2, 0)
         self:buildPlot(i, cf)
     end
@@ -3080,7 +3082,7 @@ function World:landscape()
         Kit.part(terrain, "Curb", Vector3.new(0.6, 0.8, 410), CFrame.new(side * 17.4, 0.1, 20), Color3.fromRGB(213, 205, 180))
         for row = 1, 8 do
             local z = -83 + (row - 1) * 35
-            Kit.part(terrain, "ShopPath", Vector3.new(14, 0.25, 10), CFrame.new(side * 33, 0.2, z), Color3.fromRGB(214, 195, 162), Enum.Material.Pavement)
+            Kit.part(terrain, "ShopPath", Vector3.new(56, 0.25, 10), CFrame.new(side * 60, 0.2, z), Color3.fromRGB(214, 195, 162), Enum.Material.Pavement)
             if row % 2 == 1 then Kit.bench(terrain, CFrame.new(side * 24.5, 0.3, z + 14) * CFrame.Angles(0, if side == -1 then -math.pi / 2 else math.pi / 2, 0)) end
         end
         for i = 1, 10 do Kit.lamp(terrain, CFrame.new(side * 18.8, 0.3, -120 + i * 34)) end
@@ -3131,15 +3133,15 @@ function World:square()
     Kit.sign(square, "THRIFT STREET", CFrame.new(0, 15, -129), Vector3.new(34, 4.3, 0.6), P.Teal)
     Kit.sign(square, "SECOND CHANCES. EXTRAORDINARY FINDS.", CFrame.new(0, 11.8, -129.2), Vector3.new(29, 1.1, 0.2), P.Cream, P.Ink)
     local notice = Kit.model(square, "CommunityNoticeboard")
-    local noticeCF = CFrame.new(40, 0, -175)
+    local noticeCF = CFrame.new(-24, 0, -145)
     for side = -1, 1, 2 do Kit.part(notice, "Post", Vector3.new(0.6, 8, 0.6), noticeCF * CFrame.new(side * 5.6, 4, 0), P.Wood, Enum.Material.Wood) end
     local label, board = Kit.sign(notice, "THE DAILY FIND\nQUESTS &amp; DESIGNER SHOWCASE", noticeCF * CFrame.new(0, 6, 0), Vector3.new(12, 5, 0.5), P.Teal)
     label.TextColor3 = P.Paper; prompt(board, "Quests &amp; showcase", "Quests")
     Kit.part(notice, "RainCover", Vector3.new(14, 0.35, 3), noticeCF * CFrame.new(0, 9.2, 0), P.Wood, Enum.Material.Wood)
     for i = 1, 3 do Kit.sign(notice, ({"FIND\n3 treasures", "RESTORE\n3 keepsakes", "SELL\n3 stories"})[i], noticeCF * CFrame.new(-3.6 + (i - 1) * 3.6, 2.2, -0.4) * CFrame.Angles(0, 0, (i - 2) * 0.06), Vector3.new(3, 2.4, 0.1), P.Paper, P.Ink) end
-    self.Destinations = {Source = Vector3.new(-40, 2, -120), Estate = Vector3.new(42, 2, -120),
-        Delivery = Vector3.new(-40, 2, -175), Quests = Vector3.new(40, 2, -175),
-        Auction = Vector3.new(0, 2, -233), Market = Vector3.new(0, 2, 210)}
+    self.Destinations = {Source = Vector3.new(-46, 2, -165), Estate = Vector3.new(48, 2, -165),
+        Delivery = Vector3.new(46, 2, -185), Quests = Vector3.new(-24, 2, -145), Flea = Vector3.new(-78, 2, -215),
+        Auction = Vector3.new(-48, 2, 55), Market = Vector3.new(-48, 2, -95), Workbench = Vector3.new(48, 2, 55)}
     local travel = Kit.model(square, "FastTravelHub")
     local stops = {
         {"FINDS", "Source", -16, -147, P.Coral}, {"ESTATE", "Estate", -8, -147, P.Gold},
@@ -3156,7 +3158,7 @@ function World:square()
     end
     Kit.sign(travel, "FAST TRAVEL", CFrame.new(0, 5.8, -144.2), Vector3.new(14, 2.1, 0.3), P.Teal, P.Paper)
     local delivery = Kit.model(square, "ParcelPost")
-    local dcf = CFrame.new(-40, 0.2, -175)
+    local dcf = CFrame.new(46, 0.2, -185)
     Kit.part(delivery, "PostalCabinet", Vector3.new(9, 5, 4), dcf * CFrame.new(0, 2.5, 0), P.Teal)
     Kit.part(delivery, "PostalTop", Vector3.new(9.5, 0.4, 4.5), dcf * CFrame.new(0, 5.2, 0), P.Oak, Enum.Material.Wood)
     Kit.sign(delivery, "PARCEL POST", dcf * CFrame.new(0, 7, 0.1), Vector3.new(10, 2, 0.3), P.Cream, P.Ink)
@@ -3170,10 +3172,10 @@ function World:square()
 end
 function World:sourcing()
     local alley = Kit.model(self.Root, "SecondChanceAlley")
-    local cf = CFrame.new(-42, 0, -120)
+    local cf = CFrame.new(-46, 0, -165)
     Kit.part(alley, "AlleyPavers", Vector3.new(30, 0.3, 24), cf, Color3.fromRGB(162, 160, 145), Enum.Material.Cobblestone)
     Kit.part(alley, "BrickWall", Vector3.new(29, 9, 1), cf * CFrame.new(0, 4.5, -10), P.Brick, Enum.Material.Brick)
-    Kit.sign(alley, "SECOND CHANCE ALLEY", cf * CFrame.new(0, 7, -9.4) * CFrame.Angles(0, math.pi, 0), Vector3.new(22, 2.6, 0.2), P.Teal)
+    Kit.sign(alley, "START HERE\nDUMPSTER ALLEY", cf * CFrame.new(0, 7, -9.4) * CFrame.Angles(0, math.pi, 0), Vector3.new(22, 4.3, 0.2), P.Teal)
     for _, x in ipairs({-7, 2}) do
         local binCF = cf * CFrame.new(x, 0.3, -4)
         local bin = Kit.part(alley, "SalvageBin", Vector3.new(6.8, 3.9, 4.3), binCF * CFrame.new(0, 2.1, 0), if x &lt; 0 then P.Teal else P.Ink, Enum.Material.Metal)
@@ -3191,7 +3193,7 @@ function World:sourcing()
     Kit.plant(alley, cf * CFrame.new(-12, 0.3, 7), 1, nil, true)
     Kit.sign(alley, "FREE FINDS\nA little dusty. A lot of possibility.", cf * CFrame.new(0, 1.8, 7) * CFrame.Angles(0, math.pi, 0), Vector3.new(10, 2.5, 0.3), P.Cream, P.Ink)
     local estate = Kit.model(self.Root, "SundayEstateSale")
-    local ecf = CFrame.new(46, 0, -120)
+    local ecf = CFrame.new(48, 0, -165)
     Kit.part(estate, "GardenPath", Vector3.new(27, 0.3, 26), ecf, Color3.fromRGB(210, 194, 160), Enum.Material.Pavement)
     Kit.fence(estate, ecf * CFrame.new(14, 0.2, -1) * CFrame.Angles(0, math.pi / 2, 0), 28)
     Kit.fence(estate, ecf * CFrame.new(0, 0.2, -13), 28)
@@ -3202,7 +3204,7 @@ function World:sourcing()
     awning(estate, ecf * CFrame.new(-2, 8.5, 0), 16, 8, P.Rose)
     for x = -1, 1, 2 do Kit.part(estate, "CanopyPole", Vector3.new(0.25, 8.4, 0.25), ecf * CFrame.new(-2 + x * 7.4, 4.2, 2.9), P.Cream, Enum.Material.Metal) end
     prompt(tableTop, "Browse mystery lots", "Estate")
-    Kit.sign(estate, "THE SUNDAY SALE", ecf * CFrame.new(-2, 6.5, 4) * CFrame.Angles(0, math.pi, 0), Vector3.new(14, 2.2, 0.3), P.Rose)
+    Kit.sign(estate, "WHOLESALE SOURCE", ecf * CFrame.new(-2, 6.5, 4) * CFrame.Angles(0, math.pi, 0), Vector3.new(14, 2.2, 0.3), P.Rose)
     Kit.parcel(estate, ecf * CFrame.new(-5, 3.2, 0), Vector3.new(2.6, 1.8, 2.5), P.Cream)
     Kit.parcel(estate, ecf * CFrame.new(0, 3.2, 0), Vector3.new(2.5, 2.3, 2.5), P.Teal)
     Kit.parcel(estate, ecf * CFrame.new(3, 3.2, 0), Vector3.new(2.2, 1.4, 2.2), P.Rose)
@@ -3211,7 +3213,7 @@ function World:sourcing()
 end
 function World:auctionHouse()
     local model = Kit.model(self.Root, "TheGavelAuctionHouse")
-    local cf = CFrame.new(0, 0, -237) * CFrame.Angles(0, math.pi, 0)
+    local cf = CFrame.new(-52, 0, 55) * CFrame.Angles(0, -math.pi / 2, 0)
     Kit.part(model, "Foundation", Vector3.new(58, 1, 46), cf * CFrame.new(0, 0.25, 0), P.Cream, Enum.Material.Marble)
     Kit.part(model, "TimberFloor", Vector3.new(52, 0.2, 40), cf * CFrame.new(0, 0.85, 0), P.Wood, Enum.Material.WoodPlanks)
     Kit.part(model, "BackWall", Vector3.new(56, 20, 1.3), cf * CFrame.new(0, 10, 22), P.Brick, Enum.Material.Brick)
@@ -3273,6 +3275,62 @@ function World:market()
     prompt(kiosk, "Open the market", "Market")
     Kit.sign(market, "TRADE STORIES\nFIND SOMETHING YOU LOVE", CFrame.new(0, 4.8, 208.4), Vector3.new(10, 3, 0.25), P.Cream, P.Ink)
     for _, x in ipairs({-38, 38}) do Kit.tree(market, CFrame.new(x, 0.2, 213), 1.2, 1) end
+    local pivot = market:GetPivot()
+    local transform = CFrame.new(-52, 0, -95) * CFrame.Angles(0, -math.pi / 2, 0) * CFrame.new(0, 0, -211)
+    market:PivotTo(transform * pivot)
+end
+function World:districtLandmarks()
+    local district = Kit.model(self.Root, "ThriftStreetLandmarks")
+    local function storefront(name, subtitle, position, side, color)
+        local facing = if side &lt; 0 then -math.pi / 2 else math.pi / 2
+        local cf = CFrame.new(position) * CFrame.Angles(0, facing, 0)
+        local building = Kit.model(district, string.gsub(name, " ", ""))
+        Kit.part(building, "Foundation", Vector3.new(32, 0.7, 25), cf * CFrame.new(0, 0.15, 0), P.Cream, Enum.Material.Marble)
+        Kit.part(building, "Facade", Vector3.new(30, 15, 1), cf * CFrame.new(0, 7.5, -11.5), color, Enum.Material.Brick)
+        Kit.part(building, "Roof", Vector3.new(32, 1, 27), cf * CFrame.new(0, 15.5, 0), P.Ink, Enum.Material.Slate)
+        for x = -1, 1, 2 do window(building, cf * CFrame.new(x * 8.5, 8, -12.1), 6.2, 7.2, Color3.fromRGB(183, 224, 226)) end
+        awning(building, cf * CFrame.new(0, 5.7, -13), 11, 4, color)
+        Kit.sign(building, name .. "\n" .. subtitle, cf * CFrame.new(0, 12.7, -12.2), Vector3.new(24, 4, 0.3), P.Ink, P.Paper)
+        for x = -1, 1, 2 do Kit.plant(building, cf * CFrame.new(x * 11, 0.4, -14), 1.1, nil, true) end
+        return building, cf
+    end
+    storefront("THRIFT SHOP", "CURATED SECOND CHANCES", Vector3.new(-52, 0, -20), -1, P.Coral)
+    storefront("DESIGNER SHOWCASE", "THIS WEEK'S BEST WINDOWS", Vector3.new(52, 0, -95), 1, P.Lavender)
+    storefront("ANTIQUE CORNER", "HISTORY WORTH KEEPING", Vector3.new(52, 0, -20), 1, P.Gold)
+    local workshop, wcf = storefront("RESTORE WORKSHOP", "BRING GREAT FINDS BACK", Vector3.new(52, 0, 55), 1, P.Teal)
+    local bench = Kit.part(workshop, "PublicWorkbench", Vector3.new(9, 3, 3), wcf * CFrame.new(0, 2, -15), P.Wood, Enum.Material.Wood)
+    prompt(bench, "Restore a treasure", "Workbench")
+    local flea = Kit.model(district, "FleaField")
+    local fcf = CFrame.new(-78, 0, -215)
+    Kit.part(flea, "Field", Vector3.new(58, 0.3, 42), fcf, Color3.fromRGB(148, 174, 113), Enum.Material.Grass)
+    Kit.sign(flea, "FLEA FIELD\nDIG • DISCOVER • RESTORE", fcf * CFrame.new(0, 7, -19), Vector3.new(27, 4, 0.4), P.Coral, P.Paper)
+    for i = 1, 6 do
+        local x, z = -20 + (i - 1) % 3 * 20, -8 + math.floor((i - 1) / 3) * 17
+        local spot = Kit.cylinder(flea, "FindSpot", 3, 0.18, fcf * CFrame.new(x, 0.25, z), if i % 2 == 0 then P.Gold else P.Rose, Enum.Material.Sand)
+        prompt(spot, "Search the flea field", "Source")
+        Kit.crate(flea, fcf * CFrame.new(x + 4, 0.2, z + 2), Vector3.new(2.5, 1.7, 2.2), i % 2 == 0)
+    end
+end
+function World:wayfinding()
+    local route = Kit.model(self.Root, "NewPlayerRoute")
+    local stops = {
+        {1, "SPAWN", Vector3.new(0, 0.5, -145)}, {2, "QUESTS", Vector3.new(-24, 0.5, -145)},
+        {3, "DIG", Vector3.new(-46, 0.5, -165)}, {4, "RESTORE", Vector3.new(35, 0.5, 55)},
+        {5, "SELL", Vector3.new(-35, 0.5, -95)},
+    }
+    for index, stop in ipairs(stops) do
+        local pad = Kit.cylinder(route, "Stop" .. stop[1], 2.1, 0.16, CFrame.new(stop[3]), P.Teal, Enum.Material.Neon, false)
+        Kit.sign(route, tostring(stop[1]), CFrame.new(stop[3] + Vector3.new(0, 0.25, 0)), Vector3.new(2.2, 2.2, 0.08), P.Teal, P.Paper)
+        if index &lt; #stops then
+            local a, b = stop[3], stops[index + 1][3]; local delta = b - a; local length = delta.Magnitude
+            for distance = 5, length - 3, 6 do
+                local point = a + delta.Unit * distance
+                Kit.part(route, "RouteDash", Vector3.new(0.45, 0.08, 3.2), CFrame.lookAt(point, point + delta.Unit), P.Gold, Enum.Material.Neon, nil, false)
+            end
+        end
+    end
+    local legendCF = CFrame.new(75, 5, -145) * CFrame.Angles(0, math.pi, 0)
+    Kit.sign(route, "NEW PLAYER ROUTE\n1  SPAWN\n2  DAILY QUESTS\n3  DIG THE ALLEY\n4  RESTORE AT WORKSHOP\n5  SELL AT MARKET", legendCF, Vector3.new(24, 11, 0.5), P.Ink, P.Paper)
 end
 function World:buildPlot(index, cf)
     local model = Kit.model(self.Root, "Shop" .. index)
@@ -3440,7 +3498,8 @@ function World:near(player, action)
     local character = player.Character; local root = character and character:FindFirstChild("HumanoidRootPart")
     if not root then return false end
     local target = self.Destinations[action]
-    if target then return (root.Position - target).Magnitude &lt; 25 end
+    if target and (root.Position - target).Magnitude &lt; 25 then return true end
+    if action == "Source" and (root.Position - self.Destinations.Flea).Magnitude &lt; 38 then return true end
     local plot = self.Owners[player.UserId]; if not plot then return false end
     local position = plot.CF:PointToObjectSpace(root.Position)
     return math.abs(position.X) &lt; 15.5 and position.Z &gt; -18 and position.Z &lt; plot.BackZ + 1 and position.Y &gt; -3 and position.Y &lt; 14
@@ -3448,14 +3507,16 @@ end
 function World:teleportCFrame(player, destination)
     local target = self.Destinations[destination]
     if target then return CFrame.new(target + Vector3.new(0, 3.5, 6), target) end
-    if destination ~= "Shop" and destination ~= "Workbench" then return nil end
+    if destination == "Workbench" then
+        local target = self.Destinations.Workbench
+        return CFrame.new(target + Vector3.new(0, 3.5, -7), target)
+    end
+    if destination ~= "Shop" then return nil end
     local plot = self.Owners[player.UserId]
     if not plot then return nil end
-    local localPosition = if destination == "Workbench"
-        then Vector3.new(-7.5, 4, plot.BackZ - 8)
-        else Vector3.new(0, 4, -8)
+    local localPosition = Vector3.new(0, 4, -8)
     local position = plot.CF:PointToWorldSpace(localPosition)
-    local lookAt = plot.CF:PointToWorldSpace(if destination == "Workbench" then Vector3.new(-7.5, 3, plot.BackZ - 3.5) else Vector3.new(0, 3, 0))
+    local lookAt = plot.CF:PointToWorldSpace(Vector3.new(0, 3, 0))
     return CFrame.lookAt(position, lookAt)
 end
 function World:render(player, profile, catalog, config)
@@ -3864,16 +3925,16 @@ local billboard = Instance.new("BillboardGui")
 billboard.Name = "Guide"; billboard.Size = UDim2.fromOffset(230, 62); billboard.AlwaysOnTop = true; billboard.Parent = marker
 local guideText = UI.label(billboard, "▼ YOUR NEXT STEP", 20, UI.Colors.Gold)
 guideText.Size = UDim2.fromScale(1, 1); guideText.AutomaticSize = Enum.AutomaticSize.None; guideText.TextXAlignment = Enum.TextXAlignment.Center
-local locations = {Source=Vector3.new(-42,8,-119),Estate=Vector3.new(42,8,-119),Delivery=Vector3.new(-40,8,-175),
-    Auction=Vector3.new(0,12,-211),Market=Vector3.new(0,9,210),Quests=Vector3.new(40,8,-175)}
+local locations = {Source=Vector3.new(-46,8,-165),Estate=Vector3.new(48,8,-165),Delivery=Vector3.new(46,8,-185),
+    Auction=Vector3.new(-48,12,55),Market=Vector3.new(-48,9,-95),Quests=Vector3.new(-24,8,-145),Workbench=Vector3.new(48,8,55)}
 local guideExpires = 0
 local function guide(location)
     local target = locations[location]
-    if location == "Shop" or location == "Workbench" then
+    if location == "Shop" then
         for _, shop in ipairs(state and state.Shops or {}) do
             if shop.UserId == player.UserId and shop.Plot then
                 local row = math.ceil(shop.Plot / 2); local side = if shop.Plot % 2 == 1 then -1 else 1
-                target = Vector3.new(side * 52, 12, -83 + (row - 1) * 35); break
+                target = Vector3.new(side * 95, 12, -83 + (row - 1) * 35); break
             end
         end
     end
