@@ -2889,6 +2889,65 @@ local CollectionService = game:GetService("CollectionService")
 local MarketplaceService = game:GetService("MarketplaceService")
 local RunService = game:GetService("RunService")
 local ServerStorage = game:GetService("ServerStorage")
+
+-- Install Studio tools before building the world. The town can take several
+-- seconds to generate, so commands registered after World.new() are easy to
+-- miss and appear to hang in the Command Bar.
+local service = nil
+local function findStudioPlayer(playerOrName)
+    if typeof(playerOrName) == "Instance" and playerOrName:IsA("Player") then return playerOrName end
+    local wanted = string.lower(tostring(playerOrName or ""))
+    for _, candidate in ipairs(Players:GetPlayers()) do
+        if string.lower(candidate.Name) == wanted or string.lower(candidate.DisplayName) == wanted then
+            return candidate
+        end
+    end
+    return nil
+end
+local function runStudioLegendary(playerOrName, query)
+    local player = findStudioPlayer(playerOrName)
+    if not player then return false, "Player not found. Start Play mode and check your username." end
+    local deadline = os.clock() + 20
+    while player.Parent and (not service or not service:profile(player)) and os.clock() &lt; deadline do
+        task.wait(0.1)
+    end
+    if not service then return false, "Thrift Flip did not finish loading. Check Output for the first red server error." end
+    if not service:profile(player) then return false, "Your player profile did not load. Stop Play mode, start it again, and retry." end
+    return service:studioLegendary(player, query)
+end
+if RunService:IsStudio() then
+    local previousCommand = ServerStorage:FindFirstChild("ThriftStudioLegendary")
+    if previousCommand then previousCommand:Destroy() end
+    local command = Instance.new("BindableFunction")
+    command.Name = "ThriftStudioLegendary"
+    command.OnInvoke = runStudioLegendary
+    command.Parent = ServerStorage
+
+    -- Client Command Bar cannot access ServerStorage, so expose a Studio-only
+    -- RemoteFunction as the reliable client-side equivalent.
+    local previousRemote = ReplicatedStorage:FindFirstChild("ThriftStudioLegendary")
+    if previousRemote then previousRemote:Destroy() end
+    local remoteCommand = Instance.new("RemoteFunction")
+    remoteCommand.Name = "ThriftStudioLegendary"
+    remoteCommand.OnServerInvoke = function(player, query)
+        return runStudioLegendary(player, query)
+    end
+    remoteCommand.Parent = ReplicatedStorage
+
+    local function studioChat(player)
+        player.Chatted:Connect(function(message)
+            local query = string.match(string.lower(message), "^[/!]legendary%s*(.*)$")
+            if not query then return end
+            local ok, result = runStudioLegendary(player, query)
+            if not ok then
+                if service then service:notify(player, result) else warn(result) end
+            end
+        end)
+    end
+    Players.PlayerAdded:Connect(studioChat)
+    for _, player in ipairs(Players:GetPlayers()) do studioChat(player) end
+end
+
 local Config = require(ReplicatedStorage.Shared.Config)
 local remotes = Instance.new("Folder"); remotes.Name = "Remotes"; remotes.Parent = ReplicatedStorage
 local event = Instance.new("RemoteEvent"); event.Name = "Game"; event.Parent = remotes
@@ -2899,7 +2958,7 @@ local ExchangeService = require(script.Parent.ExchangeService)
 local LiveService = require(script.Parent.LiveService)
 local data = DataService.new()
 local world = World.new()
-local service = GameService.new(data, world, event)
+service = GameService.new(data, world, event)
 service.Exchange = ExchangeService.new(data, service)
 service.Live = LiveService.new(data, service)
 MarketplaceService.ProcessReceipt = function(receipt) return service.Live:processReceipt(receipt) end
@@ -2926,25 +2985,6 @@ CollectionService:GetInstanceAddedSignal("ThriftInteractable"):Connect(connectPr
 Players.PlayerAdded:Connect(function(player) service:join(player) end)
 Players.PlayerRemoving:Connect(function(player) service:leave(player) end)
 for _, player in ipairs(Players:GetPlayers()) do task.spawn(function() service:join(player) end) end
-if RunService:IsStudio() then
-    local function studioChat(player)
-        player.Chatted:Connect(function(message)
-            local query = string.match(message, "^[/!]legendary%s*(.*)$")
-            if query then
-                local ok, result = service:studioLegendary(player, query)
-                if not ok then service:notify(player, result) end
-            end
-        end)
-    end
-    Players.PlayerAdded:Connect(studioChat)
-    for _, player in ipairs(Players:GetPlayers()) do studioChat(player) end
-    local command = Instance.new("BindableFunction"); command.Name = "ThriftStudioLegendary"; command.Parent = ServerStorage
-    command.OnInvoke = function(playerOrName, query)
-        local player = if typeof(playerOrName) == "Instance" and playerOrName:IsA("Player") then playerOrName else Players:FindFirstChild(tostring(playerOrName))
-        if not player then return false, "Player not found" end
-        return service:studioLegendary(player, query)
-    end
-end
 MarketplaceService.PromptGamePassPurchaseFinished:Connect(function(player, passId, purchased)
     service.Live:passPurchased(player, passId, purchased)
 end)
