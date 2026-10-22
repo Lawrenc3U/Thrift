@@ -2,6 +2,8 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local CollectionService = game:GetService("CollectionService")
 local MarketplaceService = game:GetService("MarketplaceService")
+local RunService = game:GetService("RunService")
+local ServerStorage = game:GetService("ServerStorage")
 local Config = require(ReplicatedStorage.Shared.Config)
 local remotes = Instance.new("Folder"); remotes.Name = "Remotes"; remotes.Parent = ReplicatedStorage
 local event = Instance.new("RemoteEvent"); event.Name = "Game"; event.Parent = remotes
@@ -39,6 +41,25 @@ CollectionService:GetInstanceAddedSignal("ThriftInteractable"):Connect(connectPr
 Players.PlayerAdded:Connect(function(player) service:join(player) end)
 Players.PlayerRemoving:Connect(function(player) service:leave(player) end)
 for _, player in ipairs(Players:GetPlayers()) do task.spawn(function() service:join(player) end) end
+if RunService:IsStudio() then
+    local function studioChat(player)
+        player.Chatted:Connect(function(message)
+            local query = string.match(message, "^[/!]legendary%s*(.*)$")
+            if query then
+                local ok, result = service:studioLegendary(player, query)
+                if not ok then service:notify(player, result) end
+            end
+        end)
+    end
+    Players.PlayerAdded:Connect(studioChat)
+    for _, player in ipairs(Players:GetPlayers()) do studioChat(player) end
+    local command = Instance.new("BindableFunction"); command.Name = "ThriftStudioLegendary"; command.Parent = ServerStorage
+    command.OnInvoke = function(playerOrName, query)
+        local player = if typeof(playerOrName) == "Instance" and playerOrName:IsA("Player") then playerOrName else Players:FindFirstChild(tostring(playerOrName))
+        if not player then return false, "Player not found" end
+        return service:studioLegendary(player, query)
+    end
+end
 MarketplaceService.PromptGamePassPurchaseFinished:Connect(function(player, passId, purchased)
     service.Live:passPurchased(player, passId, purchased)
 end)

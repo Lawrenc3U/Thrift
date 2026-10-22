@@ -1,5 +1,6 @@
 local Players = game:GetService("Players")
 local HttpService = game:GetService("HttpService")
+local RunService = game:GetService("RunService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared.Config)
@@ -150,6 +151,28 @@ function GameService:generate(source, level, tutorial)
     return {Uid = HttpService:GenerateGUID(false), DefId = definition.Id, Rarity = rarity,
         Condition = if tutorial then 2 else self.Random:NextInteger(1, 3),
         Variance = self.Random:NextNumber(0.92, 1.08), Inspected = false, Style = definition.Style}
+end
+function GameService:studioLegendary(player, query)
+    if not RunService:IsStudio() then return false, "Studio-only command" end
+    local profile = self:profile(player)
+    if not profile then return false, "Profile is not ready" end
+    if #profile.Inventory >= Config.InventoryLimit then return false, "Inventory is full" end
+    query = string.lower(type(query) == "string" and query or "")
+    local choices = {}
+    for _, definition in ipairs(Catalog.Items) do
+        if query == "" or string.find(string.lower(definition.Name), query, 1, true)
+            or string.find(string.lower(definition.Category), query, 1, true)
+            or string.find(string.lower(definition.Id), query, 1, true) then
+            table.insert(choices, definition)
+        end
+    end
+    if #choices == 0 then return false, "No item matches '" .. query .. "'" end
+    local definition = choices[self.Random:NextInteger(1, #choices)]
+    local item = {Uid = HttpService:GenerateGUID(false), DefId = definition.Id, Rarity = 5,
+        Condition = 5, Variance = 1.08, Inspected = true, Style = definition.Style}
+    table.insert(profile.Inventory, item); profile.Collection[definition.Id .. ":5"] = true
+    self:refresh(player); self:notify(player, "Studio test item added: Legendary " .. definition.Name)
+    return true, definition.Name
 end
 function GameService:source(player, payload)
     local profile = self:profile(player)
