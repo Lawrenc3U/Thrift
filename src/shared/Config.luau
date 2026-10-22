@@ -7,6 +7,10 @@ local Config = {
     -- The town has eight claimable storefronts. Keep the server cap aligned so
     -- every player always receives a shop.
     MaxPlayers = 8,
+    -- UserIds are preferred for permanent live admins. Usernames are matched
+    -- against Roblox-authenticated Player.Name values and are case-insensitive.
+    AdminUserIds = {},
+    AdminUsernames = {"TheKaiju015"},
     AutosaveSeconds = 60,
     SessionLease = 180,
     Sources = {

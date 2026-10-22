@@ -36,6 +36,26 @@ function GameService:profile(player)
         or (self.Data.MutationLocks and self.Data.MutationLocks[player.UserId]) then return nil end
     return self.Data.Profiles[player.UserId]
 end
+function GameService:isAdmin(player)
+    if not player then return false end
+    if RunService:IsStudio() then return true end
+    if tostring(game.CreatorType) == "Enum.CreatorType.User" and player.UserId == game.CreatorId then return true end
+    for _, userId in ipairs(Config.AdminUserIds or {}) do if player.UserId == userId then return true end end
+    local username = string.lower(player.Name or "")
+    for _, allowed in ipairs(Config.AdminUsernames or {}) do
+        if username == string.lower(allowed) then return true end
+    end
+    return false
+end
+function GameService:adminTarget(requester, value)
+    if value == nil or value == "" then return requester end
+    local wanted = string.lower(tostring(value))
+    for _, candidate in ipairs(Players:GetPlayers()) do
+        if tostring(candidate.UserId) == wanted or string.lower(candidate.Name) == wanted
+            or string.lower(candidate.DisplayName) == wanted then return candidate end
+    end
+    return nil
+end
 function GameService:notify(player, message)
     self.Event:FireClient(player, "Notice", message)
 end
@@ -132,6 +152,7 @@ function GameService:snapshot(player)
         Demand = self:demandStyle(), Auction = auction, NextAuction = self.NextAuction,
         Offer = self.Offers[player.UserId], Ephemeral = self.Data.Ephemeral,
         Held = self.Held[player.UserId],
+        IsAdmin = self:isAdmin(player),
         Market = market, Trade = trade, Live = self.Live and self.Live:snapshot(player),
         Showcase = self.Showcase, ServerTime = os.time(),
     })
@@ -512,6 +533,71 @@ function GameService:settings(player, payload)
         profile.Settings[payload.Name] = payload.Enabled; self:snapshot(player)
     end
 end
+function GameService:admin(player, payload)
+    if not self:isAdmin(player) then return self:notify(player, "Admin access denied.") end
+    local command = payload.Command
+    if type(command) ~= "string" then return end
+    if command == "Announce" then
+        local message = payload.Message
+        if type(message) ~= "string" or #message < 1 or #message > 120 then return self:notify(player, "Announcements must be 1–120 characters.") end
+        for _, recipient in ipairs(Players:GetPlayers()) do self.Event:FireClient(recipient, "Announcement", player.DisplayName .. ": " .. message) end
+        warn("[THRIFT ADMIN] " .. player.Name .. " broadcast an announcement"); return
+    end
+    local target = self:adminTarget(player, payload.Target)
+    if not target then return self:notify(player, "That player is not in this server.") end
+    local profile = self:profile(target)
+    if not profile then return self:notify(player, "That player's profile is not ready.") end
+
+    if command == "GiveItem" then
+        if #profile.Inventory >= Config.InventoryLimit then return self:notify(player, "That player's bag is full.") end
+        local rarity = payload.Rarity
+        if not Economy.validAmount(rarity, 1, 5) then return self:notify(player, "Choose a rarity from 1 to 5.") end
+        local query = string.lower(type(payload.Query) == "string" and payload.Query or "")
+        local choices = {}
+        for _, definition in ipairs(Catalog.Items) do
+            if query == "" or string.find(string.lower(definition.Name), query, 1, true)
+                or string.find(string.lower(definition.Category), query, 1, true)
+                or string.find(string.lower(definition.Id), query, 1, true) then table.insert(choices, definition) end
+        end
+        if #choices == 0 then return self:notify(player, "No item matches '" .. query .. "'.") end
+        local definition = choices[self.Random:NextInteger(1, #choices)]
+        local item = {Uid = HttpService:GenerateGUID(false), DefId = definition.Id, Rarity = rarity,
+            Condition = 5, Variance = 1, Inspected = true, Style = definition.Style}
+        table.insert(profile.Inventory, item); profile.Collection[definition.Id .. ":" .. rarity] = true
+        self:refresh(target)
+        local reveal = shallowPublicItem(item); reveal.Value = self:value(profile, item)
+        self.Event:FireClient(target, "Reveal", {Item = reveal})
+        self:notify(player, "Gave " .. target.DisplayName .. " a " .. Config.Rarities[rarity] .. " " .. definition.Name .. ".")
+    elseif command == "Cash" then
+        local amount = payload.Amount
+        if not Economy.validAmount(amount, -100000, 100000) or amount == 0 then return self:notify(player, "Cash change must be a whole number up to 100,000.") end
+        profile.Cash = math.clamp(profile.Cash + amount, 0, 1000000000); self:refresh(target)
+        self:notify(player, (if amount > 0 then "Added $" .. amount .. " to " else "Removed $" .. math.abs(amount) .. " from ") .. target.DisplayName .. ".")
+    elseif command == "XP" then
+        local amount = payload.Amount
+        if not Economy.validAmount(amount, 1, 100000) then return self:notify(player, "XP must be a whole number up to 100,000.") end
+        profile.XP = math.clamp(profile.XP + amount, 0, 100000000); self:refresh(target)
+        self:notify(player, "Added " .. amount .. " XP to " .. target.DisplayName .. ".")
+    elseif command == "Tutorial" then
+        if payload.Value ~= 0 and payload.Value ~= 5 then return end
+        profile.Tutorial = payload.Value; self:refresh(target)
+        self:notify(player, (if payload.Value == 0 then "Reset " else "Completed ") .. target.DisplayName .. "'s tutorial.")
+    elseif command == "Bring" then
+        local sourceRoot = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+        local targetHumanoid = target.Character and target.Character:FindFirstChildOfClass("Humanoid")
+        if not sourceRoot or not targetHumanoid or targetHumanoid.Health <= 0 then return self:notify(player, "One avatar is not ready.") end
+        target.Character:PivotTo(sourceRoot.CFrame * CFrame.new(3, 0, 0)); self:notify(player, "Brought " .. target.DisplayName .. ".")
+    elseif command == "Heal" then
+        local humanoid = target.Character and target.Character:FindFirstChildOfClass("Humanoid")
+        if not humanoid then return self:notify(player, "That avatar is not ready.") end
+        humanoid.Health = humanoid.MaxHealth; self:notify(player, "Healed " .. target.DisplayName .. ".")
+    elseif command == "Kick" then
+        if target ~= player and self:isAdmin(target) then return self:notify(player, "Administrators cannot kick each other.") end
+        warn("[THRIFT ADMIN] " .. player.Name .. " kicked " .. target.Name)
+        target:Kick("Removed by a Thrift Flip administrator."); return
+    else return end
+    warn("[THRIFT ADMIN] " .. player.Name .. " used " .. command .. " on " .. target.Name)
+end
 function GameService:teleport(player, payload)
     if type(payload.Destination) ~= "string" or #payload.Destination > 20 then return end
     local now = os.clock()
@@ -532,6 +618,7 @@ local handlers = {
     Display = GameService.display, Haggle = GameService.haggle, Upgrade = GameService.upgrade,
     Quest = GameService.quest, Bid = GameService.bid, Rate = GameService.rating, DecorPlace = GameService.decorPlace,
     Showcase = GameService.showcase, Settings = GameService.settings, Teleport = GameService.teleport,
+    Admin = GameService.admin,
     DailyGift = GameService.dailyGift,
 }
 function GameService:request(player, action, payload)

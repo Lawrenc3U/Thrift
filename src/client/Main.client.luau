@@ -86,7 +86,7 @@ local function nextObjective()
     local discoveries = 0; for _ in pairs(state.Collection or {}) do discoveries += 1 end
     return discoveries .. "/400 discoveries • hunt for a new " .. state.Demand .. " find"
 end
-local lastOffer, lastTutorial
+local lastOffer, lastTutorial, adminButton
 local function updateHud()
     ui.Balance.Text = tostring(math.floor(state.Cash))
     ui.Level.Text = "LV " .. state.Level
@@ -103,6 +103,10 @@ event.OnClientEvent:Connect(function(kind, payload)
     if kind == "State" then
         local wasVisible = ui.Panel.Visible; local oldCash = state and state.Cash or payload.Cash
         state = payload; updateHud()
+        if state.IsAdmin and not adminButton then
+            adminButton = ui:addQuickAction("⚙\nAdmin", UI.Colors.Gold, function() open("Admin") end)
+            ui.QuickActions.Size = UDim2.fromOffset(74, 288)
+        end
         if state.Cash > oldCash then ui:cashFeedback(state.Cash - oldCash); audio:play("sale") end
         if state.Tutorial ~= lastTutorial then
             lastTutorial = state.Tutorial
@@ -115,6 +119,7 @@ event.OnClientEvent:Connect(function(kind, payload)
         lastOffer = state.Offer and state.Offer.Uid or nil
         if wasVisible and not session then render() end
     elseif kind == "Notice" then ui:notice(payload)
+    elseif kind == "Announcement" then ui:notice("📣  " .. tostring(payload)); audio:play("reward")
     elseif kind == "Reveal" then
         local item = payload and payload.Item
         local definition = item and Catalog.ById[item.DefId]

@@ -95,6 +95,10 @@ local Config = {
     -- The town has eight claimable storefronts. Keep the server cap aligned so
     -- every player always receives a shop.
     MaxPlayers = 8,
+    -- UserIds are preferred for permanent live admins. Usernames are matched
+    -- against Roblox-authenticated Player.Name values and are case-insensitive.
+    AdminUserIds = {},
+    AdminUsernames = {"TheKaiju015"},
     AutosaveSeconds = 60,
     SessionLease = 180,
     Sources = {
@@ -1862,6 +1866,26 @@ function GameService:profile(player)
         or (self.Data.MutationLocks and self.Data.MutationLocks[player.UserId]) then return nil end
     return self.Data.Profiles[player.UserId]
 end
+function GameService:isAdmin(player)
+    if not player then return false end
+    if RunService:IsStudio() then return true end
+    if tostring(game.CreatorType) == "Enum.CreatorType.User" and player.UserId == game.CreatorId then return true end
+    for _, userId in ipairs(Config.AdminUserIds or {}) do if player.UserId == userId then return true end end
+    local username = string.lower(player.Name or "")
+    for _, allowed in ipairs(Config.AdminUsernames or {}) do
+        if username == string.lower(allowed) then return true end
+    end
+    return false
+end
+function GameService:adminTarget(requester, value)
+    if value == nil or value == "" then return requester end
+    local wanted = string.lower(tostring(value))
+    for _, candidate in ipairs(Players:GetPlayers()) do
+        if tostring(candidate.UserId) == wanted or string.lower(candidate.Name) == wanted
+            or string.lower(candidate.DisplayName) == wanted then return candidate end
+    end
+    return nil
+end
 function GameService:notify(player, message)
     self.Event:FireClient(player, "Notice", message)
 end
@@ -1958,6 +1982,7 @@ function GameService:snapshot(player)
         Demand = self:demandStyle(), Auction = auction, NextAuction = self.NextAuction,
         Offer = self.Offers[player.UserId], Ephemeral = self.Data.Ephemeral,
         Held = self.Held[player.UserId],
+        IsAdmin = self:isAdmin(player),
         Market = market, Trade = trade, Live = self.Live and self.Live:snapshot(player),
         Showcase = self.Showcase, ServerTime = os.time(),
     })
@@ -2338,6 +2363,71 @@ function GameService:settings(player, payload)
         profile.Settings[payload.Name] = payload.Enabled; self:snapshot(player)
     end
 end
+function GameService:admin(player, payload)
+    if not self:isAdmin(player) then return self:notify(player, "Admin access denied.") end
+    local command = payload.Command
+    if type(command) ~= "string" then return end
+    if command == "Announce" then
+        local message = payload.Message
+        if type(message) ~= "string" or #message &lt; 1 or #message &gt; 120 then return self:notify(player, "Announcements must be 1–120 characters.") end
+        for _, recipient in ipairs(Players:GetPlayers()) do self.Event:FireClient(recipient, "Announcement", player.DisplayName .. ": " .. message) end
+        warn("[THRIFT ADMIN] " .. player.Name .. " broadcast an announcement"); return
+    end
+    local target = self:adminTarget(player, payload.Target)
+    if not target then return self:notify(player, "That player is not in this server.") end
+    local profile = self:profile(target)
+    if not profile then return self:notify(player, "That player's profile is not ready.") end
+
+    if command == "GiveItem" then
+        if #profile.Inventory &gt;= Config.InventoryLimit then return self:notify(player, "That player's bag is full.") end
+        local rarity = payload.Rarity
+        if not Economy.validAmount(rarity, 1, 5) then return self:notify(player, "Choose a rarity from 1 to 5.") end
+        local query = string.lower(type(payload.Query) == "string" and payload.Query or "")
+        local choices = {}
+        for _, definition in ipairs(Catalog.Items) do
+            if query == "" or string.find(string.lower(definition.Name), query, 1, true)
+                or string.find(string.lower(definition.Category), query, 1, true)
+                or string.find(string.lower(definition.Id), query, 1, true) then table.insert(choices, definition) end
+        end
+        if #choices == 0 then return self:notify(player, "No item matches '" .. query .. "'.") end
+        local definition = choices[self.Random:NextInteger(1, #choices)]
+        local item = {Uid = HttpService:GenerateGUID(false), DefId = definition.Id, Rarity = rarity,
+            Condition = 5, Variance = 1, Inspected = true, Style = definition.Style}
+        table.insert(profile.Inventory, item); profile.Collection[definition.Id .. ":" .. rarity] = true
+        self:refresh(target)
+        local reveal = shallowPublicItem(item); reveal.Value = self:value(profile, item)
+        self.Event:FireClient(target, "Reveal", {Item = reveal})
+        self:notify(player, "Gave " .. target.DisplayName .. " a " .. Config.Rarities[rarity] .. " " .. definition.Name .. ".")
+    elseif command == "Cash" then
+        local amount = payload.Amount
+        if not Economy.validAmount(amount, -100000, 100000) or amount == 0 then return self:notify(player, "Cash change must be a whole number up to 100,000.") end
+        profile.Cash = math.clamp(profile.Cash + amount, 0, 1000000000); self:refresh(target)
+        self:notify(player, (if amount &gt; 0 then "Added $" .. amount .. " to " else "Removed $" .. math.abs(amount) .. " from ") .. target.DisplayName .. ".")
+    elseif command == "XP" then
+        local amount = payload.Amount
+        if not Economy.validAmount(amount, 1, 100000) then return self:notify(player, "XP must be a whole number up to 100,000.") end
+        profile.XP = math.clamp(profile.XP + amount, 0, 100000000); self:refresh(target)
+        self:notify(player, "Added " .. amount .. " XP to " .. target.DisplayName .. ".")
+    elseif command == "Tutorial" then
+        if payload.Value ~= 0 and payload.Value ~= 5 then return end
+        profile.Tutorial = payload.Value; self:refresh(target)
+        self:notify(player, (if payload.Value == 0 then "Reset " else "Completed ") .. target.DisplayName .. "'s tutorial.")
+    elseif command == "Bring" then
+        local sourceRoot = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+        local targetHumanoid = target.Character and target.Character:FindFirstChildOfClass("Humanoid")
+        if not sourceRoot or not targetHumanoid or targetHumanoid.Health &lt;= 0 then return self:notify(player, "One avatar is not ready.") end
+        target.Character:PivotTo(sourceRoot.CFrame * CFrame.new(3, 0, 0)); self:notify(player, "Brought " .. target.DisplayName .. ".")
+    elseif command == "Heal" then
+        local humanoid = target.Character and target.Character:FindFirstChildOfClass("Humanoid")
+        if not humanoid then return self:notify(player, "That avatar is not ready.") end
+        humanoid.Health = humanoid.MaxHealth; self:notify(player, "Healed " .. target.DisplayName .. ".")
+    elseif command == "Kick" then
+        if target ~= player and self:isAdmin(target) then return self:notify(player, "Administrators cannot kick each other.") end
+        warn("[THRIFT ADMIN] " .. player.Name .. " kicked " .. target.Name)
+        target:Kick("Removed by a Thrift Flip administrator."); return
+    else return end
+    warn("[THRIFT ADMIN] " .. player.Name .. " used " .. command .. " on " .. target.Name)
+end
 function GameService:teleport(player, payload)
     if type(payload.Destination) ~= "string" or #payload.Destination &gt; 20 then return end
     local now = os.clock()
@@ -2358,6 +2448,7 @@ local handlers = {
     Display = GameService.display, Haggle = GameService.haggle, Upgrade = GameService.upgrade,
     Quest = GameService.quest, Bid = GameService.bid, Rate = GameService.rating, DecorPlace = GameService.decorPlace,
     Showcase = GameService.showcase, Settings = GameService.settings, Teleport = GameService.teleport,
+    Admin = GameService.admin,
     DailyGift = GameService.dailyGift,
 }
 function GameService:request(player, action, payload)
@@ -4756,7 +4847,7 @@ local function nextObjective()
     local discoveries = 0; for _ in pairs(state.Collection or {}) do discoveries += 1 end
     return discoveries .. "/400 discoveries • hunt for a new " .. state.Demand .. " find"
 end
-local lastOffer, lastTutorial
+local lastOffer, lastTutorial, adminButton
 local function updateHud()
     ui.Balance.Text = tostring(math.floor(state.Cash))
     ui.Level.Text = "LV " .. state.Level
@@ -4773,6 +4864,10 @@ event.OnClientEvent:Connect(function(kind, payload)
     if kind == "State" then
         local wasVisible = ui.Panel.Visible; local oldCash = state and state.Cash or payload.Cash
         state = payload; updateHud()
+        if state.IsAdmin and not adminButton then
+            adminButton = ui:addQuickAction("⚙\nAdmin", UI.Colors.Gold, function() open("Admin") end)
+            ui.QuickActions.Size = UDim2.fromOffset(74, 288)
+        end
         if state.Cash &gt; oldCash then ui:cashFeedback(state.Cash - oldCash); audio:play("sale") end
         if state.Tutorial ~= lastTutorial then
             lastTutorial = state.Tutorial
@@ -4785,6 +4880,7 @@ event.OnClientEvent:Connect(function(kind, payload)
         lastOffer = state.Offer and state.Offer.Uid or nil
         if wasVisible and not session then render() end
     elseif kind == "Notice" then ui:notice(payload)
+    elseif kind == "Announcement" then ui:notice("📣  " .. tostring(payload)); audio:play("reward")
     elseif kind == "Reveal" then
         local item = payload and payload.Item
         local definition = item and Catalog.ById[item.DefId]
@@ -6050,6 +6146,76 @@ function Pages:visitPage(context)
     end
 end
 
+function Pages:adminPage()
+    if not self.State.IsAdmin then
+        UI.label(self:card(), "Admin access is not enabled for this account.", 18); return
+    end
+    local draft = self.Drafts.Admin or {Target = player.Name, Query = "", Rarity = 5, Cash = "1000", XP = "500", Message = ""}
+    self.Drafts.Admin = draft
+    local hero = UI.hero(self.UI.Content, "Server administration", "Thrift Flip control room", "Every action is checked on the server and written to the server log. Target a player by username, display name, or user ID.", UI.Colors.Ink)
+    UI.eyebrow(hero, "ONLINE PLAYERS")
+    for _, shop in ipairs(self.State.Shops or {}) do
+        local choice = UI.button(hero, shop.Name .. "  •  Shop tier " .. shop.Tier, function()
+            draft.Target = shop.Name; self.Open("Admin")
+        end, true)
+        choice.Size = UDim2.new(1, 0, 0, 40); choice.TextSize = 14
+    end
+
+    local targetCard = self:card("Target player")
+    local target = UI.input(targetCard, "Username, display name, or user ID", draft.Target)
+    target.FocusLost:Connect(function() draft.Target = target.Text end)
+
+    local itemCard = self:card("Grant a collectible")
+    UI.label(itemCard, "Search by name, category, or ID. Leave blank for a random item.", 14, UI.Colors.Muted)
+    local query = UI.input(itemCard, "Example: jukebox, chair, radios", draft.Query)
+    query.FocusLost:Connect(function() draft.Query = query.Text end)
+    local rarityButton = UI.button(itemCard, Config.RarityIcons[draft.Rarity] .. "  Rarity: " .. Config.Rarities[draft.Rarity] .. "  • tap to change", function()
+        draft.Query = query.Text; draft.Target = target.Text; draft.Rarity = draft.Rarity % 5 + 1; self.Open("Admin")
+    end, true)
+    rarityButton.TextColor3 = Color3.fromHex(Config.RarityColors[draft.Rarity])
+    UI.button(itemCard, "Grant item and show reveal", function()
+        draft.Query = query.Text; draft.Target = target.Text
+        self.Send("Admin", {Command = "GiveItem", Target = target.Text, Query = query.Text, Rarity = draft.Rarity})
+    end, false)
+
+    local economy = self:card("Economy and progression")
+    local cash = UI.input(economy, "Cash amount", draft.Cash, true)
+    cash.FocusLost:Connect(function() draft.Cash = cash.Text end)
+    local cashRow = UI.row(economy)
+    UI.rowButton(cashRow, "+ Add cash", function()
+        draft.Target = target.Text; draft.Cash = cash.Text
+        self.Send("Admin", {Command = "Cash", Target = target.Text, Amount = tonumber(cash.Text) or 0})
+    end, 2, false)
+    UI.rowButton(cashRow, "− Remove cash", function()
+        draft.Target = target.Text; draft.Cash = cash.Text
+        self.Send("Admin", {Command = "Cash", Target = target.Text, Amount = -(tonumber(cash.Text) or 0)})
+    end, 2, true)
+    local xp = UI.input(economy, "XP amount", draft.XP, true)
+    xp.FocusLost:Connect(function() draft.XP = xp.Text end)
+    UI.button(economy, "Add XP", function()
+        draft.Target = target.Text; draft.XP = xp.Text
+        self.Send("Admin", {Command = "XP", Target = target.Text, Amount = tonumber(xp.Text) or 0})
+    end, true)
+
+    local playerTools = self:card("Player tools")
+    local tutorialRow = UI.row(playerTools)
+    UI.rowButton(tutorialRow, "Complete tutorial", function() self.Send("Admin", {Command = "Tutorial", Target = target.Text, Value = 5}) end, 2, true)
+    UI.rowButton(tutorialRow, "Reset tutorial", function() self.Send("Admin", {Command = "Tutorial", Target = target.Text, Value = 0}) end, 2, true)
+    local utilityRow = UI.row(playerTools)
+    UI.rowButton(utilityRow, "Bring to me", function() self.Send("Admin", {Command = "Bring", Target = target.Text}) end, 2, true)
+    UI.rowButton(utilityRow, "Heal player", function() self.Send("Admin", {Command = "Heal", Target = target.Text}) end, 2, true)
+    local kick = UI.button(playerTools, "Kick player from this server", function() self.Send("Admin", {Command = "Kick", Target = target.Text}) end, true)
+    kick.BackgroundColor3 = UI.Colors.Rose; kick.TextColor3 = UI.Colors.White
+
+    local broadcast = self:card("Server announcement")
+    local message = UI.input(broadcast, "Announcement (maximum 120 characters)", draft.Message)
+    message.FocusLost:Connect(function() draft.Message = string.sub(message.Text, 1, 120) end)
+    UI.button(broadcast, "Broadcast announcement", function()
+        draft.Message = string.sub(message.Text, 1, 120)
+        self.Send("Admin", {Command = "Announce", Target = target.Text, Message = draft.Message})
+    end, false)
+end
+
 function Pages:settingsPage()
     local frame = self:card("Comfort and accessibility")
     self:button(frame, "Music: " .. (if self.State.Settings.Music then "On" else "Off"), "Settings", {Name="Music",Enabled=not self.State.Settings.Music}, true)
@@ -6077,6 +6243,7 @@ function Pages:render(page, context)
         Market=function() self:marketPage() end, List=function() self:listPage() end, ListingEditor=function() self:listingEditor(context) end,
         Trade=function() self:tradePage() end, Showcase=function() self:showcasePage() end, Events=function() self:eventsPage() end,
         Boutique=function() self:boutiquePage() end, Visit=function() self:visitPage(context) end, Settings=function() self:settingsPage() end,
+        Admin=function() self:adminPage() end,
         Town=function() self:townPage() end,
     }
     (handlers[page] or handlers.Town)()

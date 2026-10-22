@@ -9,7 +9,7 @@ local function equal(actual, expected)
 end
 local function fixture()
     local events = {}
-    local player = {UserId = 101, DisplayName = "Tester", Parent = true, FindFirstChild = function() return nil end}
+    local player = {UserId = 101, Name = "Tester", DisplayName = "Tester", Parent = true, FindFirstChild = function() return nil end}
     local profile = Profile.new()
     local data = {Profiles = {[101] = profile}, Closing = {}, Ephemeral = true}
     local world = {Allowed = true, Owners = {[101] = {Index = 1}}, near = function(self) return self.Allowed end,
@@ -164,6 +164,15 @@ test("held items are visible in state and blocked from conflicting actions", fun
     s:beginRestore(p, {Uid = item.Uid, Kind = "Scrub"}); assert(s.Sessions[p.UserId] == nil)
     s:display(p, {Uid = item.Uid, Slot = 1}); assert(item.Slot == nil)
     s:hold(p, {Uid = item.Uid}); assert(s.Held[p.UserId] == nil and world.Holding == nil)
+end)
+test("admin tools reject ordinary players and validate server-side grants", function()
+    local s, p, profile = fixture(); local startingCash = profile.Cash
+    s:admin(p, {Command = "Cash", Amount = 1000}); equal(profile.Cash, startingCash)
+    s.isAdmin = function() return true end
+    s:admin(p, {Command = "Cash", Amount = 1000}); equal(profile.Cash, startingCash + 1000)
+    s:admin(p, {Command = "GiveItem", Query = "lamp", Rarity = 5})
+    equal(#profile.Inventory, 1); equal(profile.Inventory[1].Rarity, 5); assert(profile.Inventory[1].Inspected)
+    s:admin(p, {Command = "Cash", Amount = 0 / 0}); equal(profile.Cash, startingCash + 1000)
 end)
 test("sale executes once and removes the exact inventory item", function()
     local s, p, profile = fixture(); local item = addItem(profile); item.Slot = 1

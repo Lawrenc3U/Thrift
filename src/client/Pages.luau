@@ -559,6 +559,76 @@ function Pages:visitPage(context)
     end
 end
 
+function Pages:adminPage()
+    if not self.State.IsAdmin then
+        UI.label(self:card(), "Admin access is not enabled for this account.", 18); return
+    end
+    local draft = self.Drafts.Admin or {Target = player.Name, Query = "", Rarity = 5, Cash = "1000", XP = "500", Message = ""}
+    self.Drafts.Admin = draft
+    local hero = UI.hero(self.UI.Content, "Server administration", "Thrift Flip control room", "Every action is checked on the server and written to the server log. Target a player by username, display name, or user ID.", UI.Colors.Ink)
+    UI.eyebrow(hero, "ONLINE PLAYERS")
+    for _, shop in ipairs(self.State.Shops or {}) do
+        local choice = UI.button(hero, shop.Name .. "  •  Shop tier " .. shop.Tier, function()
+            draft.Target = shop.Name; self.Open("Admin")
+        end, true)
+        choice.Size = UDim2.new(1, 0, 0, 40); choice.TextSize = 14
+    end
+
+    local targetCard = self:card("Target player")
+    local target = UI.input(targetCard, "Username, display name, or user ID", draft.Target)
+    target.FocusLost:Connect(function() draft.Target = target.Text end)
+
+    local itemCard = self:card("Grant a collectible")
+    UI.label(itemCard, "Search by name, category, or ID. Leave blank for a random item.", 14, UI.Colors.Muted)
+    local query = UI.input(itemCard, "Example: jukebox, chair, radios", draft.Query)
+    query.FocusLost:Connect(function() draft.Query = query.Text end)
+    local rarityButton = UI.button(itemCard, Config.RarityIcons[draft.Rarity] .. "  Rarity: " .. Config.Rarities[draft.Rarity] .. "  • tap to change", function()
+        draft.Query = query.Text; draft.Target = target.Text; draft.Rarity = draft.Rarity % 5 + 1; self.Open("Admin")
+    end, true)
+    rarityButton.TextColor3 = Color3.fromHex(Config.RarityColors[draft.Rarity])
+    UI.button(itemCard, "Grant item and show reveal", function()
+        draft.Query = query.Text; draft.Target = target.Text
+        self.Send("Admin", {Command = "GiveItem", Target = target.Text, Query = query.Text, Rarity = draft.Rarity})
+    end, false)
+
+    local economy = self:card("Economy and progression")
+    local cash = UI.input(economy, "Cash amount", draft.Cash, true)
+    cash.FocusLost:Connect(function() draft.Cash = cash.Text end)
+    local cashRow = UI.row(economy)
+    UI.rowButton(cashRow, "+ Add cash", function()
+        draft.Target = target.Text; draft.Cash = cash.Text
+        self.Send("Admin", {Command = "Cash", Target = target.Text, Amount = tonumber(cash.Text) or 0})
+    end, 2, false)
+    UI.rowButton(cashRow, "− Remove cash", function()
+        draft.Target = target.Text; draft.Cash = cash.Text
+        self.Send("Admin", {Command = "Cash", Target = target.Text, Amount = -(tonumber(cash.Text) or 0)})
+    end, 2, true)
+    local xp = UI.input(economy, "XP amount", draft.XP, true)
+    xp.FocusLost:Connect(function() draft.XP = xp.Text end)
+    UI.button(economy, "Add XP", function()
+        draft.Target = target.Text; draft.XP = xp.Text
+        self.Send("Admin", {Command = "XP", Target = target.Text, Amount = tonumber(xp.Text) or 0})
+    end, true)
+
+    local playerTools = self:card("Player tools")
+    local tutorialRow = UI.row(playerTools)
+    UI.rowButton(tutorialRow, "Complete tutorial", function() self.Send("Admin", {Command = "Tutorial", Target = target.Text, Value = 5}) end, 2, true)
+    UI.rowButton(tutorialRow, "Reset tutorial", function() self.Send("Admin", {Command = "Tutorial", Target = target.Text, Value = 0}) end, 2, true)
+    local utilityRow = UI.row(playerTools)
+    UI.rowButton(utilityRow, "Bring to me", function() self.Send("Admin", {Command = "Bring", Target = target.Text}) end, 2, true)
+    UI.rowButton(utilityRow, "Heal player", function() self.Send("Admin", {Command = "Heal", Target = target.Text}) end, 2, true)
+    local kick = UI.button(playerTools, "Kick player from this server", function() self.Send("Admin", {Command = "Kick", Target = target.Text}) end, true)
+    kick.BackgroundColor3 = UI.Colors.Rose; kick.TextColor3 = UI.Colors.White
+
+    local broadcast = self:card("Server announcement")
+    local message = UI.input(broadcast, "Announcement (maximum 120 characters)", draft.Message)
+    message.FocusLost:Connect(function() draft.Message = string.sub(message.Text, 1, 120) end)
+    UI.button(broadcast, "Broadcast announcement", function()
+        draft.Message = string.sub(message.Text, 1, 120)
+        self.Send("Admin", {Command = "Announce", Target = target.Text, Message = draft.Message})
+    end, false)
+end
+
 function Pages:settingsPage()
     local frame = self:card("Comfort and accessibility")
     self:button(frame, "Music: " .. (if self.State.Settings.Music then "On" else "Off"), "Settings", {Name="Music",Enabled=not self.State.Settings.Music}, true)
@@ -586,6 +656,7 @@ function Pages:render(page, context)
         Market=function() self:marketPage() end, List=function() self:listPage() end, ListingEditor=function() self:listingEditor(context) end,
         Trade=function() self:tradePage() end, Showcase=function() self:showcasePage() end, Events=function() self:eventsPage() end,
         Boutique=function() self:boutiquePage() end, Visit=function() self:visitPage(context) end, Settings=function() self:settingsPage() end,
+        Admin=function() self:adminPage() end,
         Town=function() self:townPage() end,
     }
     (handlers[page] or handlers.Town)()
