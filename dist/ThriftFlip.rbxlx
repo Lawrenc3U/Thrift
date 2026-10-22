@@ -4793,7 +4793,9 @@ function Pages:sourcePage(source)
     elseif state.AvailableCash &lt; tuning.Cost then
         UI.disabled(info, "You need " .. money(tuning.Cost) .. " available cash")
     else
-        self:button(info, if source == "Delivery" then "Open today's parcel" elseif source == "Dumpster" then "Search for a treasure" else "Choose a mystery lot · " .. money(tuning.Cost), "Source", {Source = source})
+        UI.button(info, if source == "Delivery" then "Open today's parcel" elseif source == "Dumpster" then "Search for a treasure" else "Choose a mystery lot · " .. money(tuning.Cost), function()
+            self.UI:searchTreasure(source, function() self.Send("Source", {Source = source}) end)
+        end)
     end
     self:guideButton(info, if source == "Dumpster" then "Source" else source, "Find this spot in town")
     local odds = self:card("A little surprise, with clear odds")
@@ -5181,11 +5183,11 @@ local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UI = {}
 UI.Colors = {
-    Cream = Color3.fromRGB(241, 245, 249), Panel = Color3.fromRGB(255, 255, 255),
+    Cream = Color3.fromRGB(255, 248, 232), Panel = Color3.fromRGB(255, 253, 246),
     Ink = Color3.fromRGB(22, 30, 48), Teal = Color3.fromRGB(20, 190, 164),
     Muted = Color3.fromRGB(100, 116, 139), Rose = Color3.fromRGB(246, 96, 114),
     Gold = Color3.fromRGB(255, 190, 55), Line = Color3.fromRGB(218, 226, 238),
-    Light = Color3.fromRGB(235, 241, 248), White = Color3.fromRGB(255, 255, 255),
+    Light = Color3.fromRGB(239, 244, 235), White = Color3.fromRGB(255, 255, 255),
     Wood = Color3.fromRGB(146, 103, 72), Night = Color3.fromRGB(12, 18, 32),
 }
 local Models, SharedConfig
@@ -5285,8 +5287,8 @@ end
 function UI.card(parent)
     local frame = Instance.new("Frame"); frame.Name = "Card"
     frame.Size = UDim2.new(1, -2, 0, 0); frame.AutomaticSize = Enum.AutomaticSize.Y
-    frame.BackgroundColor3 = UI.Colors.Panel; frame.Parent = parent; UI.corner(frame, 18)
-    UI.stroke(frame, UI.Colors.Line, 1, 0.08); UI.padding(frame, 18, 16); UI.list(frame, 10)
+    frame.BackgroundColor3 = UI.Colors.Panel; frame.Parent = parent; UI.corner(frame, 16)
+    UI.stroke(frame, Color3.fromRGB(205, 215, 201), 1, 0.2); UI.padding(frame, 18, 16); UI.list(frame, 10)
     return frame
 end
 function UI.hero(parent, kicker, title, body, color)
@@ -5465,25 +5467,31 @@ function UI.new()
     local overlay = Instance.new("TextButton"); overlay.Name = "ModalBackdrop"; overlay.Text = ""; overlay.AutoButtonColor = false
     overlay.Size = UDim2.fromScale(1, 1); overlay.BackgroundColor3 = UI.Colors.Night; overlay.BackgroundTransparency = 0.4
     overlay.BorderSizePixel = 0; overlay.Visible = false; overlay.ZIndex = 4; overlay.Parent = gui; self.Overlay = overlay
+    local shadow = Instance.new("Frame"); shadow.Name = "ModalShadow"; shadow.AnchorPoint = Vector2.new(0.5, 0.5)
+    shadow.Position = UDim2.new(0.5, 4, 0.5, -16); shadow.Size = UDim2.new(1, -24, 1, -100)
+    shadow.BackgroundColor3 = Color3.fromRGB(12, 52, 48); shadow.BackgroundTransparency = 0.62; shadow.Visible = false; shadow.ZIndex = 5; shadow.Parent = gui
+    UI.corner(shadow, 26); local shadowLimit = Instance.new("UISizeConstraint"); shadowLimit.MaxSize = Vector2.new(780, 730); shadowLimit.MinSize = Vector2.new(270, 170); shadowLimit.Parent = shadow; self.PanelShadow = shadow
     local panel = Instance.new("Frame"); panel.Name = "Journal"; panel.AnchorPoint = Vector2.new(0.5, 0.5)
     panel.Position = UDim2.new(0.5, 0, 0.5, -22); panel.Size = UDim2.new(1, -24, 1, -100)
-    panel.BackgroundColor3 = UI.Colors.Cream; panel.Visible = false; panel.Parent = gui; panel.ZIndex = 5
-    UI.corner(panel, 24); UI.stroke(panel, UI.Colors.White, 2, 0.05)
-    local limit = Instance.new("UISizeConstraint"); limit.MaxSize = Vector2.new(860, 730); limit.MinSize = Vector2.new(270, 170); limit.Parent = panel
-    self.Panel = panel
-    local accent = Instance.new("Frame"); accent.Position = UDim2.fromOffset(17, 17); accent.Size = UDim2.fromOffset(5, 39)
-    accent.BackgroundColor3 = UI.Colors.Teal; accent.Parent = panel; UI.corner(accent, 3); UI.gradient(accent, UI.Colors.Teal, Color3.fromRGB(24, 147, 222), 90)
-    self.Title = UI.label(panel, "Your finds", 25); self.Title.Font = Enum.Font.GothamBold
-    self.Title.Position = UDim2.fromOffset(32, 11); self.Title.Size = UDim2.new(1, -100, 0, 31); self.Title.AutomaticSize = Enum.AutomaticSize.None
+    panel.BackgroundColor3 = UI.Colors.Cream; panel.Visible = false; panel.Parent = gui; panel.ZIndex = 6
+    UI.corner(panel, 26); UI.stroke(panel, UI.Colors.White, 2, 0.12)
+    local limit = Instance.new("UISizeConstraint"); limit.MaxSize = Vector2.new(780, 730); limit.MinSize = Vector2.new(270, 170); limit.Parent = panel
+    local panelScale = Instance.new("UIScale"); panelScale.Parent = panel; self.PanelScale = panelScale; self.Panel = panel
+    local header = Instance.new("Frame"); header.Name = "ModalHeader"; header.Size = UDim2.new(1, 0, 0, 70)
+    header.BackgroundColor3 = Color3.fromRGB(20, 132, 124); header.BorderSizePixel = 0; header.Parent = panel; header.ZIndex = 7; UI.corner(header, 25)
+    local headerMask = Instance.new("Frame"); headerMask.Position = UDim2.new(0, 0, 1, -24); headerMask.Size = UDim2.new(1, 0, 0, 24)
+    headerMask.BackgroundColor3 = header.BackgroundColor3; headerMask.BorderSizePixel = 0; headerMask.Parent = header; headerMask.ZIndex = 7
+    self.Title = UI.label(header, "Your finds", 24, UI.Colors.White); self.Title.Font = Enum.Font.GothamBold; self.Title.ZIndex = 8
+    self.Title.Position = UDim2.fromOffset(20, 8); self.Title.Size = UDim2.new(1, -88, 0, 30); self.Title.AutomaticSize = Enum.AutomaticSize.None
     self.Title.TextTruncate = Enum.TextTruncate.AtEnd; self.Title.TextWrapped = false
-    self.Subtitle = UI.label(panel, "THE THRIFT STREET JOURNAL", 11, UI.Colors.Muted)
-    self.Subtitle.Font = Enum.Font.GothamBold; self.Subtitle.Position = UDim2.fromOffset(33, 43)
-    self.Subtitle.Size = UDim2.new(1, -103, 0, 18); self.Subtitle.AutomaticSize = Enum.AutomaticSize.None
+    self.Subtitle = UI.label(header, "THRIFT STREET", 10, Color3.fromRGB(191, 237, 229)); self.Subtitle.ZIndex = 8
+    self.Subtitle.Font = Enum.Font.GothamBold; self.Subtitle.Position = UDim2.fromOffset(21, 38)
+    self.Subtitle.Size = UDim2.new(1, -90, 0, 18); self.Subtitle.AutomaticSize = Enum.AutomaticSize.None
     self.Subtitle.TextTruncate = Enum.TextTruncate.AtEnd; self.Subtitle.TextWrapped = false
-    local close = UI.button(panel, "×", function() self:hide() end, true)
-    close.Size = UDim2.fromOffset(44, 44); close.Position = UDim2.new(1, -56, 0, 13); close.TextSize = 27
-    local scroll = Instance.new("ScrollingFrame"); scroll.Name = "Pages"; scroll.Position = UDim2.fromOffset(15, 74)
-    scroll.Size = UDim2.new(1, -30, 1, -88); scroll.BackgroundTransparency = 1; scroll.BorderSizePixel = 0
+    local close = UI.button(header, "×", function() self:hide() end, true)
+    close.Size = UDim2.fromOffset(42, 42); close.Position = UDim2.new(1, -54, 0, 13); close.TextSize = 25; close.ZIndex = 9; close.BackgroundColor3 = UI.Colors.Cream
+    local scroll = Instance.new("ScrollingFrame"); scroll.Name = "Pages"; scroll.Position = UDim2.fromOffset(15, 84)
+    scroll.Size = UDim2.new(1, -30, 1, -98); scroll.BackgroundTransparency = 1; scroll.BorderSizePixel = 0
     scroll.ScrollBarThickness = 4; scroll.ScrollBarImageColor3 = UI.Colors.Teal
     scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y; scroll.CanvasSize = UDim2.new()
     scroll.ScrollingDirection = Enum.ScrollingDirection.Y; scroll.Parent = panel; UI.list(scroll, 12); self.Content = scroll
@@ -5522,7 +5530,7 @@ end
 function UI:setSubtitle(text) self.Subtitle.Text = string.upper(text) end
 function UI:hide()
     if self.Locked then self:notice("Finish or cancel your restoration first."); return end
-    self.Panel.Visible = false; self.Overlay.Visible = false; self:selectNav(nil)
+    self.Panel.Visible = false; self.PanelShadow.Visible = false; self.Overlay.Visible = false; self:selectNav(nil)
 end
 function UI:clear(title, subtitle, preserveScroll)
     for _, connection in ipairs(self.PageConnections) do connection:Disconnect() end; self.PageConnections = {}
@@ -5530,12 +5538,49 @@ function UI:clear(title, subtitle, preserveScroll)
     for _, child in ipairs(self.Content:GetChildren()) do if child:IsA("GuiObject") then child:Destroy() end end
     self.Title.Text = title; self:setSubtitle(subtitle or "THE THRIFT STREET JOURNAL")
     local opening = not self.Panel.Visible
-    self.Panel.Visible = true; self.Overlay.Visible = true
+    self.Panel.Visible = true; self.PanelShadow.Visible = true; self.Overlay.Visible = true
     if opening and self.Effects then
         self.Overlay.BackgroundTransparency = 1; tween(self.Overlay, {BackgroundTransparency = 0.4}, 0.18)
+        self.PanelScale.Scale = 0.94; tween(self.PanelScale, {Scale = 1}, 0.2)
     end
     self.Content.CanvasPosition = scroll
     if preserveScroll then task.defer(function() self.Content.CanvasPosition = scroll end) end
+end
+function UI:searchTreasure(source, callback)
+    if self.Searching then return end
+    self.Searching = true
+    local layer = Instance.new("Frame"); layer.Name = "TreasureSearch"; layer.Size = UDim2.fromScale(1, 1)
+    layer.BackgroundColor3 = UI.Colors.Night; layer.BackgroundTransparency = 0.28; layer.BorderSizePixel = 0; layer.ZIndex = 40; layer.Parent = self.Gui
+    local card = Instance.new("Frame"); card.AnchorPoint = Vector2.new(0.5, 0.5); card.Position = UDim2.fromScale(0.5, 0.5)
+    card.Size = UDim2.new(0.86, 0, 0, 250); card.BackgroundColor3 = UI.Colors.Cream; card.ZIndex = 41; card.Parent = layer; UI.corner(card, 24); UI.stroke(card, UI.Colors.White, 2, 0.08)
+    local limit = Instance.new("UISizeConstraint"); limit.MaxSize = Vector2.new(390, 250); limit.Parent = card
+    local scale = Instance.new("UIScale"); scale.Scale = 0.9; scale.Parent = card; tween(scale, {Scale = 1}, 0.2)
+    local title = UI.label(card, if source == "Delivery" then "Unwrapping your parcel…" elseif source == "Estate" then "Browsing the estate…" else "Searching for treasure…", 22, Color3.fromRGB(8, 91, 84))
+    title.Font = Enum.Font.GothamBold; title.Position = UDim2.fromOffset(18, 18); title.Size = UDim2.new(1, -36, 0, 32); title.AutomaticSize = Enum.AutomaticSize.None; title.TextXAlignment = Enum.TextXAlignment.Center; title.ZIndex = 42
+    local bin = Instance.new("Frame"); bin.AnchorPoint = Vector2.new(0.5, 0); bin.Position = UDim2.new(0.5, 0, 0, 68); bin.Size = UDim2.fromOffset(112, 82)
+    bin.BackgroundColor3 = Color3.fromRGB(20, 132, 124); bin.ZIndex = 42; bin.Parent = card; UI.corner(bin, 13)
+    local lid = Instance.new("Frame"); lid.AnchorPoint = Vector2.new(0.5, 1); lid.Position = UDim2.new(0.5, 0, 0, 3); lid.Size = UDim2.fromOffset(122, 17)
+    lid.BackgroundColor3 = Color3.fromRGB(8, 91, 84); lid.ZIndex = 43; lid.Parent = bin; UI.corner(lid, 8)
+    local shine = UI.label(card, "✦   ◇   ✦", 24, UI.Colors.Gold); shine.Position = UDim2.new(0.5, -80, 0, 53); shine.Size = UDim2.fromOffset(160, 36)
+    shine.AutomaticSize = Enum.AutomaticSize.None; shine.TextXAlignment = Enum.TextXAlignment.Center; shine.ZIndex = 44
+    local status = UI.label(card, "Rummaging through forgotten finds", 13, UI.Colors.Muted); status.Position = UDim2.fromOffset(18, 166)
+    status.Size = UDim2.new(1, -36, 0, 24); status.AutomaticSize = Enum.AutomaticSize.None; status.TextXAlignment = Enum.TextXAlignment.Center; status.ZIndex = 42
+    local track = Instance.new("Frame"); track.Position = UDim2.fromOffset(24, 207); track.Size = UDim2.new(1, -48, 0, 10)
+    track.BackgroundColor3 = Color3.fromRGB(218, 225, 211); track.ZIndex = 42; track.Parent = card; UI.corner(track, 6)
+    local fill = Instance.new("Frame"); fill.Size = UDim2.fromScale(0, 1); fill.BackgroundColor3 = UI.Colors.Teal; fill.ZIndex = 43; fill.Parent = track; UI.corner(fill, 6)
+    tween(fill, {Size = UDim2.fromScale(1, 1)}, 2.25)
+    task.spawn(function()
+        for step = 1, 6 do
+            lid.Rotation = if step % 2 == 0 then 7 else -7; bin.Rotation = if step % 2 == 0 then -2 else 2
+            shine.TextTransparency = if step % 2 == 0 then 0.15 else 0.55
+            if step == 3 then status.Text = "Something interesting is in here…" elseif step == 5 then status.Text = "You found something!" end
+            task.wait(0.36)
+        end
+        lid.Rotation = -18; bin.Rotation = 0; shine.TextTransparency = 0
+        task.wait(0.2)
+        if layer.Parent then layer:Destroy() end
+        self.Searching = false; callback()
+    end)
 end
 function UI:notice(text)
     self.ToastVersion += 1; local version = self.ToastVersion

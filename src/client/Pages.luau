@@ -209,7 +209,9 @@ function Pages:sourcePage(source)
     elseif state.AvailableCash < tuning.Cost then
         UI.disabled(info, "You need " .. money(tuning.Cost) .. " available cash")
     else
-        self:button(info, if source == "Delivery" then "Open today's parcel" elseif source == "Dumpster" then "Search for a treasure" else "Choose a mystery lot · " .. money(tuning.Cost), "Source", {Source = source})
+        UI.button(info, if source == "Delivery" then "Open today's parcel" elseif source == "Dumpster" then "Search for a treasure" else "Choose a mystery lot · " .. money(tuning.Cost), function()
+            self.UI:searchTreasure(source, function() self.Send("Source", {Source = source}) end)
+        end)
     end
     self:guideButton(info, if source == "Dumpster" then "Source" else source, "Find this spot in town")
     local odds = self:card("A little surprise, with clear odds")
