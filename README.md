@@ -2,6 +2,8 @@
 
 A Roblox restore-and-resell game built in Luau. Find forgotten treasures, reveal their rarity, restore them, decorate your shop, and sell to customers in a cozy shared town.
 
+Launch key art is available at `assets/marketing/thrift-flip-key-art.png`; upload it through Creator Dashboard as the experience thumbnail after reviewing Roblox's current image requirements.
+
 **Status: a feature-complete development build that still needs final Roblox Studio and device QA before public release.** The cloud environment compiles the code and runs headless server tests; it cannot run Roblox Studio. See [release status](docs/RELEASE.md) for the publishing checklist.
 
 ## Open the game

@@ -64,9 +64,10 @@ function World.new()
 end
 function World:lighting()
     Lighting.ClockTime = 16.1; Lighting.Brightness = 2.2
+    Lighting.GlobalShadows = true; Lighting.ShadowSoftness = 0.24; Lighting.ExposureCompensation = 0.08
     Lighting.Ambient = Color3.fromRGB(132, 121, 110); Lighting.OutdoorAmbient = Color3.fromRGB(160, 157, 137)
     Lighting.EnvironmentDiffuseScale = 0.65; Lighting.EnvironmentSpecularScale = 0.45
-    for _, name in ipairs({"ThriftAtmosphere", "ThriftBloom", "ThriftColor"}) do
+    for _, name in ipairs({"ThriftAtmosphere", "ThriftBloom", "ThriftColor", "ThriftSunRays"}) do
         local old = Lighting:FindFirstChild(name); if old then old:Destroy() end
     end
     local atmosphere = Instance.new("Atmosphere"); atmosphere.Name = "ThriftAtmosphere"
@@ -75,6 +76,7 @@ function World:lighting()
     local bloom = Instance.new("BloomEffect"); bloom.Name = "ThriftBloom"; bloom.Intensity = 0.14; bloom.Size = 18; bloom.Threshold = 1.5; bloom.Parent = Lighting
     local grading = Instance.new("ColorCorrectionEffect"); grading.Name = "ThriftColor"; grading.Saturation = 0.06
     grading.Contrast = 0.035; grading.TintColor = Color3.fromRGB(255, 249, 239); grading.Parent = Lighting
+    local rays = Instance.new("SunRaysEffect"); rays.Name = "ThriftSunRays"; rays.Intensity = 0.035; rays.Spread = 0.72; rays.Parent = Lighting
 end
 function World:landscape()
     local terrain = Kit.model(self.Root, "VillageLandscape")

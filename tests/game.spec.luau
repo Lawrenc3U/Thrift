@@ -69,6 +69,16 @@ test("profile reconciliation preserves saved state and isolates inventories", fu
     equal(p.Cash, 999); equal(p.Stats.Sold, 5); equal(p.Stats.Found, 0); equal(p.Inventory[1].Uid, "saved")
     local a, b = Profile.new(), Profile.new(); a.Inventory[1] = {}; equal(#b.Inventory, 0)
 end)
+test("daily welcome streak advances once and claims exactly once", function()
+    local s, p, profile = fixture()
+    s:prepareLogin(profile, 100); equal(profile.Login.Streak, 1)
+    s:prepareLogin(profile, 100); equal(profile.Login.Streak, 1)
+    s:prepareLogin(profile, 101); equal(profile.Login.Streak, 2)
+    s:prepareLogin(profile, 104); equal(profile.Login.Streak, 1)
+    profile.Login.Day = Economy.daily(os.time()); profile.Login.Streak = 3; profile.Login.ClaimedDay = -2
+    local before = profile.Cash; s:dailyGift(p); equal(profile.Cash, before + 100)
+    s:dailyGift(p); equal(profile.Cash, before + 100)
+end)
 test("datastore leases reject competing sessions and permit released saves", function()
     stores = {}
     local a, b = DataService.new(), DataService.new()

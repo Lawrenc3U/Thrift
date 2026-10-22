@@ -58,12 +58,14 @@ function UI.button(parent, text, callback, secondary)
     UI.corner(button, 14); UI.padding(button, 10, 3)
     UI.stroke(button, if secondary then UI.Colors.Line else UI.Colors.White, 1, if secondary then 0.15 else 0.72)
     if not secondary then UI.gradient(button, Color3.fromRGB(16, 202, 171), Color3.fromRGB(20, 154, 213), 15) end
+    local scale = Instance.new("UIScale"); scale.Parent = button
     local baseColor = button.BackgroundColor3
     button.MouseEnter:Connect(function() tween(button, {BackgroundColor3 = baseColor:Lerp(UI.Colors.Gold, 0.12)}) end)
     button.MouseLeave:Connect(function() tween(button, {BackgroundColor3 = baseColor}) end)
     button.SelectionGained:Connect(function() tween(button, {BackgroundColor3 = baseColor:Lerp(UI.Colors.Gold, 0.2)}) end)
     button.SelectionLost:Connect(function() tween(button, {BackgroundColor3 = baseColor}) end)
     button.Activated:Connect(function(...)
+        scale.Scale = 0.96; tween(scale, {Scale = 1}, 0.14)
         if UI.OnClick then UI.OnClick() end
         callback(...)
     end)
@@ -213,6 +215,19 @@ function UI.new()
     local gui = Instance.new("ScreenGui"); gui.Name = "ThriftFlip"; gui.ResetOnSpawn = false
     gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling; gui.ScreenInsets = Enum.ScreenInsets.CoreUISafeInsets
     gui.Parent = Players.LocalPlayer:WaitForChild("PlayerGui"); self.Gui = gui
+    local splash = Instance.new("Frame"); splash.Name = "LaunchSplash"; splash.Size = UDim2.fromScale(1, 1)
+    splash.BackgroundColor3 = UI.Colors.Night; splash.BorderSizePixel = 0; splash.ZIndex = 100; splash.Parent = gui
+    UI.gradient(splash, Color3.fromRGB(10, 17, 31), Color3.fromRGB(19, 92, 100), 35)
+    local splashTitle = UI.label(splash, "THRIFT FLIP", 42, UI.Colors.White); splashTitle.Font = Enum.Font.GothamBlack
+    splashTitle.AnchorPoint = Vector2.new(0.5, 0.5); splashTitle.Position = UDim2.fromScale(0.5, 0.45)
+    splashTitle.Size = UDim2.new(0.9, 0, 0, 58); splashTitle.AutomaticSize = Enum.AutomaticSize.None; splashTitle.TextXAlignment = Enum.TextXAlignment.Center; splashTitle.ZIndex = 101
+    local splashTag = UI.label(splash, "FIND  •  RESTORE  •  BUILD YOUR DREAM SHOP", 13, UI.Colors.Gold)
+    splashTag.AnchorPoint = Vector2.new(0.5, 0); splashTag.Position = UDim2.fromScale(0.5, 0.51)
+    splashTag.Size = UDim2.new(0.9, 0, 0, 30); splashTag.AutomaticSize = Enum.AutomaticSize.None; splashTag.TextXAlignment = Enum.TextXAlignment.Center; splashTag.ZIndex = 101
+    task.delay(1.1, function()
+        tween(splash, {BackgroundTransparency = 1}, 0.35); tween(splashTitle, {TextTransparency = 1}, 0.25); tween(splashTag, {TextTransparency = 1}, 0.25)
+        task.wait(0.38); if splash.Parent then splash:Destroy() end
+    end)
     local hud = Instance.new("Frame"); hud.Name = "TownHUD"; hud.Position = UDim2.fromOffset(14, 10)
     hud.Size = UDim2.new(1, -28, 0, 76); hud.BackgroundColor3 = UI.Colors.Night; hud.BackgroundTransparency = 0.05; hud.Parent = gui
     UI.corner(hud, 19); UI.stroke(hud, UI.Colors.White, 1, 0.82); UI.gradient(hud, Color3.fromRGB(13, 21, 38), Color3.fromRGB(23, 63, 75), 10)
@@ -232,6 +247,11 @@ function UI.new()
     self.Hint = UI.label(hud, "Find. Restore. Make it yours.", 12, Color3.fromRGB(181, 196, 215))
     self.Hint.Position = UDim2.fromOffset(14, 56); self.Hint.Size = UDim2.new(1, -28, 0, 17)
     self.Hint.AutomaticSize = Enum.AutomaticSize.None; self.Hint.TextTruncate = Enum.TextTruncate.AtEnd; self.Hint.TextWrapped = false
+    local levelTrack = Instance.new("Frame"); levelTrack.Name = "LevelProgress"; levelTrack.Position = UDim2.new(0, 14, 1, -4)
+    levelTrack.Size = UDim2.new(1, -28, 0, 3); levelTrack.BackgroundColor3 = Color3.fromRGB(54, 72, 94); levelTrack.BorderSizePixel = 0; levelTrack.Parent = hud
+    UI.corner(levelTrack, 3)
+    local levelFill = Instance.new("Frame"); levelFill.Name = "Fill"; levelFill.Size = UDim2.fromScale(0, 1)
+    levelFill.BackgroundColor3 = UI.Colors.Gold; levelFill.BorderSizePixel = 0; levelFill.Parent = levelTrack; UI.corner(levelFill, 3); self.LevelProgress = levelFill
     local nav = Instance.new("Frame"); nav.Name = "Navigation"; nav.AnchorPoint = Vector2.new(0.5, 1)
     nav.Position = UDim2.new(0.5, 0, 1, -9); nav.Size = UDim2.new(1, -24, 0, 62)
     nav.BackgroundColor3 = UI.Colors.Night; nav.BackgroundTransparency = 0.04; nav.Parent = gui; nav.ZIndex = 12; UI.corner(nav, 20); UI.padding(nav, 6, 6)

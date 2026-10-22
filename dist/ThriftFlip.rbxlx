@@ -1193,6 +1193,7 @@ function Profile.new()
         Inventory = {}, Collection = {}, Themes = {Cozy = true}, Theme = "Cozy",
         Stats = {Found = 0, Restored = 0, Sold = 0, Earned = 0},
         Tutorial = 0, LastDelivery = -1, Daily = {Day = -1, Claimed = {}},
+        Login = {Day = -2, Streak = 0, ClaimedDay = -2},
         Weekly = {Week = -1, Restored = 0, Sold = 0, Claimed = false},
         Decorations = {}, PlacedDecor = {}, DecorLayout = {}, Reputation = 0, RatingTotal = 0, RatingCount = 0, Rated = {},
         Settings = {Music = true, Effects = true}, Titles = {},
@@ -1841,6 +1842,14 @@ function GameService:resetQuests(profile)
         profile.Weekly = {Week = week, Restored = 0, Sold = 0, Claimed = false}
     end
 end
+function GameService:prepareLogin(profile, day)
+    day = day or Economy.daily(os.time())
+    profile.Login = profile.Login or {Day = -2, Streak = 0, ClaimedDay = -2}
+    if profile.Login.Day ~= day then
+        profile.Login.Streak = if profile.Login.Day == day - 1 then math.min(7, profile.Login.Streak + 1) else 1
+        profile.Login.Day = day
+    end
+end
 function GameService:stat(profile, name, amount)
     self:resetQuests(profile)
     if self.Live then self.Live:recordStat(profile, name, amount) end
@@ -1888,7 +1897,7 @@ function GameService:snapshot(player)
         Level = Economy.level(profile.XP), Tier = profile.Tier, Tool = profile.Tool,
         Inventory = inventory, Tutorial = profile.Tutorial, Reputation = profile.Reputation,
         DecorLayout = profile.DecorLayout, Decorations = profile.Decorations, PlacedDecor = profile.PlacedDecor, Collection = profile.Collection, Themes = profile.Themes, Theme = profile.Theme,
-        Daily = profile.Daily, Weekly = profile.Weekly, Stats = profile.Stats,
+        Daily = profile.Daily, Weekly = profile.Weekly, Login = profile.Login, Stats = profile.Stats,
         LastDelivery = profile.LastDelivery, Day = Economy.daily(os.time()),
         Settings = profile.Settings, Titles = profile.Titles, Shops = shops,
         Demand = self:demandStyle(), Auction = auction, NextAuction = self.NextAuction,
@@ -2158,6 +2167,17 @@ function GameService:quest(player, payload)
     end
     self:snapshot(player)
 end
+function GameService:dailyGift(player)
+    local profile = self:profile(player)
+    local day = Economy.daily(os.time()); self:prepareLogin(profile, day)
+    if profile.Login.ClaimedDay == day then return self:notify(player, "Today's welcome gift is already collected.") end
+    local rewards = {50, 75, 100, 150, 200, 300, 500}
+    local reward = rewards[math.clamp(profile.Login.Streak, 1, #rewards)]
+    profile.Login.ClaimedDay = day; profile.Cash += reward; profile.XP += 10
+    self:analytics(player, "DailyGiftDay" .. tostring(profile.Login.Streak))
+    self:notify(player, "Day " .. profile.Login.Streak .. " welcome gift: +$" .. reward)
+    self:refresh(player)
+end
 function GameService:bid(player, payload)
     local profile = self:profile(player)
     local auction = self.Auction
@@ -2227,6 +2247,7 @@ local handlers = {
     Display = GameService.display, Haggle = GameService.haggle, Upgrade = GameService.upgrade,
     Quest = GameService.quest, Bid = GameService.bid, Rate = GameService.rating, DecorPlace = GameService.decorPlace,
     Showcase = GameService.showcase, Settings = GameService.settings, Teleport = GameService.teleport,
+    DailyGift = GameService.dailyGift,
 }
 function GameService:request(player, action, payload)
     if self.Closing or not self:profile(player) then return end
@@ -2274,7 +2295,7 @@ function GameService:join(player)
     if not player.Parent then self.Data:release(player.UserId); return end
     if self.Closing then self.Data:release(player.UserId); player:Kick("Server closing. Please rejoin."); return end
     if not self.World:assign(player) then self.Data:release(player.UserId); player:Kick("This town is full. Please join another server."); return end
-    self.Ready[player.UserId] = true; self.JoinedAt[player.UserId] = os.clock(); self:resetQuests(profile)
+    self.Ready[player.UserId] = true; self.JoinedAt[player.UserId] = os.clock(); self:resetQuests(profile); self:prepareLogin(profile)
     self.NextCustomer[player.UserId] = os.time() + 10
     local leaderstats = Instance.new("Folder"); leaderstats.Name = "leaderstats"; leaderstats.Parent = player
     local cash = Instance.new("IntValue"); cash.Name = "Cash"; cash.Value = profile.Cash; cash.Parent = leaderstats
@@ -2979,9 +3000,10 @@ function World.new()
 end
 function World:lighting()
     Lighting.ClockTime = 16.1; Lighting.Brightness = 2.2
+    Lighting.GlobalShadows = true; Lighting.ShadowSoftness = 0.24; Lighting.ExposureCompensation = 0.08
     Lighting.Ambient = Color3.fromRGB(132, 121, 110); Lighting.OutdoorAmbient = Color3.fromRGB(160, 157, 137)
     Lighting.EnvironmentDiffuseScale = 0.65; Lighting.EnvironmentSpecularScale = 0.45
-    for _, name in ipairs({"ThriftAtmosphere", "ThriftBloom", "ThriftColor"}) do
+    for _, name in ipairs({"ThriftAtmosphere", "ThriftBloom", "ThriftColor", "ThriftSunRays"}) do
         local old = Lighting:FindFirstChild(name); if old then old:Destroy() end
     end
     local atmosphere = Instance.new("Atmosphere"); atmosphere.Name = "ThriftAtmosphere"
@@ -2990,6 +3012,7 @@ function World:lighting()
     local bloom = Instance.new("BloomEffect"); bloom.Name = "ThriftBloom"; bloom.Intensity = 0.14; bloom.Size = 18; bloom.Threshold = 1.5; bloom.Parent = Lighting
     local grading = Instance.new("ColorCorrectionEffect"); grading.Name = "ThriftColor"; grading.Saturation = 0.06
     grading.Contrast = 0.035; grading.TintColor = Color3.fromRGB(255, 249, 239); grading.Parent = Lighting
+    local rays = Instance.new("SunRaysEffect"); rays.Name = "ThriftSunRays"; rays.Intensity = 0.035; rays.Spread = 0.72; rays.Parent = Lighting
 end
 function World:landscape()
     local terrain = Kit.model(self.Root, "VillageLandscape")
@@ -3823,6 +3846,8 @@ local tutorialHints = {
 local lastOffer, lastTutorial
 local function updateHud()
     ui.Balance.Text = "$" .. tostring(math.floor(state.Cash)) .. "   LV " .. state.Level
+    local levelStart, levelEnd = 30 * (state.Level - 1) ^ 2, 30 * state.Level ^ 2
+    ui.LevelProgress.Size = UDim2.fromScale(math.clamp((state.XP - levelStart) / math.max(1, levelEnd - levelStart), 0, 1), 1)
     ui.Hint.Text = tutorialHints[state.Tutorial] or (state.Demand .. " finds are trending  •  Reputation " .. state.Reputation)
     ui:setSubtitle(if state.Ephemeral then "STUDIO PRACTICE • PROGRESS DOES NOT SAVE" else "YOUR COZY CORNER OF THRIFT STREET")
     ui.Effects = state.Settings.Effects
@@ -4867,6 +4892,14 @@ end
 function Pages:questsPage()
     local state = self.State
     UI.hero(self.UI.Content, "Little goals. Lovely rewards.", "A little progress, every day.", "Find something. Fix something. Make someone's day.")
+    local login = state.Login or {Streak = 1, ClaimedDay = -2}
+    local gifts = {50, 75, 100, 150, 200, 300, 500}
+    local gift = self:card("Your 7-day welcome streak")
+    UI.label(gift, "Day " .. login.Streak .. " of 7  •  today's gift " .. money(gifts[math.clamp(login.Streak, 1, 7)]), 18)
+    UI.progress(gift, login.Streak / 7, UI.Colors.Rose)
+    local today = math.floor(self:now() / 86400)
+    if login.ClaimedDay == today then UI.disabled(gift, "✓ Today's gift collected — come back tomorrow")
+    else self:button(gift, "Collect today's gift", "DailyGift", {}) end
     local definitions = {{"Find", "Find 3 new stories", "Found", 3, 65}, {"Restore", "Restore 3 forgotten finds", "Restored", 3, 100}, {"Sell", "Send 3 finds to new homes", "Sold", 3, 150}}
     for _, definition in ipairs(definitions) do
         local frame = self:card(definition[2]); local progress = math.min(definition[4], state.Daily[definition[3]] or 0)
@@ -5183,12 +5216,14 @@ function UI.button(parent, text, callback, secondary)
     UI.corner(button, 14); UI.padding(button, 10, 3)
     UI.stroke(button, if secondary then UI.Colors.Line else UI.Colors.White, 1, if secondary then 0.15 else 0.72)
     if not secondary then UI.gradient(button, Color3.fromRGB(16, 202, 171), Color3.fromRGB(20, 154, 213), 15) end
+    local scale = Instance.new("UIScale"); scale.Parent = button
     local baseColor = button.BackgroundColor3
     button.MouseEnter:Connect(function() tween(button, {BackgroundColor3 = baseColor:Lerp(UI.Colors.Gold, 0.12)}) end)
     button.MouseLeave:Connect(function() tween(button, {BackgroundColor3 = baseColor}) end)
     button.SelectionGained:Connect(function() tween(button, {BackgroundColor3 = baseColor:Lerp(UI.Colors.Gold, 0.2)}) end)
     button.SelectionLost:Connect(function() tween(button, {BackgroundColor3 = baseColor}) end)
     button.Activated:Connect(function(...)
+        scale.Scale = 0.96; tween(scale, {Scale = 1}, 0.14)
         if UI.OnClick then UI.OnClick() end
         callback(...)
     end)
@@ -5338,6 +5373,19 @@ function UI.new()
     local gui = Instance.new("ScreenGui"); gui.Name = "ThriftFlip"; gui.ResetOnSpawn = false
     gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling; gui.ScreenInsets = Enum.ScreenInsets.CoreUISafeInsets
     gui.Parent = Players.LocalPlayer:WaitForChild("PlayerGui"); self.Gui = gui
+    local splash = Instance.new("Frame"); splash.Name = "LaunchSplash"; splash.Size = UDim2.fromScale(1, 1)
+    splash.BackgroundColor3 = UI.Colors.Night; splash.BorderSizePixel = 0; splash.ZIndex = 100; splash.Parent = gui
+    UI.gradient(splash, Color3.fromRGB(10, 17, 31), Color3.fromRGB(19, 92, 100), 35)
+    local splashTitle = UI.label(splash, "THRIFT FLIP", 42, UI.Colors.White); splashTitle.Font = Enum.Font.GothamBlack
+    splashTitle.AnchorPoint = Vector2.new(0.5, 0.5); splashTitle.Position = UDim2.fromScale(0.5, 0.45)
+    splashTitle.Size = UDim2.new(0.9, 0, 0, 58); splashTitle.AutomaticSize = Enum.AutomaticSize.None; splashTitle.TextXAlignment = Enum.TextXAlignment.Center; splashTitle.ZIndex = 101
+    local splashTag = UI.label(splash, "FIND  •  RESTORE  •  BUILD YOUR DREAM SHOP", 13, UI.Colors.Gold)
+    splashTag.AnchorPoint = Vector2.new(0.5, 0); splashTag.Position = UDim2.fromScale(0.5, 0.51)
+    splashTag.Size = UDim2.new(0.9, 0, 0, 30); splashTag.AutomaticSize = Enum.AutomaticSize.None; splashTag.TextXAlignment = Enum.TextXAlignment.Center; splashTag.ZIndex = 101
+    task.delay(1.1, function()
+        tween(splash, {BackgroundTransparency = 1}, 0.35); tween(splashTitle, {TextTransparency = 1}, 0.25); tween(splashTag, {TextTransparency = 1}, 0.25)
+        task.wait(0.38); if splash.Parent then splash:Destroy() end
+    end)
     local hud = Instance.new("Frame"); hud.Name = "TownHUD"; hud.Position = UDim2.fromOffset(14, 10)
     hud.Size = UDim2.new(1, -28, 0, 76); hud.BackgroundColor3 = UI.Colors.Night; hud.BackgroundTransparency = 0.05; hud.Parent = gui
     UI.corner(hud, 19); UI.stroke(hud, UI.Colors.White, 1, 0.82); UI.gradient(hud, Color3.fromRGB(13, 21, 38), Color3.fromRGB(23, 63, 75), 10)
@@ -5357,6 +5405,11 @@ function UI.new()
     self.Hint = UI.label(hud, "Find. Restore. Make it yours.", 12, Color3.fromRGB(181, 196, 215))
     self.Hint.Position = UDim2.fromOffset(14, 56); self.Hint.Size = UDim2.new(1, -28, 0, 17)
     self.Hint.AutomaticSize = Enum.AutomaticSize.None; self.Hint.TextTruncate = Enum.TextTruncate.AtEnd; self.Hint.TextWrapped = false
+    local levelTrack = Instance.new("Frame"); levelTrack.Name = "LevelProgress"; levelTrack.Position = UDim2.new(0, 14, 1, -4)
+    levelTrack.Size = UDim2.new(1, -28, 0, 3); levelTrack.BackgroundColor3 = Color3.fromRGB(54, 72, 94); levelTrack.BorderSizePixel = 0; levelTrack.Parent = hud
+    UI.corner(levelTrack, 3)
+    local levelFill = Instance.new("Frame"); levelFill.Name = "Fill"; levelFill.Size = UDim2.fromScale(0, 1)
+    levelFill.BackgroundColor3 = UI.Colors.Gold; levelFill.BorderSizePixel = 0; levelFill.Parent = levelTrack; UI.corner(levelFill, 3); self.LevelProgress = levelFill
     local nav = Instance.new("Frame"); nav.Name = "Navigation"; nav.AnchorPoint = Vector2.new(0.5, 1)
     nav.Position = UDim2.new(0.5, 0, 1, -9); nav.Size = UDim2.new(1, -24, 0, 62)
     nav.BackgroundColor3 = UI.Colors.Night; nav.BackgroundTransparency = 0.04; nav.Parent = gui; nav.ZIndex = 12; UI.corner(nav, 20); UI.padding(nav, 6, 6)
