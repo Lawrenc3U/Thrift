@@ -31,8 +31,15 @@ local function guide(location)
     if location == "Shop" then
         for _, shop in ipairs(state and state.Shops or {}) do
             if shop.UserId == player.UserId and shop.Plot then
-                local row = math.ceil(shop.Plot / 2); local side = if shop.Plot % 2 == 1 then -1 else 1
-                target = Vector3.new(side * 95, 12, -83 + (row - 1) * 35); break
+                if shop.Plot == 1 then
+                    target = Vector3.new(-52, 12, -25)
+                else
+                    local slot = shop.Plot - 2
+                    local row = math.floor(slot / 2) + 1
+                    local side = if slot % 2 == 0 then -1 else 1
+                    target = Vector3.new(side * 120, 12, -105 + (row - 1) * 40)
+                end
+                break
             end
         end
     end

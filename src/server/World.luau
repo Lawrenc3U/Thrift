@@ -47,9 +47,17 @@ function World.new()
     self:districtLandmarks()
     self:wayfinding()
     for i = 1, 16 do
-        local row = math.ceil(i / 2)
-        local side = if i % 2 == 1 then -1 else 1
-        local center = Vector3.new(side * 95, 0, -83 + (row - 1) * 35)
+        -- The first player owns the featured Thrift Shop on the main street.
+        -- Extra server slots live on the outer merchant row, clear of the civic landmarks.
+        local center, side
+        if i == 1 then
+            center, side = Vector3.new(-52, 0, -25), -1
+        else
+            local slot = i - 2
+            local row = math.floor(slot / 2) + 1
+            side = if slot % 2 == 0 then -1 else 1
+            center = Vector3.new(side * 120, 0, -105 + (row - 1) * 40)
+        end
         local cf = CFrame.new(center) * CFrame.Angles(0, if side == -1 then -math.pi / 2 else math.pi / 2, 0)
         self:buildPlot(i, cf)
     end
@@ -82,16 +90,20 @@ function World:landscape()
     local terrain = Kit.model(self.Root, "VillageLandscape")
     Kit.part(terrain, "Meadow", Vector3.new(520, 2, 650), CFrame.new(0, -1.5, -15), P.Grass, Enum.Material.Grass)
     Kit.part(terrain, "CobblestoneHighStreet", Vector3.new(34, 0.5, 410), CFrame.new(0, -0.3, 20), Color3.fromRGB(185, 178, 158), Enum.Material.Cobblestone)
+    Kit.part(terrain, "FeaturedShopWalk", Vector3.new(9, 0.25, 12), CFrame.new(-32, 0.2, -25), Color3.fromRGB(214, 195, 162), Enum.Material.Pavement)
+    Kit.part(terrain, "MerchantCrossStreet", Vector3.new(182, 0.5, 14), CFrame.new(0, -0.3, 75), Color3.fromRGB(185, 178, 158), Enum.Material.Cobblestone)
     for z = -170, 210, 18 do
         Kit.part(terrain, "RoadMarker", Vector3.new(0.45, 0.08, 8), CFrame.new(0, 0.01, z), P.Gold, Enum.Material.Neon, nil, false)
     end
     for side = -1, 1, 2 do
         Kit.part(terrain, "PavedWalkway", Vector3.new(11, 0.5, 410), CFrame.new(side * 22.5, 0, 20), P.Cream, Enum.Material.Pavement)
         Kit.part(terrain, "Curb", Vector3.new(0.6, 0.8, 410), CFrame.new(side * 17.4, 0.1, 20), Color3.fromRGB(213, 205, 180))
+        Kit.part(terrain, "MerchantRowRoad", Vector3.new(14, 0.5, 340), CFrame.new(side * 90, -0.3, 35), Color3.fromRGB(185, 178, 158), Enum.Material.Cobblestone)
+        Kit.part(terrain, "MerchantRowWalkway", Vector3.new(8, 0.5, 340), CFrame.new(side * 101, 0, 35), P.Cream, Enum.Material.Pavement)
+        Kit.part(terrain, "MerchantRowCurb", Vector3.new(0.6, 0.8, 340), CFrame.new(side * 97.2, 0.1, 35), Color3.fromRGB(213, 205, 180))
         for row = 1, 8 do
-            local z = -83 + (row - 1) * 35
-            Kit.part(terrain, "ShopPath", Vector3.new(56, 0.25, 10), CFrame.new(side * 60, 0.2, z), Color3.fromRGB(214, 195, 162), Enum.Material.Pavement)
-            if row % 2 == 1 then Kit.bench(terrain, CFrame.new(side * 24.5, 0.3, z + 14) * CFrame.Angles(0, if side == -1 then -math.pi / 2 else math.pi / 2, 0)) end
+            local z = -105 + (row - 1) * 40
+            if row % 2 == 1 then Kit.bench(terrain, CFrame.new(side * 96, 0.3, z + 17) * CFrame.Angles(0, if side == -1 then -math.pi / 2 else math.pi / 2, 0)) end
         end
         for i = 1, 10 do Kit.lamp(terrain, CFrame.new(side * 18.8, 0.3, -120 + i * 34)) end
         for i = 1, 14 do Kit.tree(terrain, CFrame.new(side * (108 + i % 3 * 5), 0, -230 + i * 34), 0.9 + (i % 3) * 0.15, i) end
@@ -319,17 +331,6 @@ function World:districtLandmarks()
         end end
     end
     local colors = {P.Coral, P.Gold, P.Teal, P.Lavender, P.Cream}
-    -- Port of thrift(): cream shell, teal glass frames, striped canopy, racks and checkout.
-    local thrift, tcf = building("ThriftShop", Vector3.new(-52, 0, -25), -1, 36, 14, 28, Color3.fromRGB(244, 227, 193), P.Oak, P.Ink)
-    Kit.part(thrift, "FrontFascia", Vector3.new(36, 4, 1), tcf * CFrame.new(0, 12, -13.5), Color3.fromRGB(244, 227, 193))
-    displayWindow(thrift, tcf, -10.5, 6, 8.5, 6, P.Teal); displayWindow(thrift, tcf, 10.5, 6, 8.5, 6, P.Teal)
-    Kit.part(thrift, "Door", Vector3.new(5, 8, 0.7), tcf * CFrame.new(0, 4, -14), P.Teal)
-    awning(thrift, tcf * CFrame.new(0, 10.5, -15.8), 36, 4, P.Teal)
-    Kit.sign(thrift, "THRIFT SHOP", tcf * CFrame.new(0, 12.6, -14.2), Vector3.new(20, 3.2, 0.35), P.Teal, P.Cream)
-    for x = -1, 1, 2 do Kit.part(thrift, "FlowerBox", Vector3.new(8.5, 1.2, 1.2), tcf * CFrame.new(x * 10.5, 2.1, -15), P.Wood, Enum.Material.Wood) end
-    shelf(thrift, tcf, -10, 11.5, 12, 3, colors); shelf(thrift, tcf, 10, 11.5, 12, 3, colors)
-    local thriftCounter = Kit.part(thrift, "Checkout", Vector3.new(9, 3, 2.4), tcf * CFrame.new(10, 2, -4), P.Teal)
-    prompt(thriftCounter, "Browse the thrift shop", "Market")
     -- Port of market(): three open striped stalls with counters and visible stock.
     local market = Kit.model(district, "Market")
     local mcf = CFrame.new(-52, 0, -80) * CFrame.Angles(0, -math.pi / 2, 0)
@@ -430,6 +431,7 @@ function World:wayfinding()
 end
 function World:buildPlot(index, cf)
     local model = Kit.model(self.Root, "Shop" .. index)
+    model:SetAttribute("Role", "PlayerThriftShop")
     local color = shopColors[(index - 1) % #shopColors + 1]
     local front = Kit.model(model, "Storefront")
     local zone = Kit.part(front, "OwnedPlot", Vector3.new(32, 0.16, 33), cf * CFrame.new(0, 0.35, 0), color, Enum.Material.SmoothPlastic, nil, false)
@@ -438,24 +440,31 @@ function World:buildPlot(index, cf)
         Kit.part(front, "PlotRail", Vector3.new(0.24, 0.2, 33), cf * CFrame.new(side * 15.8, 0.48, 0), color, Enum.Material.Neon, nil, false)
     end
     Kit.part(front, "FrontStep", Vector3.new(29, 0.6, 5), cf * CFrame.new(0, 0, -15), P.Cream, Enum.Material.Pavement)
+    Kit.part(front, "WelcomeMat", Vector3.new(5.5, 0.12, 2.5), cf * CFrame.new(0, 0.38, -16.4), P.Coral, Enum.Material.Fabric, nil, false)
     for side = -1, 1, 2 do
-        Kit.part(front, "FrontPanel", Vector3.new(6, 12, 0.7), cf * CFrame.new(side * 11, 6, -14), color)
-        window(front, cf * CFrame.new(side * 11, 6, -14.45), 4.8, 5.5)
+        Kit.part(front, "FrontPanel", Vector3.new(6, 12, 0.7), cf * CFrame.new(side * 11, 6, -14), P.Cream)
+        window(front, cf * CFrame.new(side * 11, 6, -14.45), 4.8, 5.5, Color3.fromRGB(207, 233, 230))
         Kit.part(front, "DoorPost", Vector3.new(0.5, 9, 0.9), cf * CFrame.new(side * 7.9, 4.5, -14), P.Cream)
-        Kit.plant(front, cf * CFrame.new(side * 11.4, 0.35, -17.1), 1.2, nil, true)
+        Kit.part(front, "FlowerBox", Vector3.new(5.2, 0.8, 1.1), cf * CFrame.new(side * 11, 2.4, -15), P.Wood, Enum.Material.Wood)
+        for flower = -1, 1 do
+            Kit.ball(front, "WindowFlower", Vector3.new(0.5, 0.5, 0.5), cf * CFrame.new(side * 11 + flower * 1.35, 3, -15.1), if flower == 0 then P.Gold else P.Coral, Enum.Material.SmoothPlastic, false)
+        end
     end
-    Kit.part(front, "SignFascia", Vector3.new(29, 3.5, 1), cf * CFrame.new(0, 11.2, -14), color)
+    Kit.part(front, "EntryDoor", Vector3.new(5, 8.5, 0.7), cf * CFrame.new(0, 4.4, -14), P.Teal)
+    window(front, cf * CFrame.new(0, 5.3, -14.45), 3.6, 4.5, Color3.fromRGB(207, 233, 230))
+    Kit.part(front, "DoorHandle", Vector3.new(0.18, 0.65, 0.25), cf * CFrame.new(1.55, 4.2, -14.9), P.Gold, Enum.Material.Metal, nil, false)
+    Kit.part(front, "SignFascia", Vector3.new(29, 3.5, 1), cf * CFrame.new(0, 11.2, -14), P.Teal)
     Kit.part(front, "Cornice", Vector3.new(30, 0.6, 1.8), cf * CFrame.new(0, 13.2, -14), P.Cream)
     for side = -1, 1, 2 do
         local lightBar = Kit.part(front, "StorefrontGlow", Vector3.new(0.22, 9.5, 0.25), cf * CFrame.new(side * 14.15, 6.2, -14.7), color, Enum.Material.Neon, nil, false)
         lightBar.Transparency = 0.1
     end
-    local label = Kit.sign(front, "YOUR NEXT CHAPTER", cf * CFrame.new(0, 11.2, -14.6), Vector3.new(26, 2.6, 0.15), color)
+    local label = Kit.sign(front, "CLAIM YOUR THRIFT SHOP", cf * CFrame.new(0, 11.2, -14.6), Vector3.new(26, 2.6, 0.15), P.Teal, P.Cream)
     for side = -1, 1, 2 do
         Kit.part(front, "BrandPylon", Vector3.new(0.7, 15, 0.7), cf * CFrame.new(side * 15, 7.5, -13.8), P.Ink, Enum.Material.Metal)
     end
     Kit.part(front, "BrandArch", Vector3.new(30.7, 0.7, 0.7), cf * CFrame.new(0, 14.7, -13.8), P.Ink, Enum.Material.Metal)
-    awning(front, cf * CFrame.new(0, 8.8, -15.4), 17, 4.5, color)
+    awning(front, cf * CFrame.new(0, 8.8, -15.4), 17, 4.5, P.Teal)
     Kit.sign(front, string.format("%02d", index), cf * CFrame.new(-8.2, 5.8, -14.6), Vector3.new(1.4, 1.8, 0.12), P.Ink)
     local plot = {Model = model, CF = cf, Label = label, Slots = {}, Items = {}, Index = index,
         Color = color, Tier = 0, Depth = 28, RenderKeys = {}, DecorKey = "", Owner = nil}
@@ -583,7 +592,7 @@ end
 function World:release(userId)
     local plot = self.Owners[userId]; if not plot then return end
     for _, item in pairs(plot.Items) do item:Destroy() end
-    plot.Items = {}; plot.RenderKeys = {}; plot.Owner = nil; plot.Label.Text = "YOUR NEXT CHAPTER"
+    plot.Items = {}; plot.RenderKeys = {}; plot.Owner = nil; plot.Label.Text = "CLAIM YOUR THRIFT SHOP"
     self:buildInterior(plot, 1)
     local decor = plot.Model:FindFirstChild("Decorations"); if decor then decor:Destroy() end
     for _, child in ipairs(plot.Model:GetDescendants()) do if child:IsA("ProximityPrompt") then child:SetAttribute("Owner", 0) end end
@@ -620,7 +629,7 @@ function World:render(player, profile, catalog, config)
     if plot.Tier ~= profile.Tier then self:buildInterior(plot, profile.Tier) end
     local tier = config.Tiers[profile.Tier]
     local average = if profile.RatingCount > 0 then string.format("%.1f", profile.RatingTotal / profile.RatingCount) else "NEW"
-    plot.Label.Text = player.DisplayName .. "'s " .. tier.Name .. "  •  ★ " .. average
+    plot.Label.Text = player.DisplayName .. "'s THRIFT SHOP  •  " .. tier.Name .. "  •  ★ " .. average
     for _, theme in ipairs(config.Themes) do if theme.Id == profile.Theme then plot.Wall.Color = Color3.new(unpack(theme.Color)) end end
     self:decorate(plot, profile)
     self:setSlotCapacity(plot, tier.Slots)
