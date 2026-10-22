@@ -53,6 +53,9 @@ pages = Pages.new(ui, send, open, guide)
 for _, entry in ipairs({{"Town","⌂"},{"Bag","▣"},{"Shop","✦"},{"Find","⌕"},{"Quests","✓"}}) do
     ui:addNav(entry[1], entry[2], function() open(if entry[1] == "Find" then "Source" else entry[1]) end)
 end
+ui:addQuickAction("⚡\nFAST TRAVEL", UI.Colors.Teal, function() open("Town") end)
+ui:addQuickAction("🎁\nREWARDS", UI.Colors.Rose, function() open("Quests") end)
+ui:addQuickAction("🛍\nSTORE", Color3.fromRGB(122, 92, 224), function() open("Boutique") end)
 
 local tutorialHints = {
     [0]="Find your first treasure in Dumpster Alley", [1]="Open your bag and inspect the mystery find",

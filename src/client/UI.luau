@@ -239,6 +239,13 @@ function UI.new()
     local navLimit = Instance.new("UISizeConstraint"); navLimit.MaxSize = Vector2.new(650, 62); navLimit.Parent = nav
     local grid = Instance.new("UIGridLayout"); grid.CellSize = UDim2.new(0.2, -4, 1, 0); grid.CellPadding = UDim2.fromOffset(5, 0)
     grid.SortOrder = Enum.SortOrder.LayoutOrder; grid.Parent = nav; self.Nav = nav; self.NavButtons = {}
+    local actions = Instance.new("Frame"); actions.Name = "QuickActions"; actions.AnchorPoint = Vector2.new(1, 0.5)
+    actions.Position = UDim2.new(1, -14, 0.5, 0); actions.Size = UDim2.fromOffset(116, 184)
+    actions.BackgroundTransparency = 1; actions.Parent = gui; actions.ZIndex = 12; UI.list(actions, 8); self.QuickActions = actions
+    local camera = workspace.CurrentCamera
+    local function fitQuickActions() actions.Visible = not camera or camera.ViewportSize.X >= 700 end
+    if camera then camera:GetPropertyChangedSignal("ViewportSize"):Connect(fitQuickActions) end
+    fitQuickActions()
     local overlay = Instance.new("TextButton"); overlay.Name = "ModalBackdrop"; overlay.Text = ""; overlay.AutoButtonColor = false
     overlay.Size = UDim2.fromScale(1, 1); overlay.BackgroundColor3 = UI.Colors.Night; overlay.BackgroundTransparency = 0.4
     overlay.BorderSizePixel = 0; overlay.Visible = false; overlay.ZIndex = 4; overlay.Parent = gui; self.Overlay = overlay
@@ -275,6 +282,13 @@ function UI.new()
         if not processed and input.KeyCode == Enum.KeyCode.Escape and self.Panel.Visible then self:hide() end
     end)
     return self
+end
+function UI:addQuickAction(text, color, callback)
+    local button = UI.button(self.QuickActions, text, callback, false)
+    button.Size = UDim2.new(1, 0, 0, 56); button.TextSize = 13; button.ZIndex = 13
+    for _, child in ipairs(button:GetChildren()) do if child:IsA("UIGradient") then child:Destroy() end end
+    button.BackgroundColor3 = color; UI.gradient(button, color:Lerp(UI.Colors.White, 0.08), color:Lerp(UI.Colors.Night, 0.16), 15)
+    return button
 end
 function UI:addNav(name, symbol, callback)
     local button = UI.button(self.Nav, symbol .. "\n" .. name, callback, true)
