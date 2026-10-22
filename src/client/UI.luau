@@ -235,39 +235,53 @@ function UI.new()
         tween(splash, {BackgroundTransparency = 1}, 0.35); tween(splashTitle, {TextTransparency = 1}, 0.25); tween(splashTag, {TextTransparency = 1}, 0.25)
         task.wait(0.38); if splash.Parent then splash:Destroy() end
     end)
-    local hud = Instance.new("Frame"); hud.Name = "TownHUD"; hud.Position = UDim2.fromOffset(14, 10)
-    hud.Size = UDim2.new(1, -28, 0, 76); hud.BackgroundColor3 = UI.Colors.Night; hud.BackgroundTransparency = 0.05; hud.Parent = gui
-    UI.corner(hud, 19); UI.stroke(hud, UI.Colors.White, 1, 0.82); UI.gradient(hud, Color3.fromRGB(13, 21, 38), Color3.fromRGB(23, 63, 75), 10)
-    local badge = Instance.new("Frame"); badge.Size = UDim2.fromOffset(48, 48); badge.Position = UDim2.fromOffset(12, 10)
-    badge.BackgroundColor3 = UI.Colors.Teal; badge.Parent = hud; UI.corner(badge, 15); UI.gradient(badge, UI.Colors.Teal, Color3.fromRGB(19, 151, 215), 45)
-    local icon = UI.label(badge, "♻", 28, UI.Colors.White); icon.Size = UDim2.fromScale(1, 1); icon.TextXAlignment = Enum.TextXAlignment.Center
-    icon.AutomaticSize = Enum.AutomaticSize.None
-    self.Brand = UI.label(hud, "THRIFT FLIP", 19); self.Brand.Font = Enum.Font.GothamBlack
-    self.Brand.TextColor3 = UI.Colors.White; self.Brand.Position = UDim2.fromOffset(70, 8); self.Brand.Size = UDim2.new(0.54, -70, 0, 28); self.Brand.TextWrapped = false
-    self.Brand.AutomaticSize = Enum.AutomaticSize.None
-    self.Balance = UI.label(hud, "Connecting…", 21, UI.Colors.Gold); self.Balance.Font = Enum.Font.GothamBold
-    self.Balance.Position = UDim2.new(0.54, 0, 0, 8); self.Balance.Size = UDim2.new(0.46, -14, 0, 28)
-    self.Balance.TextXAlignment = Enum.TextXAlignment.Right; self.Balance.AutomaticSize = Enum.AutomaticSize.None
-    self.Level = UI.label(hud, "EVERY FIND HAS A STORY", 11, UI.Colors.Muted); self.Level.Font = Enum.Font.GothamBold
-    self.Level.TextColor3 = Color3.fromRGB(174, 209, 215); self.Level.Position = UDim2.fromOffset(70, 37); self.Level.Size = UDim2.new(1, -84, 0, 17)
-    self.Level.AutomaticSize = Enum.AutomaticSize.None; self.Level.TextWrapped = false
-    self.Hint = UI.label(hud, "Find. Restore. Make it yours.", 12, Color3.fromRGB(181, 196, 215))
-    self.Hint.Position = UDim2.fromOffset(14, 56); self.Hint.Size = UDim2.new(1, -28, 0, 17)
-    self.Hint.AutomaticSize = Enum.AutomaticSize.None; self.Hint.TextTruncate = Enum.TextTruncate.AtEnd; self.Hint.TextWrapped = false
-    local levelTrack = Instance.new("Frame"); levelTrack.Name = "LevelProgress"; levelTrack.Position = UDim2.new(0, 14, 1, -4)
-    levelTrack.Size = UDim2.new(1, -28, 0, 3); levelTrack.BackgroundColor3 = Color3.fromRGB(54, 72, 94); levelTrack.BorderSizePixel = 0; levelTrack.Parent = hud
-    UI.corner(levelTrack, 3)
+    local hud = Instance.new("Frame"); hud.Name = "TownHUD"; hud.Position = UDim2.fromOffset(10, 10)
+    hud.Size = UDim2.new(1, -20, 0, 112); hud.BackgroundTransparency = 1; hud.Parent = gui
+    local brand = Instance.new("Frame"); brand.Name = "BrandPill"; brand.Size = UDim2.fromOffset(256, 46)
+    brand.BackgroundColor3 = Color3.fromRGB(255, 248, 232); brand.Parent = hud; UI.corner(brand, 23); UI.stroke(brand, UI.Colors.White, 2, 0.15)
+    local badge = Instance.new("Frame"); badge.Size = UDim2.fromOffset(36, 36); badge.Position = UDim2.fromOffset(5, 5)
+    badge.BackgroundColor3 = Color3.fromRGB(23, 132, 124); badge.Parent = brand; UI.corner(badge, 18)
+    local icon = UI.label(badge, "⌄", 24, UI.Colors.White); icon.Size = UDim2.fromScale(1, 1); icon.TextXAlignment = Enum.TextXAlignment.Center
+    icon.AutomaticSize = Enum.AutomaticSize.None; icon.Font = Enum.Font.GothamBold
+    self.Brand = UI.label(brand, "Thrift Flip", 16, Color3.fromRGB(8, 91, 84)); self.Brand.Font = Enum.Font.GothamBold
+    self.Brand.Position = UDim2.fromOffset(48, 5); self.Brand.Size = UDim2.new(1, -55, 0, 20); self.Brand.AutomaticSize = Enum.AutomaticSize.None
+    local tagline = UI.label(brand, "Every find has a story", 10, Color3.fromRGB(67, 86, 83))
+    tagline.Position = UDim2.fromOffset(48, 24); tagline.Size = UDim2.new(1, -55, 0, 16); tagline.AutomaticSize = Enum.AutomaticSize.None
+    local objective = Instance.new("Frame"); objective.Name = "Objective"; objective.Position = UDim2.fromOffset(0, 54)
+    objective.Size = UDim2.fromOffset(256, 58); objective.BackgroundColor3 = Color3.fromRGB(20, 132, 124); objective.Parent = hud; UI.corner(objective, 14)
+    UI.stroke(objective, Color3.fromRGB(8, 107, 101), 1, 0.25)
+    local arrow = UI.label(objective, "➜", 18, UI.Colors.White); arrow.Position = UDim2.fromOffset(13, 16); arrow.Size = UDim2.fromOffset(23, 27); arrow.AutomaticSize = Enum.AutomaticSize.None
+    local objectiveTitle = UI.label(objective, "OBJECTIVE", 9, Color3.fromRGB(187, 235, 226)); objectiveTitle.Font = Enum.Font.GothamBold
+    objectiveTitle.Position = UDim2.fromOffset(36, 6); objectiveTitle.Size = UDim2.new(1, -45, 0, 14); objectiveTitle.AutomaticSize = Enum.AutomaticSize.None
+    self.Hint = UI.label(objective, "Find your first treasure", 12, UI.Colors.White); self.Hint.Font = Enum.Font.GothamBold
+    self.Hint.Position = UDim2.fromOffset(36, 18); self.Hint.Size = UDim2.new(1, -45, 0, 34); self.Hint.AutomaticSize = Enum.AutomaticSize.None
+    self.Hint.TextTruncate = Enum.TextTruncate.AtEnd; self.Hint.TextWrapped = true
+    local stats = Instance.new("Frame"); stats.Name = "Stats"; stats.AnchorPoint = Vector2.new(1, 0); stats.Position = UDim2.new(1, 0, 0, 0)
+    stats.Size = UDim2.fromOffset(164, 42); stats.BackgroundTransparency = 1; stats.Parent = hud
+    local cashPill = Instance.new("Frame"); cashPill.Size = UDim2.fromOffset(76, 38); cashPill.BackgroundColor3 = Color3.fromRGB(255, 248, 232); cashPill.Parent = stats; UI.corner(cashPill, 19)
+    local coin = UI.label(cashPill, "$", 13, Color3.fromRGB(17, 92, 84)); coin.Size = UDim2.fromOffset(27, 27); coin.Position = UDim2.fromOffset(5, 5)
+    coin.AutomaticSize = Enum.AutomaticSize.None; coin.TextXAlignment = Enum.TextXAlignment.Center; coin.BackgroundTransparency = 0; coin.BackgroundColor3 = UI.Colors.Gold; coin.Font = Enum.Font.GothamBold; UI.corner(coin, 14)
+    self.Balance = UI.label(cashPill, "75", 16, Color3.fromRGB(20, 75, 70)); self.Balance.Font = Enum.Font.GothamBold
+    self.Balance.Position = UDim2.fromOffset(36, 5); self.Balance.Size = UDim2.new(1, -42, 0, 28); self.Balance.AutomaticSize = Enum.AutomaticSize.None
+    local levelPill = Instance.new("Frame"); levelPill.Position = UDim2.fromOffset(82, 0); levelPill.Size = UDim2.fromOffset(82, 38)
+    levelPill.BackgroundColor3 = Color3.fromRGB(255, 248, 232); levelPill.Parent = stats; UI.corner(levelPill, 19)
+    local star = UI.label(levelPill, "★", 14, UI.Colors.White); star.Size = UDim2.fromOffset(27, 27); star.Position = UDim2.fromOffset(5, 5)
+    star.AutomaticSize = Enum.AutomaticSize.None; star.TextXAlignment = Enum.TextXAlignment.Center; star.BackgroundTransparency = 0; star.BackgroundColor3 = Color3.fromRGB(20, 132, 124); star.Font = Enum.Font.GothamBold; UI.corner(star, 14)
+    self.Level = UI.label(levelPill, "LV 1", 15, Color3.fromRGB(20, 75, 70)); self.Level.Font = Enum.Font.GothamBold
+    self.Level.Position = UDim2.fromOffset(36, 5); self.Level.Size = UDim2.new(1, -40, 0, 28); self.Level.AutomaticSize = Enum.AutomaticSize.None
+    local levelTrack = Instance.new("Frame"); levelTrack.Name = "LevelProgress"; levelTrack.Position = UDim2.new(0, 36, 1, -5)
+    levelTrack.Size = UDim2.new(1, -48, 0, 3); levelTrack.BackgroundColor3 = Color3.fromRGB(31, 111, 104); levelTrack.BorderSizePixel = 0; levelTrack.Parent = objective; UI.corner(levelTrack, 3)
     local levelFill = Instance.new("Frame"); levelFill.Name = "Fill"; levelFill.Size = UDim2.fromScale(0, 1)
     levelFill.BackgroundColor3 = UI.Colors.Gold; levelFill.BorderSizePixel = 0; levelFill.Parent = levelTrack; UI.corner(levelFill, 3); self.LevelProgress = levelFill
     local nav = Instance.new("Frame"); nav.Name = "Navigation"; nav.AnchorPoint = Vector2.new(0.5, 1)
-    nav.Position = UDim2.new(0.5, 0, 1, -9); nav.Size = UDim2.new(1, -24, 0, 62)
-    nav.BackgroundColor3 = UI.Colors.Night; nav.BackgroundTransparency = 0.04; nav.Parent = gui; nav.ZIndex = 12; UI.corner(nav, 20); UI.padding(nav, 6, 6)
-    UI.stroke(nav, UI.Colors.White, 1, 0.82)
-    local navLimit = Instance.new("UISizeConstraint"); navLimit.MaxSize = Vector2.new(650, 62); navLimit.Parent = nav
+    nav.Position = UDim2.new(0.5, 0, 1, -12); nav.Size = UDim2.new(1, -24, 0, 70)
+    nav.BackgroundColor3 = Color3.fromRGB(255, 248, 232); nav.Parent = gui; nav.ZIndex = 12; UI.corner(nav, 22); UI.padding(nav, 6, 6)
+    UI.stroke(nav, Color3.fromRGB(122, 143, 135), 1, 0.45)
+    local navLimit = Instance.new("UISizeConstraint"); navLimit.MaxSize = Vector2.new(410, 70); navLimit.Parent = nav
     local grid = Instance.new("UIGridLayout"); grid.CellSize = UDim2.new(0.2, -4, 1, 0); grid.CellPadding = UDim2.fromOffset(5, 0)
     grid.SortOrder = Enum.SortOrder.LayoutOrder; grid.Parent = nav; self.Nav = nav; self.NavButtons = {}
     local actions = Instance.new("Frame"); actions.Name = "QuickActions"; actions.AnchorPoint = Vector2.new(1, 0.5)
-    actions.Position = UDim2.new(1, -14, 0.5, 0); actions.Size = UDim2.fromOffset(116, 184)
+    actions.Position = UDim2.new(1, -14, 0.64, 0); actions.Size = UDim2.fromOffset(74, 214)
     actions.BackgroundTransparency = 1; actions.Parent = gui; actions.ZIndex = 12; UI.list(actions, 8); self.QuickActions = actions
     local camera = workspace.CurrentCamera
     local function fitQuickActions() actions.Visible = not camera or camera.ViewportSize.X >= 700 end
@@ -311,22 +325,23 @@ function UI.new()
     return self
 end
 function UI:addQuickAction(text, color, callback)
-    local button = UI.button(self.QuickActions, text, callback, false)
-    button.Size = UDim2.new(1, 0, 0, 56); button.TextSize = 13; button.ZIndex = 13
+    local button = UI.button(self.QuickActions, text, callback, true)
+    button.Size = UDim2.new(1, 0, 0, 66); button.TextSize = 12; button.ZIndex = 13
     for _, child in ipairs(button:GetChildren()) do if child:IsA("UIGradient") then child:Destroy() end end
-    button.BackgroundColor3 = color; UI.gradient(button, color:Lerp(UI.Colors.White, 0.08), color:Lerp(UI.Colors.Night, 0.16), 15)
+    button.BackgroundColor3 = Color3.fromRGB(255, 248, 232); button.TextColor3 = Color3.fromRGB(8, 91, 84)
+    UI.corner(button, 16)
     return button
 end
 function UI:addNav(name, symbol, callback)
     local button = UI.button(self.Nav, symbol .. "\n" .. name, callback, true)
-    button.TextSize = 14; button.BackgroundColor3 = UI.Colors.Night; button.TextColor3 = Color3.fromRGB(202, 215, 231); button.ZIndex = 13
+    button.TextSize = 12; button.BackgroundColor3 = Color3.fromRGB(255, 248, 232); button.TextColor3 = Color3.fromRGB(8, 91, 84); button.ZIndex = 13
     self.NavButtons[name] = button; return button
 end
 function UI:selectNav(name)
     for label, button in pairs(self.NavButtons) do
         local selected = label == name or (label == "Find" and name == "Source")
-        button.BackgroundColor3 = if selected then UI.Colors.Teal else UI.Colors.Night
-        button.TextColor3 = if selected then UI.Colors.White else Color3.fromRGB(202, 215, 231)
+        button.BackgroundColor3 = if selected then Color3.fromRGB(20, 132, 124) else Color3.fromRGB(255, 248, 232)
+        button.TextColor3 = if selected then UI.Colors.White else Color3.fromRGB(8, 91, 84)
     end
 end
 function UI:setSubtitle(text) self.Subtitle.Text = string.upper(text) end

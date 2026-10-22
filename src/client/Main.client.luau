@@ -53,9 +53,9 @@ pages = Pages.new(ui, send, open, guide)
 for _, entry in ipairs({{"Town","⌂"},{"Bag","▣"},{"Shop","✦"},{"Find","⌕"},{"Quests","✓"}}) do
     ui:addNav(entry[1], entry[2], function() open(if entry[1] == "Find" then "Source" else entry[1]) end)
 end
-ui:addQuickAction("⚡\nFAST TRAVEL", UI.Colors.Teal, function() open("Town") end)
-ui:addQuickAction("🎁\nREWARDS", UI.Colors.Rose, function() open("Quests") end)
-ui:addQuickAction("🛍\nSTORE", Color3.fromRGB(122, 92, 224), function() open("Boutique") end)
+ui:addQuickAction("ϟ\nTravel", UI.Colors.Teal, function() open("Town") end)
+ui:addQuickAction("▣\nRewards", UI.Colors.Rose, function() open("Quests") end)
+ui:addQuickAction("◇\nStore", Color3.fromRGB(122, 92, 224), function() open("Boutique") end)
 
 local tutorialHints = {
     [0]="Find your first treasure in Dumpster Alley", [1]="Open your bag and inspect the mystery find",
@@ -64,7 +64,8 @@ local tutorialHints = {
 }
 local lastOffer, lastTutorial
 local function updateHud()
-    ui.Balance.Text = "$" .. tostring(math.floor(state.Cash)) .. "   LV " .. state.Level
+    ui.Balance.Text = tostring(math.floor(state.Cash))
+    ui.Level.Text = "LV " .. state.Level
     local levelStart, levelEnd = 30 * (state.Level - 1) ^ 2, 30 * state.Level ^ 2
     ui.LevelProgress.Size = UDim2.fromScale(math.clamp((state.XP - levelStart) / math.max(1, levelEnd - levelStart), 0, 1), 1)
     ui.Hint.Text = tutorialHints[state.Tutorial] or (state.Demand .. " finds are trending  •  Reputation " .. state.Reputation)
