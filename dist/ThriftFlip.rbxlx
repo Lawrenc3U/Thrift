@@ -1800,7 +1800,7 @@ local function shallowPublicItem(item)
 end
 function GameService.new(data, world, event)
     return setmetatable({Data = data, World = world, Event = event,
-        Random = Random.new(), Sessions = {}, Offers = {}, Cooldowns = {}, Buckets = {},
+        Random = Random.new(), Sessions = {}, Offers = {}, Cooldowns = {}, Buckets = {}, TeleportAt = {},
         Auction = nil, NextAuction = os.time() + 45, NextCustomer = {}, Ready = {},
         Closing = false, JoinedAt = {}, Showcase = {Week = Economy.week(os.time()), Entries = {}, Votes = {}}}, GameService)
 end
@@ -2208,12 +2208,25 @@ function GameService:settings(player, payload)
         profile.Settings[payload.Name] = payload.Enabled; self:snapshot(player)
     end
 end
+function GameService:teleport(player, payload)
+    if type(payload.Destination) ~= "string" or #payload.Destination &gt; 20 then return end
+    local now = os.clock()
+    if now - (self.TeleportAt[player.UserId] or 0) &lt; 1.5 then return end
+    if self.Sessions[player.UserId] then return self:notify(player, "Finish or cancel your restoration first.") end
+    local destination = self.World:teleportCFrame(player, payload.Destination)
+    local character = player.Character
+    local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+    if not destination or not humanoid or humanoid.Health &lt;= 0 then return self:notify(player, "That destination is not available yet.") end
+    self.TeleportAt[player.UserId] = now
+    character:PivotTo(destination)
+    self:notify(player, "Arrived at " .. payload.Destination .. ".")
+end
 local handlers = {
     Source = GameService.source, Inspect = GameService.inspect, BeginRestore = GameService.beginRestore,
     RestoreInput = GameService.restoreInput, FinishRestore = GameService.finishRestore,
     Display = GameService.display, Haggle = GameService.haggle, Upgrade = GameService.upgrade,
     Quest = GameService.quest, Bid = GameService.bid, Rate = GameService.rating, DecorPlace = GameService.decorPlace,
-    Showcase = GameService.showcase, Settings = GameService.settings,
+    Showcase = GameService.showcase, Settings = GameService.settings, Teleport = GameService.teleport,
 }
 function GameService:request(player, action, payload)
     if self.Closing or not self:profile(player) then return end
@@ -2845,7 +2858,11 @@ local function connectPrompt(prompt)
         if owner ~= 0 and owner ~= player.UserId then
             event:FireClient(player, "Open", {Page = "Visit", Owner = owner}); return
         end
-        event:FireClient(player, "Open", {Page = action, Slot = prompt:GetAttribute("Slot")})
+        if action == "Teleport" then
+            service:request(player, "Teleport", {Destination = prompt:GetAttribute("Destination")})
+        else
+            event:FireClient(player, "Open", {Page = action, Slot = prompt:GetAttribute("Slot")})
+        end
     end)
 end
 for _, prompt in ipairs(CollectionService:GetTagged("ThriftInteractable")) do connectPrompt(prompt) end
@@ -2908,10 +2925,11 @@ local P = Kit.Palette
 local World = {}
 World.__index = World
 local shopColors = {P.Teal, P.Rose, P.Gold, P.Lavender, P.Coral, Color3.fromRGB(137, 166, 190)}
-local function prompt(parent, text, action, owner, slot)
+local function prompt(parent, text, action, owner, slot, destination)
     local p = Instance.new("ProximityPrompt"); p.ActionText = text; p.ObjectText = "Thrift Flip"
     p.MaxActivationDistance = 12; p.RequiresLineOfSight = false; p.HoldDuration = 0.15
     p:SetAttribute("Action", action); p:SetAttribute("Owner", owner or 0); p:SetAttribute("Slot", slot or 0)
+    if destination then p:SetAttribute("Destination", destination) end
     p.Parent = parent; CollectionService:AddTag(p, "ThriftInteractable")
     return p
 end
@@ -2977,6 +2995,9 @@ function World:landscape()
     local terrain = Kit.model(self.Root, "VillageLandscape")
     Kit.part(terrain, "Meadow", Vector3.new(520, 2, 650), CFrame.new(0, -1.5, -15), P.Grass, Enum.Material.Grass)
     Kit.part(terrain, "CobblestoneHighStreet", Vector3.new(34, 0.5, 410), CFrame.new(0, -0.3, 20), Color3.fromRGB(185, 178, 158), Enum.Material.Cobblestone)
+    for z = -170, 210, 18 do
+        Kit.part(terrain, "RoadMarker", Vector3.new(0.45, 0.08, 8), CFrame.new(0, 0.01, z), P.Gold, Enum.Material.Neon, nil, false)
+    end
     for side = -1, 1, 2 do
         Kit.part(terrain, "PavedWalkway", Vector3.new(11, 0.5, 410), CFrame.new(side * 22.5, 0, 20), P.Cream, Enum.Material.Pavement)
         Kit.part(terrain, "Curb", Vector3.new(0.6, 0.8, 410), CFrame.new(side * 17.4, 0.1, 20), Color3.fromRGB(213, 205, 180))
@@ -3042,6 +3063,19 @@ function World:square()
     self.Destinations = {Source = Vector3.new(-40, 2, -120), Estate = Vector3.new(42, 2, -120),
         Delivery = Vector3.new(-40, 2, -175), Quests = Vector3.new(40, 2, -175),
         Auction = Vector3.new(0, 2, -233), Market = Vector3.new(0, 2, 210)}
+    local travel = Kit.model(square, "FastTravelHub")
+    local stops = {
+        {"FINDS", "Source", -16, -147, P.Coral}, {"ESTATE", "Estate", -8, -147, P.Gold},
+        {"AUCTION", "Auction", 8, -147, P.Rose}, {"MARKET", "Market", 16, -147, P.Lavender},
+    }
+    for _, stop in ipairs(stops) do
+        local pad = Kit.cylinder(travel, stop[1] .. "TravelPad", 3.1, 0.35, CFrame.new(stop[3], 0.42, stop[4]), stop[5], Enum.Material.Neon)
+        pad.Transparency = 0.08
+        Kit.cylinder(travel, "PadRing", 3.75, 0.16, CFrame.new(stop[3], 0.25, stop[4]), P.Ink, Enum.Material.Metal)
+        Kit.sign(travel, stop[1], CFrame.new(stop[3], 3.4, stop[4] + 2.8), Vector3.new(6.5, 1.5, 0.18), P.Ink, P.Paper)
+        prompt(pad, "Fast travel", "Teleport", 0, 0, stop[2])
+    end
+    Kit.sign(travel, "FAST TRAVEL", CFrame.new(0, 5.8, -144.2), Vector3.new(14, 2.1, 0.3), P.Teal, P.Paper)
     local delivery = Kit.model(square, "ParcelPost")
     local dcf = CFrame.new(-40, 0.2, -175)
     Kit.part(delivery, "PostalCabinet", Vector3.new(9, 5, 4), dcf * CFrame.new(0, 2.5, 0), P.Teal)
@@ -3174,6 +3208,10 @@ function World:buildPlot(index, cf)
     end
     Kit.part(front, "SignFascia", Vector3.new(29, 3.5, 1), cf * CFrame.new(0, 11.2, -14), color)
     Kit.part(front, "Cornice", Vector3.new(30, 0.6, 1.8), cf * CFrame.new(0, 13.2, -14), P.Cream)
+    for side = -1, 1, 2 do
+        local lightBar = Kit.part(front, "StorefrontGlow", Vector3.new(0.22, 9.5, 0.25), cf * CFrame.new(side * 14.15, 6.2, -14.7), color, Enum.Material.Neon, nil, false)
+        lightBar.Transparency = 0.1
+    end
     local label = Kit.sign(front, "YOUR NEXT CHAPTER", cf * CFrame.new(0, 11.2, -14.6), Vector3.new(26, 2.6, 0.15), color)
     awning(front, cf * CFrame.new(0, 8.8, -15.4), 17, 4.5, color)
     Kit.sign(front, string.format("%02d", index), cf * CFrame.new(-8.2, 5.8, -14.6), Vector3.new(1.4, 1.8, 0.12), P.Ink)
@@ -3223,6 +3261,12 @@ function World:buildInterior(plot, tier)
     Kit.part(model, "TillDisplay", Vector3.new(1.3, 0.75, 0.3), cf * CFrame.new(9.3, 4.6, -8.3), P.Ink)
     Kit.sign(model, "THANK YOU", cf * CFrame.new(6.8, 4.1, -9.3), Vector3.new(2.3, 0.8, 0.1), P.Cream, P.Ink)
     prompt(counter, "Sales, decor &amp; upgrades", "Shop", plot.Owner)
+    local managementPad = Kit.cylinder(model, "TycoonManagementPad", 2.7, 0.24, cf * CFrame.new(8, 0.62, -4.5), plot.Color, Enum.Material.Neon)
+    managementPad.Transparency = 0.12
+    Kit.cylinder(model, "ManagementPadRing", 3.15, 0.12, cf * CFrame.new(8, 0.5, -4.5), P.Ink, Enum.Material.Metal)
+    prompt(managementPad, "Manage shop", "Shop", plot.Owner)
+    local padLabel = Kit.sign(model, "UPGRADES", cf * CFrame.new(8, 1.15, -1.8), Vector3.new(5.8, 1.1, 0.12), P.Ink, P.Paper)
+    padLabel.TextScaled = true
     for slot = 1, 16 do
         local position, surface, shelf
         if slot &lt;= 4 then
@@ -3309,6 +3353,19 @@ function World:near(player, action)
     local plot = self.Owners[player.UserId]; if not plot then return false end
     local position = plot.CF:PointToObjectSpace(root.Position)
     return math.abs(position.X) &lt; 15.5 and position.Z &gt; -18 and position.Z &lt; plot.BackZ + 1 and position.Y &gt; -3 and position.Y &lt; 14
+end
+function World:teleportCFrame(player, destination)
+    local target = self.Destinations[destination]
+    if target then return CFrame.new(target + Vector3.new(0, 3.5, 6), target) end
+    if destination ~= "Shop" and destination ~= "Workbench" then return nil end
+    local plot = self.Owners[player.UserId]
+    if not plot then return nil end
+    local localPosition = if destination == "Workbench"
+        then Vector3.new(-7.5, 4, plot.BackZ - 8)
+        else Vector3.new(0, 4, -8)
+    local position = plot.CF:PointToWorldSpace(localPosition)
+    local lookAt = plot.CF:PointToWorldSpace(if destination == "Workbench" then Vector3.new(-7.5, 3, plot.BackZ - 3.5) else Vector3.new(0, 3, 0))
+    return CFrame.lookAt(position, lookAt)
 end
 function World:render(player, profile, catalog, config)
     local plot = self.Owners[player.UserId]; if not plot then return end
@@ -4566,9 +4623,11 @@ function Pages:itemSummary(parent, item, height)
     else UI.label(parent, "Your mystery " .. definition.Category, 23).Font = Enum.Font.GothamBold end
 end
 function Pages:guideButton(parent, location, label)
-    return UI.button(parent, label or "Show me the way", function()
-        self.Guide(location); self.UI:hide()
-    end, true)
+    return UI.button(parent, "⚡  " .. (label or "Teleport there"), function()
+        self.Send("Teleport", {Destination = location})
+        self.Guide(location)
+        self.UI:hide()
+    end, false)
 end
 function Pages:inventory(context, mode)
     local state = self.State
@@ -4869,7 +4928,10 @@ function Pages:listingEditor(context)
     UI.label(frame, "A 3% fee is charged when you create the listing. Listings expire after 30 minutes or when you leave this server.", 14, UI.Colors.Muted)
     local suggested = math.max(1, math.floor(item.Value * 1.15))
     local input = UI.input(frame, "Whole-dollar price", tostring(self.Drafts.ListingPrice or suggested), true)
-    self:button(frame, "List this find", "MarketList", {Uid = item.Uid, Price = tonumber(input.Text) or 0})
+    UI.button(frame, "List this find", function()
+        self.Drafts.ListingPrice = tonumber(input.Text) or 0
+        self.Send("MarketList", {Uid = item.Uid, Price = self.Drafts.ListingPrice})
+    end)
 end
 
 function Pages:marketPage()
@@ -4920,7 +4982,9 @@ function Pages:tradePage()
     end
     local own = offerCard("You offer", trade.You); offerCard(trade.PartnerName .. " offers", trade.Them)
     local cash = UI.input(own, "Cash amount", tostring(trade.You.Cash), true)
-    self:button(own, "Update cash", "TradeOffer", {TradeId = trade.Id, Cash = tonumber(cash.Text) or 0}, true)
+    UI.button(own, "Update cash", function()
+        self.Send("TradeOffer", {TradeId = trade.Id, Cash = tonumber(cash.Text) or 0})
+    end, true)
     local offered = {}; for _, item in ipairs(trade.You.Items) do offered[item.Uid] = true end
     for _, item in ipairs(self.State.Inventory) do
         if item.Inspected and not item.Slot and (not item.Locked or offered[item.Uid]) then
@@ -5050,12 +5114,12 @@ local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UI = {}
 UI.Colors = {
-    Cream = Color3.fromRGB(244, 237, 221), Panel = Color3.fromRGB(255, 252, 242),
-    Ink = Color3.fromRGB(42, 62, 55), Teal = Color3.fromRGB(57, 119, 103),
-    Muted = Color3.fromRGB(110, 122, 110), Rose = Color3.fromRGB(194, 106, 103),
-    Gold = Color3.fromRGB(218, 168, 65), Line = Color3.fromRGB(216, 216, 195),
-    Light = Color3.fromRGB(231, 237, 218), White = Color3.fromRGB(255, 255, 255),
-    Wood = Color3.fromRGB(146, 103, 72), Night = Color3.fromRGB(28, 43, 38),
+    Cream = Color3.fromRGB(241, 245, 249), Panel = Color3.fromRGB(255, 255, 255),
+    Ink = Color3.fromRGB(22, 30, 48), Teal = Color3.fromRGB(20, 190, 164),
+    Muted = Color3.fromRGB(100, 116, 139), Rose = Color3.fromRGB(246, 96, 114),
+    Gold = Color3.fromRGB(255, 190, 55), Line = Color3.fromRGB(218, 226, 238),
+    Light = Color3.fromRGB(235, 241, 248), White = Color3.fromRGB(255, 255, 255),
+    Wood = Color3.fromRGB(146, 103, 72), Night = Color3.fromRGB(12, 18, 32),
 }
 local Models, SharedConfig
 local function tween(object, properties, duration)
@@ -5070,6 +5134,10 @@ function UI.stroke(object, color, thickness, transparency)
     local stroke = Instance.new("UIStroke"); stroke.Color = color or UI.Colors.Line; stroke.Thickness = thickness or 1
     stroke.Transparency = transparency or 0; stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border; stroke.Parent = object
     return stroke
+end
+function UI.gradient(object, first, second, rotation)
+    local gradient = Instance.new("UIGradient"); gradient.Color = ColorSequence.new(first, second)
+    gradient.Rotation = rotation or 0; gradient.Parent = object; return gradient
 end
 function UI.padding(object, horizontal, vertical)
     local p = Instance.new("UIPadding")
@@ -5094,8 +5162,10 @@ function UI.button(parent, text, callback, secondary)
     button.Font = Enum.Font.GothamBold; button.TextSize = 16; button.TextWrapped = true
     button.TextColor3 = if secondary then UI.Colors.Ink else UI.Colors.Panel
     button.BackgroundColor3 = if secondary then UI.Colors.Light else UI.Colors.Teal
-    button.Size = UDim2.new(1, 0, 0, 48); button.AutoButtonColor = false; button.Parent = parent
-    UI.corner(button, 11); UI.padding(button, 10, 3)
+    button.Size = UDim2.new(1, 0, 0, 50); button.AutoButtonColor = false; button.Parent = parent
+    UI.corner(button, 14); UI.padding(button, 10, 3)
+    UI.stroke(button, if secondary then UI.Colors.Line else UI.Colors.White, 1, if secondary then 0.15 else 0.72)
+    if not secondary then UI.gradient(button, Color3.fromRGB(16, 202, 171), Color3.fromRGB(20, 154, 213), 15) end
     local baseColor = button.BackgroundColor3
     button.MouseEnter:Connect(function() tween(button, {BackgroundColor3 = baseColor:Lerp(UI.Colors.Gold, 0.12)}) end)
     button.MouseLeave:Connect(function() tween(button, {BackgroundColor3 = baseColor}) end)
@@ -5146,12 +5216,13 @@ end
 function UI.card(parent)
     local frame = Instance.new("Frame"); frame.Name = "Card"
     frame.Size = UDim2.new(1, -2, 0, 0); frame.AutomaticSize = Enum.AutomaticSize.Y
-    frame.BackgroundColor3 = UI.Colors.Panel; frame.Parent = parent; UI.corner(frame, 15)
-    UI.stroke(frame, UI.Colors.Line, 1, 0.3); UI.padding(frame, 16, 14); UI.list(frame, 9)
+    frame.BackgroundColor3 = UI.Colors.Panel; frame.Parent = parent; UI.corner(frame, 18)
+    UI.stroke(frame, UI.Colors.Line, 1, 0.08); UI.padding(frame, 18, 16); UI.list(frame, 10)
     return frame
 end
 function UI.hero(parent, kicker, title, body, color)
-    local frame = UI.card(parent); frame.BackgroundColor3 = color or UI.Colors.Teal
+    local frame = UI.card(parent); frame.BackgroundColor3 = color or UI.Colors.Ink
+    if not color then UI.gradient(frame, Color3.fromRGB(19, 31, 55), Color3.fromRGB(25, 95, 109), 20) end
     UI.eyebrow(frame, kicker, UI.Colors.Cream)
     local heading = UI.label(frame, title, 28, UI.Colors.Panel); heading.Font = Enum.Font.GothamBold
     if body and body ~= "" then UI.label(frame, body, 16, UI.Colors.Cream) end
@@ -5251,27 +5322,28 @@ function UI.new()
     gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling; gui.ScreenInsets = Enum.ScreenInsets.CoreUISafeInsets
     gui.Parent = Players.LocalPlayer:WaitForChild("PlayerGui"); self.Gui = gui
     local hud = Instance.new("Frame"); hud.Name = "TownHUD"; hud.Position = UDim2.fromOffset(14, 10)
-    hud.Size = UDim2.new(1, -28, 0, 80); hud.BackgroundColor3 = UI.Colors.Panel; hud.Parent = gui
-    UI.corner(hud, 16); UI.stroke(hud, UI.Colors.Line, 1, 0.15)
-    local badge = Instance.new("Frame"); badge.Size = UDim2.fromOffset(44, 44); badge.Position = UDim2.fromOffset(12, 10)
-    badge.BackgroundColor3 = UI.Colors.Teal; badge.Parent = hud; UI.corner(badge, 12)
-    local icon = UI.label(badge, "✦", 29, UI.Colors.Gold); icon.Size = UDim2.fromScale(1, 1); icon.TextXAlignment = Enum.TextXAlignment.Center
+    hud.Size = UDim2.new(1, -28, 0, 76); hud.BackgroundColor3 = UI.Colors.Night; hud.BackgroundTransparency = 0.05; hud.Parent = gui
+    UI.corner(hud, 19); UI.stroke(hud, UI.Colors.White, 1, 0.82); UI.gradient(hud, Color3.fromRGB(13, 21, 38), Color3.fromRGB(23, 63, 75), 10)
+    local badge = Instance.new("Frame"); badge.Size = UDim2.fromOffset(48, 48); badge.Position = UDim2.fromOffset(12, 10)
+    badge.BackgroundColor3 = UI.Colors.Teal; badge.Parent = hud; UI.corner(badge, 15); UI.gradient(badge, UI.Colors.Teal, Color3.fromRGB(19, 151, 215), 45)
+    local icon = UI.label(badge, "♻", 28, UI.Colors.White); icon.Size = UDim2.fromScale(1, 1); icon.TextXAlignment = Enum.TextXAlignment.Center
     icon.AutomaticSize = Enum.AutomaticSize.None
     self.Brand = UI.label(hud, "THRIFT FLIP", 19); self.Brand.Font = Enum.Font.GothamBlack
-    self.Brand.Position = UDim2.fromOffset(65, 8); self.Brand.Size = UDim2.new(0.54, -65, 0, 28); self.Brand.TextWrapped = false
+    self.Brand.TextColor3 = UI.Colors.White; self.Brand.Position = UDim2.fromOffset(70, 8); self.Brand.Size = UDim2.new(0.54, -70, 0, 28); self.Brand.TextWrapped = false
     self.Brand.AutomaticSize = Enum.AutomaticSize.None
-    self.Balance = UI.label(hud, "Connecting…", 21, UI.Colors.Teal); self.Balance.Font = Enum.Font.GothamBold
+    self.Balance = UI.label(hud, "Connecting…", 21, UI.Colors.Gold); self.Balance.Font = Enum.Font.GothamBold
     self.Balance.Position = UDim2.new(0.54, 0, 0, 8); self.Balance.Size = UDim2.new(0.46, -14, 0, 28)
     self.Balance.TextXAlignment = Enum.TextXAlignment.Right; self.Balance.AutomaticSize = Enum.AutomaticSize.None
     self.Level = UI.label(hud, "EVERY FIND HAS A STORY", 11, UI.Colors.Muted); self.Level.Font = Enum.Font.GothamBold
-    self.Level.Position = UDim2.fromOffset(65, 37); self.Level.Size = UDim2.new(1, -79, 0, 17)
+    self.Level.TextColor3 = Color3.fromRGB(174, 209, 215); self.Level.Position = UDim2.fromOffset(70, 37); self.Level.Size = UDim2.new(1, -84, 0, 17)
     self.Level.AutomaticSize = Enum.AutomaticSize.None; self.Level.TextWrapped = false
-    self.Hint = UI.label(hud, "Find. Restore. Make it yours.", 13, UI.Colors.Muted)
-    self.Hint.Position = UDim2.fromOffset(14, 58); self.Hint.Size = UDim2.new(1, -28, 0, 19)
+    self.Hint = UI.label(hud, "Find. Restore. Make it yours.", 12, Color3.fromRGB(181, 196, 215))
+    self.Hint.Position = UDim2.fromOffset(14, 56); self.Hint.Size = UDim2.new(1, -28, 0, 17)
     self.Hint.AutomaticSize = Enum.AutomaticSize.None; self.Hint.TextTruncate = Enum.TextTruncate.AtEnd; self.Hint.TextWrapped = false
     local nav = Instance.new("Frame"); nav.Name = "Navigation"; nav.AnchorPoint = Vector2.new(0.5, 1)
     nav.Position = UDim2.new(0.5, 0, 1, -9); nav.Size = UDim2.new(1, -24, 0, 62)
-    nav.BackgroundColor3 = UI.Colors.Panel; nav.Parent = gui; nav.ZIndex = 12; UI.corner(nav, 16); UI.padding(nav, 5, 5)
+    nav.BackgroundColor3 = UI.Colors.Night; nav.BackgroundTransparency = 0.04; nav.Parent = gui; nav.ZIndex = 12; UI.corner(nav, 20); UI.padding(nav, 6, 6)
+    UI.stroke(nav, UI.Colors.White, 1, 0.82)
     local navLimit = Instance.new("UISizeConstraint"); navLimit.MaxSize = Vector2.new(650, 62); navLimit.Parent = nav
     local grid = Instance.new("UIGridLayout"); grid.CellSize = UDim2.new(0.2, -4, 1, 0); grid.CellPadding = UDim2.fromOffset(5, 0)
     grid.SortOrder = Enum.SortOrder.LayoutOrder; grid.Parent = nav; self.Nav = nav; self.NavButtons = {}
@@ -5281,11 +5353,11 @@ function UI.new()
     local panel = Instance.new("Frame"); panel.Name = "Journal"; panel.AnchorPoint = Vector2.new(0.5, 0.5)
     panel.Position = UDim2.new(0.5, 0, 0.5, -22); panel.Size = UDim2.new(1, -24, 1, -100)
     panel.BackgroundColor3 = UI.Colors.Cream; panel.Visible = false; panel.Parent = gui; panel.ZIndex = 5
-    UI.corner(panel, 20); UI.stroke(panel, UI.Colors.Panel, 2, 0.1)
+    UI.corner(panel, 24); UI.stroke(panel, UI.Colors.White, 2, 0.05)
     local limit = Instance.new("UISizeConstraint"); limit.MaxSize = Vector2.new(860, 730); limit.MinSize = Vector2.new(270, 170); limit.Parent = panel
     self.Panel = panel
     local accent = Instance.new("Frame"); accent.Position = UDim2.fromOffset(17, 17); accent.Size = UDim2.fromOffset(5, 39)
-    accent.BackgroundColor3 = UI.Colors.Gold; accent.Parent = panel; UI.corner(accent, 3)
+    accent.BackgroundColor3 = UI.Colors.Teal; accent.Parent = panel; UI.corner(accent, 3); UI.gradient(accent, UI.Colors.Teal, Color3.fromRGB(24, 147, 222), 90)
     self.Title = UI.label(panel, "Your finds", 25); self.Title.Font = Enum.Font.GothamBold
     self.Title.Position = UDim2.fromOffset(32, 11); self.Title.Size = UDim2.new(1, -100, 0, 31); self.Title.AutomaticSize = Enum.AutomaticSize.None
     self.Title.TextTruncate = Enum.TextTruncate.AtEnd; self.Title.TextWrapped = false
@@ -5314,13 +5386,14 @@ function UI.new()
 end
 function UI:addNav(name, symbol, callback)
     local button = UI.button(self.Nav, symbol .. "\n" .. name, callback, true)
-    button.TextSize = 14; button.BackgroundColor3 = UI.Colors.Panel; button.ZIndex = 13
+    button.TextSize = 14; button.BackgroundColor3 = UI.Colors.Night; button.TextColor3 = Color3.fromRGB(202, 215, 231); button.ZIndex = 13
     self.NavButtons[name] = button; return button
 end
 function UI:selectNav(name)
     for label, button in pairs(self.NavButtons) do
-        button.BackgroundColor3 = if label == name then UI.Colors.Teal else UI.Colors.Panel
-        button.TextColor3 = if label == name then UI.Colors.Panel else UI.Colors.Ink
+        local selected = label == name or (label == "Find" and name == "Source")
+        button.BackgroundColor3 = if selected then UI.Colors.Teal else UI.Colors.Night
+        button.TextColor3 = if selected then UI.Colors.White else Color3.fromRGB(202, 215, 231)
     end
 end
 function UI:setSubtitle(text) self.Subtitle.Text = string.upper(text) end

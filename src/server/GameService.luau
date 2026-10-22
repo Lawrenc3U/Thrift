@@ -24,7 +24,7 @@ local function shallowPublicItem(item)
 end
 function GameService.new(data, world, event)
     return setmetatable({Data = data, World = world, Event = event,
-        Random = Random.new(), Sessions = {}, Offers = {}, Cooldowns = {}, Buckets = {},
+        Random = Random.new(), Sessions = {}, Offers = {}, Cooldowns = {}, Buckets = {}, TeleportAt = {},
         Auction = nil, NextAuction = os.time() + 45, NextCustomer = {}, Ready = {},
         Closing = false, JoinedAt = {}, Showcase = {Week = Economy.week(os.time()), Entries = {}, Votes = {}}}, GameService)
 end
@@ -432,12 +432,25 @@ function GameService:settings(player, payload)
         profile.Settings[payload.Name] = payload.Enabled; self:snapshot(player)
     end
 end
+function GameService:teleport(player, payload)
+    if type(payload.Destination) ~= "string" or #payload.Destination > 20 then return end
+    local now = os.clock()
+    if now - (self.TeleportAt[player.UserId] or 0) < 1.5 then return end
+    if self.Sessions[player.UserId] then return self:notify(player, "Finish or cancel your restoration first.") end
+    local destination = self.World:teleportCFrame(player, payload.Destination)
+    local character = player.Character
+    local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+    if not destination or not humanoid or humanoid.Health <= 0 then return self:notify(player, "That destination is not available yet.") end
+    self.TeleportAt[player.UserId] = now
+    character:PivotTo(destination)
+    self:notify(player, "Arrived at " .. payload.Destination .. ".")
+end
 local handlers = {
     Source = GameService.source, Inspect = GameService.inspect, BeginRestore = GameService.beginRestore,
     RestoreInput = GameService.restoreInput, FinishRestore = GameService.finishRestore,
     Display = GameService.display, Haggle = GameService.haggle, Upgrade = GameService.upgrade,
     Quest = GameService.quest, Bid = GameService.bid, Rate = GameService.rating, DecorPlace = GameService.decorPlace,
-    Showcase = GameService.showcase, Settings = GameService.settings,
+    Showcase = GameService.showcase, Settings = GameService.settings, Teleport = GameService.teleport,
 }
 function GameService:request(player, action, payload)
     if self.Closing or not self:profile(player) then return end
