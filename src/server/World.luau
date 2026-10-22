@@ -1219,6 +1219,22 @@ end
 function World:clearHeld(player)
     local character = player and player.Character
     if not character then return end
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    if humanoid then
+        for _, child in ipairs(humanoid:GetChildren()) do
+            if child:GetAttribute("ThriftCarryIK") then child:Destroy() end
+        end
+    end
+    local torso = character:FindFirstChild("Torso")
+    if torso then
+        for _, name in ipairs({"Left Shoulder", "Right Shoulder"}) do
+            local shoulder = torso:FindFirstChild(name)
+            local original = shoulder and shoulder:GetAttribute("ThriftOriginalC0")
+            if shoulder and typeof(original) == "CFrame" then
+                shoulder.C0 = original; shoulder:SetAttribute("ThriftOriginalC0", nil)
+            end
+        end
+    end
     for _, child in ipairs(character:GetChildren()) do
         if child:GetAttribute("ThriftHeldItem") then child:Destroy() end
     end
@@ -1227,17 +1243,18 @@ function World:holdItem(player, definition, item, config)
     local character = player.Character
     local humanoid = character and character:FindFirstChildOfClass("Humanoid")
     local root = character and character:FindFirstChild("HumanoidRootPart")
-    local hand = character and (character:FindFirstChild("RightHand") or character:FindFirstChild("Right Arm"))
-    if not character or not humanoid or humanoid.Health <= 0 or not root or not hand then return false end
+    if not character or not humanoid or humanoid.Health <= 0 or not root then return false end
     self:clearHeld(player)
 
     local model = ItemModels.create(character, definition, item, CFrame.new(), config)
     model.Name = "Held " .. definition.Name; model:SetAttribute("ThriftHeldItem", true); model:SetAttribute("Uid", item.Uid)
     local _, initialSize = model:GetBoundingBox()
     local largest = math.max(initialSize.X, initialSize.Y, initialSize.Z, 0.01)
-    model:ScaleTo(math.min(1.1, 2.7 / largest))
-    local boxCF = model:GetBoundingBox()
-    local target = root.CFrame * CFrame.new(0.75, 0.05, -1.35) * CFrame.Angles(0, math.pi, 0)
+    model:ScaleTo(math.min(1.1, 2.35 / largest))
+    local boxCF, carrySize = model:GetBoundingBox()
+    -- ItemModels face -Z, the same direction as the avatar. Keeping that
+    -- orientation lets nearby players see the front of the treasure.
+    local target = root.CFrame * CFrame.new(0, 0.22, -1.45)
     model:PivotTo(target * boxCF:Inverse() * model:GetPivot())
 
     local holder = Instance.new("Part"); holder.Name = "CarryGrip"; holder.Size = Vector3.new(0.2, 0.2, 0.2)
@@ -1249,8 +1266,48 @@ function World:holdItem(player, definition, item, config)
             local weld = Instance.new("WeldConstraint"); weld.Part0 = holder; weld.Part1 = part; weld.Parent = holder
         end
     end
-    local handWeld = Instance.new("WeldConstraint"); handWeld.Name = "CarryWeld"
-    handWeld.Part0 = hand; handWeld.Part1 = holder; handWeld.Parent = holder; holder.Anchored = false
+    local rootWeld = Instance.new("WeldConstraint"); rootWeld.Name = "CarryWeld"
+    rootWeld.Part0 = root; rootWeld.Part1 = holder; rootWeld.Parent = holder; holder.Anchored = false
+
+    local gripX = math.clamp(carrySize.X * 0.42, 0.32, 0.92)
+    local gripY = -math.clamp(carrySize.Y * 0.12, 0.08, 0.24)
+    local gripZ = -math.clamp(carrySize.Z * 0.08, 0.04, 0.18)
+    local function gripTarget(name, x)
+        local grip = Instance.new("Part"); grip.Name = name; grip.Size = Vector3.new(0.12, 0.12, 0.12)
+        grip.CFrame = target * CFrame.new(x, gripY, gripZ); grip.Transparency = 1; grip.Massless = true
+        grip.CanCollide = false; grip.CanTouch = false; grip.CanQuery = false; grip.Parent = model
+        local weld = Instance.new("WeldConstraint"); weld.Part0 = holder; weld.Part1 = grip; weld.Parent = grip
+        local attachment = Instance.new("Attachment"); attachment.Name = name .. "Attachment"; attachment.Parent = grip
+        return attachment
+    end
+    local leftTarget = gripTarget("LeftCarryTarget", -gripX)
+    local rightTarget = gripTarget("RightCarryTarget", gripX)
+
+    local leftUpper, rightUpper = character:FindFirstChild("LeftUpperArm"), character:FindFirstChild("RightUpperArm")
+    local leftHand, rightHand = character:FindFirstChild("LeftHand"), character:FindFirstChild("RightHand")
+    if leftUpper and rightUpper and leftHand and rightHand then
+        local function addIK(name, chainRoot, endEffector, targetAttachment)
+            local control = Instance.new("IKControl"); control.Name = name; control.Type = Enum.IKControlType.Position
+            control.ChainRoot = chainRoot; control.EndEffector = endEffector; control.Target = targetAttachment
+            control.Weight = 1; control.SmoothTime = 0.06; control.Enabled = true
+            control:SetAttribute("ThriftCarryIK", true); control.Parent = humanoid
+        end
+        addIK("LeftThriftCarry", leftUpper, leftHand, leftTarget)
+        addIK("RightThriftCarry", rightUpper, rightHand, rightTarget)
+    else
+        -- R6 has no elbow chain for IK, so rotate both shoulder bases into a
+        -- stable two-arm carry pose. C0 is restored when the item is put away.
+        local torso = character:FindFirstChild("Torso")
+        if torso then
+            for _, data in ipairs({{"Left Shoulder", 1}, {"Right Shoulder", -1}}) do
+                local shoulder = torso:FindFirstChild(data[1])
+                if shoulder and shoulder:IsA("Motor6D") then
+                    shoulder:SetAttribute("ThriftOriginalC0", shoulder.C0)
+                    shoulder.C0 = shoulder.C0 * CFrame.Angles(math.rad(58), 0, math.rad(data[2] * 18))
+                end
+            end
+        end
+    end
     return true
 end
 function World:customer(userId, name)
