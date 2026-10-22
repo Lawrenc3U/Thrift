@@ -264,20 +264,8 @@ function Pages:slotsPage(context)
 end
 function Pages:shopPage()
     local state = self.State
-    local offer = state.Offer
-    if offer then
-        local welcome = UI.hero(self.UI.Content, "A customer found something they love", offer.Customer, "A good find deserves a good home.")
-        local item = findItem(state, offer.Uid)
-        if item then UI.preview(welcome, Catalog.ById[item.DefId], item, 175, false) end
-        UI.label(welcome, money(offer.Amount), 34, UI.Colors.Panel).Font = Enum.Font.GothamBold
-        self:timer(welcome, "They can stay for ", offer.Ends)
-        self:button(welcome, "Accept & make their day", "Haggle", {Choice = "Accept"})
-        if not offer.Countered then self:button(welcome, "Ask for 12% more · 65% chance", "Haggle", {Choice = "Counter"}, true) end
-        self:button(welcome, "Politely decline", "Haggle", {Choice = "Decline"}, true)
-    else
-        local hero = UI.hero(self.UI.Content, "Your little corner of the street", Config.Tiers[state.Tier].Name, "Display your favorite finds. Customers bring the conversation, you make the deal.")
-        self:guideButton(hero, "Shop", "Take me to my shop")
-    end
+    local hero = UI.hero(self.UI.Content, "Your little corner of the street", Config.Tiers[state.Tier].Name, "Display your favorite finds. Customers bring the conversation, you make the deal.")
+    self:guideButton(hero, "Shop", "Take me to my shop")
     local overview = self:card("A shop that feels like you")
     local displayed = 0; for _, item in ipairs(state.Inventory) do if item.Slot then displayed += 1 end end
     UI.label(overview, displayed .. "/" .. Config.Tiers[state.Tier].Slots .. " displays filled  •  " .. state.Reputation .. " reputation", 17)
@@ -285,7 +273,32 @@ function Pages:shopPage()
     local links = UI.row(overview)
     UI.rowButton(links, "Your displays", function() self.Open("Displays") end, 2, true)
     UI.rowButton(links, "Decorate", function() self.Open("Decor") end, 2, true)
-    self:nav(overview, "Themes & collections", "Themes")
+    if state.Offer then
+        local waiting = self:card(state.Offer.Customer .. " is waiting")
+        UI.label(waiting, "Current offer: " .. money(state.Offer.Amount), 18, UI.Colors.Teal).Font = Enum.Font.GothamBold
+        self:nav(waiting, "Review customer offer", "Offer", nil, false)
+    end
+end
+function Pages:offerPage()
+    local offer = self.State.Offer
+    if not offer then
+        local gone = UI.hero(self.UI.Content, "This customer has moved on", "Another treasure will catch someone's eye soon", "Keep your displays stocked and a new offer will arrive.")
+        return self:nav(gone, "Back to your shop", "Shop")
+    end
+    local welcome = UI.hero(self.UI.Content, "A customer found something they love", offer.Customer, "Their offer is ready now — no trip to the counter required.")
+    local item = findItem(self.State, offer.Uid)
+    if item then
+        UI.preview(welcome, Catalog.ById[item.DefId], item, 175, false)
+        UI.label(welcome, Catalog.ById[item.DefId].Name, 18, UI.Colors.Panel).Font = Enum.Font.GothamBold
+    end
+    UI.label(welcome, money(offer.Amount), 34, UI.Colors.Panel).Font = Enum.Font.GothamBold
+    self:timer(welcome, "Offer expires in ", offer.Ends)
+    self:button(welcome, "Accept offer", "Haggle", {Choice = "Accept"})
+    if not offer.Countered then self:button(welcome, "Counter for 12% more · 65% chance", "Haggle", {Choice = "Counter"}, true) end
+    self:button(welcome, "Decline", "Haggle", {Choice = "Decline"}, true)
+end
+function Pages:expandPage()
+    local state = self.State
     local upgrades = self:card("Room to grow")
     local nextTier = Config.Tiers[state.Tier + 1]
     if nextTier then
@@ -294,6 +307,9 @@ function Pages:shopPage()
         if state.Level >= nextTier.Level and state.AvailableCash >= nextTier.Cost then self:button(upgrades, "Upgrade your shop", "Upgrade", {Kind = "Shop"})
         else UI.disabled(upgrades, if state.Level < nextTier.Level then "Keep creating to reach level " .. nextTier.Level else "Save up " .. money(nextTier.Cost)) end
     else UI.disabled(upgrades, "✦ Your shop has reached its grandest tier") end
+end
+function Pages:toolsPage()
+    local state = self.State
     local tools = self:card("The right tools, a little more magic")
     UI.label(tools, "Tool level " .. state.Tool .. "/" .. #Config.ToolCosts .. " • steadier restoration and better results", 17)
     local cost = Config.ToolCosts[state.Tool + 1]
@@ -591,6 +607,20 @@ function Pages:adminPage()
         self.Send("Admin", {Command = "GiveItem", Target = target.Text, Query = query.Text, Rarity = draft.Rarity})
     end, false)
 
+    local catalogCard = self:card("All " .. #Catalog.Items .. " collectible items")
+    UI.label(catalogCard, "Choose an exact item, then use the grant button above.", 14, UI.Colors.Muted)
+    local catalogGrid = UI.grid(catalogCard, 48, 155)
+    for _, definition in ipairs(Catalog.Items) do
+        local itemDefinition = definition
+        local choice = UI.button(catalogGrid, itemDefinition.Name, function()
+            draft.Target = target.Text; draft.Query = itemDefinition.Id; self.Open("Admin")
+        end, true)
+        choice.TextSize = 12; choice.TextTruncate = Enum.TextTruncate.AtEnd
+        if draft.Query == itemDefinition.Id then
+            choice.BackgroundColor3 = UI.Colors.Teal; choice.TextColor3 = UI.Colors.White
+        end
+    end
+
     local economy = self:card("Economy and progression")
     local cash = UI.input(economy, "Cash amount", draft.Cash, true)
     cash.FocusLost:Connect(function() draft.Cash = cash.Text end)
@@ -651,8 +681,9 @@ function Pages:render(page, context)
         Source=function() self:sourcePage("Dumpster") end, Estate=function() self:sourcePage("Estate") end,
         Delivery=function() self:sourcePage("Delivery") end, Workbench=function() self:inventory(context,"Workbench") end,
         Restore=function() self:restorePage(context) end, Display=function() self:inventory(context,"Display") end,
-        Slots=function() self:slotsPage(context) end, Shop=function() self:shopPage() end, Displays=function() self:displaysPage() end,
-        Themes=function() self:themesPage() end, Decor=function() self:decorPage() end, Arrange=function() self:arrangePage(context) end,
+        Slots=function() self:slotsPage(context) end, Shop=function() self:shopPage() end, Offer=function() self:offerPage() end,
+        Displays=function() self:displaysPage() end, Themes=function() self:themesPage() end, Tools=function() self:toolsPage() end,
+        Expand=function() self:expandPage() end, Decor=function() self:decorPage() end, Arrange=function() self:arrangePage(context) end,
         Quests=function() self:questsPage() end, Collection=function() self:collectionPage() end, Auction=function() self:auctionPage() end,
         Market=function() self:marketPage() end, List=function() self:listPage() end, ListingEditor=function() self:listingEditor(context) end,
         Trade=function() self:tradePage() end, Showcase=function() self:showcasePage() end, Events=function() self:eventsPage() end,

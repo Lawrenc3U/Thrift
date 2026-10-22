@@ -390,7 +390,6 @@ function GameService:haggle(player, payload)
     local profile = self:profile(player)
     local offer = self.Offers[player.UserId]
     if not offer or os.time() > offer.Ends then return end
-    if not self.World:near(player, "Shop") then return self:notify(player, "Meet your customer in your shop.") end
     local item, index = self:find(profile, offer.Uid)
     if not item or not item.Slot then self.Offers[player.UserId] = nil; return end
     if payload.Choice == "Decline" then self.Offers[player.UserId] = nil
@@ -410,7 +409,7 @@ function GameService:haggle(player, payload)
 end
 function GameService:upgrade(player, payload)
     local profile = self:profile(player)
-    if not self.World:near(player, "Shop") then return self:notify(player, "Upgrade at your shop counter.") end
+    if payload.Kind == "Decor" and not self.World:near(player, "Shop") then return self:notify(player, "Decorate inside your shop.") end
     if payload.Kind == "Shop" then
         local nextTier = Config.Tiers[profile.Tier + 1]
         if not nextTier then return self:notify(player, "Your shop is fully upgraded!") end

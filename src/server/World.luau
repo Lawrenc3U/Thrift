@@ -966,15 +966,16 @@ function World:buildPlot(index, cf)
     for _, x in ipairs({-7, 7}) do Kit.part(front, "SignPost", Vector3.new(0.5, 3.2, 0.5), cf * CFrame.new(x, 14.6, -11.5), E.Charcoal, Enum.Material.Metal) end
     local label = Kit.sign(front, "SHOP " .. index, cf * CFrame.new(0, 14.8, -11.5), Vector3.new(18, 3, 0.5), color, E.Cream)
     Kit.part(front, "FrontStep", Vector3.new(5, 0.12, 6), cf * CFrame.new(0, 0.07, -16.3), E.Stone, Enum.Material.Pavement)
-    for _, x in ipairs({-9.6, -4.4}) do Kit.part(front, "SalePost", Vector3.new(0.4, 3.4, 0.4), cf * CFrame.new(x, 1.7, -17.5), E.Wood, Enum.Material.Wood) end
-    Kit.sign(front, "FOR SALE", cf * CFrame.new(-7, 3.6, -17.6), Vector3.new(6.6, 2.4, 0.3), E.Cream, E.Dark)
+    local forSale = Kit.model(front, "ForSale")
+    for _, x in ipairs({-9.6, -4.4}) do Kit.part(forSale, "SalePost", Vector3.new(0.4, 3.4, 0.4), cf * CFrame.new(x, 1.7, -17.5), E.Wood, Enum.Material.Wood) end
+    Kit.sign(forSale, "FOR SALE", cf * CFrame.new(-7, 3.6, -17.6), Vector3.new(6.6, 2.4, 0.3), E.Cream, E.Dark)
     for side = -1, 1, 2 do
         local rackX = side * 9
         Kit.part(front, "RackBar", Vector3.new(7, 0.3, 0.3), cf * CFrame.new(rackX, 4.5, -10.2), E.Steel, Enum.Material.Metal)
         for item = 0, 5 do Kit.part(front, "RackClothing", Vector3.new(0.8, 2.4 + item % 2 * 0.6, 0.4), cf * CFrame.new(rackX - 3 + item * 1.1, 3, -10.2), ({E.Coral,E.Gold,E.Teal,E.Purple,E.Cream})[item % 5 + 1], Enum.Material.Fabric, nil, false) end
     end
     Kit.part(front, "ShowroomRug", Vector3.new(12, 0.1, 10), cf * CFrame.new(0, 0.55, 2), color, Enum.Material.Fabric, nil, false)
-    local plot = {Model = model, CF = cf, Label = label, Slots = {}, Items = {}, Index = index,
+    local plot = {Model = model, Storefront = front, ForSale = forSale, CF = cf, Label = label, Slots = {}, Items = {}, Index = index,
         Color = color, WallColor = wallColor, Tier = 0, Depth = 28, HalfWidth = 15, RenderKeys = {}, DecorKey = "", Owner = nil}
     self.Plots[index] = plot
     self:buildInterior(plot, 1)
@@ -1020,16 +1021,7 @@ function World:buildInterior(plot, tier)
     Kit.part(model, "TillBase", Vector3.new(1.8, 0.55, 1.4), cf * CFrame.new(10.3, 4, -3), E.Cream)
     Kit.part(model, "TillDisplay", Vector3.new(1.3, 0.75, 0.3), cf * CFrame.new(10.3, 4.6, -2.5), E.Dark)
     Kit.sign(model, "THANK YOU", cf * CFrame.new(7.8, 4.1, -3.4), Vector3.new(2.3, 0.8, 0.1), E.Cream, E.Dark)
-    prompt(counter, "Sales, decor & upgrades", "Shop", plot.Owner)
-    local upgradePads = {{"EXPAND", 4.5, P.Teal}, {"TOOLS", 8, P.Gold}, {"STYLE", 11.5, P.Rose}}
-    for _, upgrade in ipairs(upgradePads) do
-        local managementPad = Kit.cylinder(model, upgrade[1] .. "Pad", 1.45, 0.24, cf * CFrame.new(upgrade[2], 0.62, -4.5), upgrade[3], Enum.Material.Neon)
-        managementPad.Transparency = 0.08
-        Kit.cylinder(model, "ManagementPadRing", 1.72, 0.12, cf * CFrame.new(upgrade[2], 0.5, -4.5), P.Ink, Enum.Material.Metal)
-        prompt(managementPad, "Open " .. string.lower(upgrade[1]), "Shop", plot.Owner)
-        local padLabel = Kit.sign(model, upgrade[1], cf * CFrame.new(upgrade[2], 1.05, -2.95), Vector3.new(3.1, 0.72, 0.1), P.Ink, P.Paper)
-        padLabel.TextScaled = true
-    end
+    prompt(counter, "Manage displays & decor", "Shop", plot.Owner)
     for slot = 1, 16 do
         local position, surface, shelf
         if slot <= 4 then
@@ -1092,6 +1084,7 @@ function World:assign(player)
     for index, plot in ipairs(self.Plots) do
         if not plot.Owner then
             plot.Owner = player.UserId; self.Owners[player.UserId] = plot
+            plot.ForSale.Parent = nil
             for _, child in ipairs(plot.Model:GetDescendants()) do if child:IsA("ProximityPrompt") then child:SetAttribute("Owner", player.UserId) end end
             return index
         end
@@ -1102,6 +1095,7 @@ function World:release(userId)
     local plot = self.Owners[userId]; if not plot then return end
     for _, item in pairs(plot.Items) do item:Destroy() end
     plot.Items = {}; plot.RenderKeys = {}; plot.Owner = nil; plot.Label.Text = "SHOP " .. plot.Index
+    plot.ForSale.Parent = plot.Storefront
     self:buildInterior(plot, 1)
     local decor = plot.Model:FindFirstChild("Decorations"); if decor then decor:Destroy() end
     for _, child in ipairs(plot.Model:GetDescendants()) do if child:IsA("ProximityPrompt") then child:SetAttribute("Owner", 0) end end

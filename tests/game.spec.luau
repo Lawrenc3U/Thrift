@@ -175,7 +175,8 @@ test("admin tools reject ordinary players and validate server-side grants", func
     s:admin(p, {Command = "Cash", Amount = 0 / 0}); equal(profile.Cash, startingCash + 1000)
 end)
 test("sale executes once and removes the exact inventory item", function()
-    local s, p, profile = fixture(); local item = addItem(profile); item.Slot = 1
+    local s, p, profile, world = fixture(); local item = addItem(profile); item.Slot = 1
+    world.Allowed = false -- Automatic offers can be answered from anywhere in town.
     s.Offers[101] = {Uid = item.Uid, Amount = 200, Ends = os.time() + 20}
     s:haggle(p, {Choice = "Accept"}); equal(profile.Cash, 275); equal(#profile.Inventory, 0)
     s:haggle(p, {Choice = "Accept"}); equal(profile.Cash, 275); equal(profile.Stats.Sold, 1)
@@ -195,6 +196,12 @@ test("auction reservations prevent overspending without persisting escrow", func
     s:bid(p, {Amount = 900}); equal(profile.Cash, 1000); equal(s:spendable(p, profile), 100)
     s:upgrade(p, {Kind = "Tool"}); equal(profile.Tool, 0); equal(profile.Cash, 1000)
     s:bid(p, {Amount = 999999}); equal(s.Auction.Bid, 900)
+end)
+test("sidebar shop upgrades work from anywhere in town", function()
+    local s, p, profile, world = fixture(); profile.Cash = 1000
+    world.Allowed = false
+    s:upgrade(p, {Kind = "Tool"})
+    equal(profile.Tool, 1); assert(profile.Cash < 1000)
 end)
 test("auction settles cash and item in the same winning profile", function()
     local s, p, profile = fixture(); local item = addItem(profile); table.clear(profile.Inventory)

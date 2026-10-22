@@ -292,8 +292,9 @@ function UI.new()
     local grid = Instance.new("UIGridLayout"); grid.CellSize = UDim2.new(0.2, -4, 1, 0); grid.CellPadding = UDim2.fromOffset(5, 0)
     grid.SortOrder = Enum.SortOrder.LayoutOrder; grid.Parent = nav; self.Nav = nav; self.NavButtons = {}
     local actions = Instance.new("Frame"); actions.Name = "QuickActions"; actions.AnchorPoint = Vector2.new(1, 0.5)
-    actions.Position = UDim2.new(1, -14, 0.64, 0); actions.Size = UDim2.fromOffset(74, 214)
-    actions.BackgroundTransparency = 1; actions.Parent = gui; actions.ZIndex = 12; UI.list(actions, 8); self.QuickActions = actions
+    actions.Position = UDim2.new(1, -14, 0.5, 0); actions.Size = UDim2.fromOffset(74, 0)
+    actions.BackgroundTransparency = 1; actions.Parent = gui; actions.ZIndex = 12; UI.list(actions, 6)
+    self.QuickActions = actions; self.QuickActionCount = 0
     local camera = workspace.CurrentCamera
     local function fitQuickActions() actions.Visible = not camera or camera.ViewportSize.X >= 700 end
     if camera then camera:GetPropertyChangedSignal("ViewportSize"):Connect(fitQuickActions) end
@@ -343,10 +344,16 @@ function UI.new()
 end
 function UI:addQuickAction(text, color, callback)
     local button = UI.button(self.QuickActions, text, callback, true)
-    button.Size = UDim2.new(1, 0, 0, 66); button.TextSize = 12; button.ZIndex = 13
+    self.QuickActionCount += 1
+    button.LayoutOrder = self.QuickActionCount
+    button.Size = UDim2.new(1, 0, 0, 52); button.TextSize = 11; button.ZIndex = 13
     for _, child in ipairs(button:GetChildren()) do if child:IsA("UIGradient") then child:Destroy() end end
     button.BackgroundColor3 = Color3.fromRGB(255, 248, 232); button.TextColor3 = Color3.fromRGB(8, 91, 84)
-    UI.corner(button, 16)
+    UI.corner(button, 15)
+    local accent = Instance.new("Frame"); accent.Name = "Accent"; accent.Size = UDim2.fromOffset(5, 25)
+    accent.AnchorPoint = Vector2.new(0, 0.5); accent.Position = UDim2.new(0, 6, 0.5, 0)
+    accent.BackgroundColor3 = color; accent.BorderSizePixel = 0; accent.ZIndex = 14; accent.Parent = button; UI.corner(accent, 3)
+    self.QuickActions.Size = UDim2.fromOffset(74, self.QuickActionCount * 52 + math.max(0, self.QuickActionCount - 1) * 6)
     return button
 end
 function UI:addNav(name, symbol, callback)

@@ -2220,7 +2220,6 @@ function GameService:haggle(player, payload)
     local profile = self:profile(player)
     local offer = self.Offers[player.UserId]
     if not offer or os.time() &gt; offer.Ends then return end
-    if not self.World:near(player, "Shop") then return self:notify(player, "Meet your customer in your shop.") end
     local item, index = self:find(profile, offer.Uid)
     if not item or not item.Slot then self.Offers[player.UserId] = nil; return end
     if payload.Choice == "Decline" then self.Offers[player.UserId] = nil
@@ -2240,7 +2239,7 @@ function GameService:haggle(player, payload)
 end
 function GameService:upgrade(player, payload)
     local profile = self:profile(player)
-    if not self.World:near(player, "Shop") then return self:notify(player, "Upgrade at your shop counter.") end
+    if payload.Kind == "Decor" and not self.World:near(player, "Shop") then return self:notify(player, "Decorate inside your shop.") end
     if payload.Kind == "Shop" then
         local nextTier = Config.Tiers[profile.Tier + 1]
         if not nextTier then return self:notify(player, "Your shop is fully upgraded!") end
@@ -4174,15 +4173,16 @@ function World:buildPlot(index, cf)
     for _, x in ipairs({-7, 7}) do Kit.part(front, "SignPost", Vector3.new(0.5, 3.2, 0.5), cf * CFrame.new(x, 14.6, -11.5), E.Charcoal, Enum.Material.Metal) end
     local label = Kit.sign(front, "SHOP " .. index, cf * CFrame.new(0, 14.8, -11.5), Vector3.new(18, 3, 0.5), color, E.Cream)
     Kit.part(front, "FrontStep", Vector3.new(5, 0.12, 6), cf * CFrame.new(0, 0.07, -16.3), E.Stone, Enum.Material.Pavement)
-    for _, x in ipairs({-9.6, -4.4}) do Kit.part(front, "SalePost", Vector3.new(0.4, 3.4, 0.4), cf * CFrame.new(x, 1.7, -17.5), E.Wood, Enum.Material.Wood) end
-    Kit.sign(front, "FOR SALE", cf * CFrame.new(-7, 3.6, -17.6), Vector3.new(6.6, 2.4, 0.3), E.Cream, E.Dark)
+    local forSale = Kit.model(front, "ForSale")
+    for _, x in ipairs({-9.6, -4.4}) do Kit.part(forSale, "SalePost", Vector3.new(0.4, 3.4, 0.4), cf * CFrame.new(x, 1.7, -17.5), E.Wood, Enum.Material.Wood) end
+    Kit.sign(forSale, "FOR SALE", cf * CFrame.new(-7, 3.6, -17.6), Vector3.new(6.6, 2.4, 0.3), E.Cream, E.Dark)
     for side = -1, 1, 2 do
         local rackX = side * 9
         Kit.part(front, "RackBar", Vector3.new(7, 0.3, 0.3), cf * CFrame.new(rackX, 4.5, -10.2), E.Steel, Enum.Material.Metal)
         for item = 0, 5 do Kit.part(front, "RackClothing", Vector3.new(0.8, 2.4 + item % 2 * 0.6, 0.4), cf * CFrame.new(rackX - 3 + item * 1.1, 3, -10.2), ({E.Coral,E.Gold,E.Teal,E.Purple,E.Cream})[item % 5 + 1], Enum.Material.Fabric, nil, false) end
     end
     Kit.part(front, "ShowroomRug", Vector3.new(12, 0.1, 10), cf * CFrame.new(0, 0.55, 2), color, Enum.Material.Fabric, nil, false)
-    local plot = {Model = model, CF = cf, Label = label, Slots = {}, Items = {}, Index = index,
+    local plot = {Model = model, Storefront = front, ForSale = forSale, CF = cf, Label = label, Slots = {}, Items = {}, Index = index,
         Color = color, WallColor = wallColor, Tier = 0, Depth = 28, HalfWidth = 15, RenderKeys = {}, DecorKey = "", Owner = nil}
     self.Plots[index] = plot
     self:buildInterior(plot, 1)
@@ -4228,16 +4228,7 @@ function World:buildInterior(plot, tier)
     Kit.part(model, "TillBase", Vector3.new(1.8, 0.55, 1.4), cf * CFrame.new(10.3, 4, -3), E.Cream)
     Kit.part(model, "TillDisplay", Vector3.new(1.3, 0.75, 0.3), cf * CFrame.new(10.3, 4.6, -2.5), E.Dark)
     Kit.sign(model, "THANK YOU", cf * CFrame.new(7.8, 4.1, -3.4), Vector3.new(2.3, 0.8, 0.1), E.Cream, E.Dark)
-    prompt(counter, "Sales, decor &amp; upgrades", "Shop", plot.Owner)
-    local upgradePads = {{"EXPAND", 4.5, P.Teal}, {"TOOLS", 8, P.Gold}, {"STYLE", 11.5, P.Rose}}
-    for _, upgrade in ipairs(upgradePads) do
-        local managementPad = Kit.cylinder(model, upgrade[1] .. "Pad", 1.45, 0.24, cf * CFrame.new(upgrade[2], 0.62, -4.5), upgrade[3], Enum.Material.Neon)
-        managementPad.Transparency = 0.08
-        Kit.cylinder(model, "ManagementPadRing", 1.72, 0.12, cf * CFrame.new(upgrade[2], 0.5, -4.5), P.Ink, Enum.Material.Metal)
-        prompt(managementPad, "Open " .. string.lower(upgrade[1]), "Shop", plot.Owner)
-        local padLabel = Kit.sign(model, upgrade[1], cf * CFrame.new(upgrade[2], 1.05, -2.95), Vector3.new(3.1, 0.72, 0.1), P.Ink, P.Paper)
-        padLabel.TextScaled = true
-    end
+    prompt(counter, "Manage displays &amp; decor", "Shop", plot.Owner)
     for slot = 1, 16 do
         local position, surface, shelf
         if slot &lt;= 4 then
@@ -4300,6 +4291,7 @@ function World:assign(player)
     for index, plot in ipairs(self.Plots) do
         if not plot.Owner then
             plot.Owner = player.UserId; self.Owners[player.UserId] = plot
+            plot.ForSale.Parent = nil
             for _, child in ipairs(plot.Model:GetDescendants()) do if child:IsA("ProximityPrompt") then child:SetAttribute("Owner", player.UserId) end end
             return index
         end
@@ -4310,6 +4302,7 @@ function World:release(userId)
     local plot = self.Owners[userId]; if not plot then return end
     for _, item in pairs(plot.Items) do item:Destroy() end
     plot.Items = {}; plot.RenderKeys = {}; plot.Owner = nil; plot.Label.Text = "SHOP " .. plot.Index
+    plot.ForSale.Parent = plot.Storefront
     self:buildInterior(plot, 1)
     local decor = plot.Model:FindFirstChild("Decorations"); if decor then decor:Destroy() end
     for _, child in ipairs(plot.Model:GetDescendants()) do if child:IsA("ProximityPrompt") then child:SetAttribute("Owner", 0) end end
@@ -4880,6 +4873,9 @@ end
 ui:addQuickAction("ϟ\nTravel", UI.Colors.Teal, function() open("Town") end)
 ui:addQuickAction("▣\nRewards", UI.Colors.Rose, function() open("Quests") end)
 ui:addQuickAction("◇\nStore", Color3.fromRGB(122, 92, 224), function() open("Boutique") end)
+ui:addQuickAction("✦\nStyle", Color3.fromRGB(227, 112, 104), function() open("Themes") end)
+ui:addQuickAction("⌁\nTools", Color3.fromRGB(65, 139, 177), function() open("Tools") end)
+ui:addQuickAction("▤\nExpand", UI.Colors.Gold, function() open("Expand") end)
 
 local tutorialHints = {
     [0]="Find your first treasure in Dumpster Alley", [1]="Open your bag and inspect the mystery find",
@@ -4904,7 +4900,7 @@ local function nextObjective()
     local discoveries = 0; for _ in pairs(state.Collection or {}) do discoveries += 1 end
     return discoveries .. "/400 discoveries • hunt for a new " .. state.Demand .. " find"
 end
-local lastOffer, lastTutorial, adminButton
+local lastOffer, pendingOffer, lastTutorial, adminButton
 local function updateHud()
     ui.Balance.Text = tostring(math.floor(state.Cash))
     ui.Level.Text = "LV " .. state.Level
@@ -4923,7 +4919,6 @@ event.OnClientEvent:Connect(function(kind, payload)
         state = payload; updateHud()
         if state.IsAdmin and not adminButton then
             adminButton = ui:addQuickAction("⚙\nAdmin", UI.Colors.Gold, function() open("Admin") end)
-            ui.QuickActions.Size = UDim2.fromOffset(74, 288)
         end
         if state.Cash &gt; oldCash then ui:cashFeedback(state.Cash - oldCash); audio:play("sale") end
         if state.Tutorial ~= lastTutorial then
@@ -4933,8 +4928,14 @@ event.OnClientEvent:Connect(function(kind, payload)
             elseif state.Tutorial &gt;= 2 and state.Tutorial &lt;= 4 then guide("Shop")
             else billboard.Enabled = false end
         end
-        if state.Offer and state.Offer.Uid ~= lastOffer then ui:notice(state.Offer.Customer .. " is browsing your shop!"); audio:play("reveal") end
-        lastOffer = state.Offer and state.Offer.Uid or nil
+        local offerId = state.Offer and state.Offer.Uid or nil
+        if offerId and offerId ~= lastOffer then
+            lastOffer = offerId; ui:notice(state.Offer.Customer .. " has made you an offer!"); audio:play("reveal")
+            if session then pendingOffer = offerId else open("Offer") end
+        elseif not offerId then
+            lastOffer = nil; pendingOffer = nil
+            if page == "Offer" then ui:hide(); page = "Town"; wasVisible = false end
+        end
         if wasVisible and not session then render() end
     elseif kind == "Notice" then ui:notice(payload)
     elseif kind == "Announcement" then ui:notice("📣  " .. tostring(payload)); audio:play("reward")
@@ -4956,7 +4957,9 @@ event.OnClientEvent:Connect(function(kind, payload)
         Minigames.stop(session); session = nil
         if payload.Cancelled then ui:notice("Restoration paused. Your find is safe.")
         else ui:notice(payload.Quality .. " restoration • now " .. payload.Condition); audio:play("reward") end
-        page = "Bag"; render()
+        if pendingOffer and state and state.Offer and state.Offer.Uid == pendingOffer then
+            pendingOffer = nil; open("Offer")
+        else page = "Bag"; render() end
     end
 end)
 task.spawn(function() while not state do send("Sync", {}); task.wait(2) end end)
@@ -5908,20 +5911,8 @@ function Pages:slotsPage(context)
 end
 function Pages:shopPage()
     local state = self.State
-    local offer = state.Offer
-    if offer then
-        local welcome = UI.hero(self.UI.Content, "A customer found something they love", offer.Customer, "A good find deserves a good home.")
-        local item = findItem(state, offer.Uid)
-        if item then UI.preview(welcome, Catalog.ById[item.DefId], item, 175, false) end
-        UI.label(welcome, money(offer.Amount), 34, UI.Colors.Panel).Font = Enum.Font.GothamBold
-        self:timer(welcome, "They can stay for ", offer.Ends)
-        self:button(welcome, "Accept &amp; make their day", "Haggle", {Choice = "Accept"})
-        if not offer.Countered then self:button(welcome, "Ask for 12% more · 65% chance", "Haggle", {Choice = "Counter"}, true) end
-        self:button(welcome, "Politely decline", "Haggle", {Choice = "Decline"}, true)
-    else
-        local hero = UI.hero(self.UI.Content, "Your little corner of the street", Config.Tiers[state.Tier].Name, "Display your favorite finds. Customers bring the conversation, you make the deal.")
-        self:guideButton(hero, "Shop", "Take me to my shop")
-    end
+    local hero = UI.hero(self.UI.Content, "Your little corner of the street", Config.Tiers[state.Tier].Name, "Display your favorite finds. Customers bring the conversation, you make the deal.")
+    self:guideButton(hero, "Shop", "Take me to my shop")
     local overview = self:card("A shop that feels like you")
     local displayed = 0; for _, item in ipairs(state.Inventory) do if item.Slot then displayed += 1 end end
     UI.label(overview, displayed .. "/" .. Config.Tiers[state.Tier].Slots .. " displays filled  •  " .. state.Reputation .. " reputation", 17)
@@ -5929,7 +5920,32 @@ function Pages:shopPage()
     local links = UI.row(overview)
     UI.rowButton(links, "Your displays", function() self.Open("Displays") end, 2, true)
     UI.rowButton(links, "Decorate", function() self.Open("Decor") end, 2, true)
-    self:nav(overview, "Themes &amp; collections", "Themes")
+    if state.Offer then
+        local waiting = self:card(state.Offer.Customer .. " is waiting")
+        UI.label(waiting, "Current offer: " .. money(state.Offer.Amount), 18, UI.Colors.Teal).Font = Enum.Font.GothamBold
+        self:nav(waiting, "Review customer offer", "Offer", nil, false)
+    end
+end
+function Pages:offerPage()
+    local offer = self.State.Offer
+    if not offer then
+        local gone = UI.hero(self.UI.Content, "This customer has moved on", "Another treasure will catch someone's eye soon", "Keep your displays stocked and a new offer will arrive.")
+        return self:nav(gone, "Back to your shop", "Shop")
+    end
+    local welcome = UI.hero(self.UI.Content, "A customer found something they love", offer.Customer, "Their offer is ready now — no trip to the counter required.")
+    local item = findItem(self.State, offer.Uid)
+    if item then
+        UI.preview(welcome, Catalog.ById[item.DefId], item, 175, false)
+        UI.label(welcome, Catalog.ById[item.DefId].Name, 18, UI.Colors.Panel).Font = Enum.Font.GothamBold
+    end
+    UI.label(welcome, money(offer.Amount), 34, UI.Colors.Panel).Font = Enum.Font.GothamBold
+    self:timer(welcome, "Offer expires in ", offer.Ends)
+    self:button(welcome, "Accept offer", "Haggle", {Choice = "Accept"})
+    if not offer.Countered then self:button(welcome, "Counter for 12% more · 65% chance", "Haggle", {Choice = "Counter"}, true) end
+    self:button(welcome, "Decline", "Haggle", {Choice = "Decline"}, true)
+end
+function Pages:expandPage()
+    local state = self.State
     local upgrades = self:card("Room to grow")
     local nextTier = Config.Tiers[state.Tier + 1]
     if nextTier then
@@ -5938,6 +5954,9 @@ function Pages:shopPage()
         if state.Level &gt;= nextTier.Level and state.AvailableCash &gt;= nextTier.Cost then self:button(upgrades, "Upgrade your shop", "Upgrade", {Kind = "Shop"})
         else UI.disabled(upgrades, if state.Level &lt; nextTier.Level then "Keep creating to reach level " .. nextTier.Level else "Save up " .. money(nextTier.Cost)) end
     else UI.disabled(upgrades, "✦ Your shop has reached its grandest tier") end
+end
+function Pages:toolsPage()
+    local state = self.State
     local tools = self:card("The right tools, a little more magic")
     UI.label(tools, "Tool level " .. state.Tool .. "/" .. #Config.ToolCosts .. " • steadier restoration and better results", 17)
     local cost = Config.ToolCosts[state.Tool + 1]
@@ -6235,6 +6254,20 @@ function Pages:adminPage()
         self.Send("Admin", {Command = "GiveItem", Target = target.Text, Query = query.Text, Rarity = draft.Rarity})
     end, false)
 
+    local catalogCard = self:card("All " .. #Catalog.Items .. " collectible items")
+    UI.label(catalogCard, "Choose an exact item, then use the grant button above.", 14, UI.Colors.Muted)
+    local catalogGrid = UI.grid(catalogCard, 48, 155)
+    for _, definition in ipairs(Catalog.Items) do
+        local itemDefinition = definition
+        local choice = UI.button(catalogGrid, itemDefinition.Name, function()
+            draft.Target = target.Text; draft.Query = itemDefinition.Id; self.Open("Admin")
+        end, true)
+        choice.TextSize = 12; choice.TextTruncate = Enum.TextTruncate.AtEnd
+        if draft.Query == itemDefinition.Id then
+            choice.BackgroundColor3 = UI.Colors.Teal; choice.TextColor3 = UI.Colors.White
+        end
+    end
+
     local economy = self:card("Economy and progression")
     local cash = UI.input(economy, "Cash amount", draft.Cash, true)
     cash.FocusLost:Connect(function() draft.Cash = cash.Text end)
@@ -6295,8 +6328,9 @@ function Pages:render(page, context)
         Source=function() self:sourcePage("Dumpster") end, Estate=function() self:sourcePage("Estate") end,
         Delivery=function() self:sourcePage("Delivery") end, Workbench=function() self:inventory(context,"Workbench") end,
         Restore=function() self:restorePage(context) end, Display=function() self:inventory(context,"Display") end,
-        Slots=function() self:slotsPage(context) end, Shop=function() self:shopPage() end, Displays=function() self:displaysPage() end,
-        Themes=function() self:themesPage() end, Decor=function() self:decorPage() end, Arrange=function() self:arrangePage(context) end,
+        Slots=function() self:slotsPage(context) end, Shop=function() self:shopPage() end, Offer=function() self:offerPage() end,
+        Displays=function() self:displaysPage() end, Themes=function() self:themesPage() end, Tools=function() self:toolsPage() end,
+        Expand=function() self:expandPage() end, Decor=function() self:decorPage() end, Arrange=function() self:arrangePage(context) end,
         Quests=function() self:questsPage() end, Collection=function() self:collectionPage() end, Auction=function() self:auctionPage() end,
         Market=function() self:marketPage() end, List=function() self:listPage() end, ListingEditor=function() self:listingEditor(context) end,
         Trade=function() self:tradePage() end, Showcase=function() self:showcasePage() end, Events=function() self:eventsPage() end,
@@ -6608,8 +6642,9 @@ function UI.new()
     local grid = Instance.new("UIGridLayout"); grid.CellSize = UDim2.new(0.2, -4, 1, 0); grid.CellPadding = UDim2.fromOffset(5, 0)
     grid.SortOrder = Enum.SortOrder.LayoutOrder; grid.Parent = nav; self.Nav = nav; self.NavButtons = {}
     local actions = Instance.new("Frame"); actions.Name = "QuickActions"; actions.AnchorPoint = Vector2.new(1, 0.5)
-    actions.Position = UDim2.new(1, -14, 0.64, 0); actions.Size = UDim2.fromOffset(74, 214)
-    actions.BackgroundTransparency = 1; actions.Parent = gui; actions.ZIndex = 12; UI.list(actions, 8); self.QuickActions = actions
+    actions.Position = UDim2.new(1, -14, 0.5, 0); actions.Size = UDim2.fromOffset(74, 0)
+    actions.BackgroundTransparency = 1; actions.Parent = gui; actions.ZIndex = 12; UI.list(actions, 6)
+    self.QuickActions = actions; self.QuickActionCount = 0
     local camera = workspace.CurrentCamera
     local function fitQuickActions() actions.Visible = not camera or camera.ViewportSize.X &gt;= 700 end
     if camera then camera:GetPropertyChangedSignal("ViewportSize"):Connect(fitQuickActions) end
@@ -6659,10 +6694,16 @@ function UI.new()
 end
 function UI:addQuickAction(text, color, callback)
     local button = UI.button(self.QuickActions, text, callback, true)
-    button.Size = UDim2.new(1, 0, 0, 66); button.TextSize = 12; button.ZIndex = 13
+    self.QuickActionCount += 1
+    button.LayoutOrder = self.QuickActionCount
+    button.Size = UDim2.new(1, 0, 0, 52); button.TextSize = 11; button.ZIndex = 13
     for _, child in ipairs(button:GetChildren()) do if child:IsA("UIGradient") then child:Destroy() end end
     button.BackgroundColor3 = Color3.fromRGB(255, 248, 232); button.TextColor3 = Color3.fromRGB(8, 91, 84)
-    UI.corner(button, 16)
+    UI.corner(button, 15)
+    local accent = Instance.new("Frame"); accent.Name = "Accent"; accent.Size = UDim2.fromOffset(5, 25)
+    accent.AnchorPoint = Vector2.new(0, 0.5); accent.Position = UDim2.new(0, 6, 0.5, 0)
+    accent.BackgroundColor3 = color; accent.BorderSizePixel = 0; accent.ZIndex = 14; accent.Parent = button; UI.corner(accent, 3)
+    self.QuickActions.Size = UDim2.fromOffset(74, self.QuickActionCount * 52 + math.max(0, self.QuickActionCount - 1) * 6)
     return button
 end
 function UI:addNav(name, symbol, callback)

@@ -62,6 +62,9 @@ end
 ui:addQuickAction("ϟ\nTravel", UI.Colors.Teal, function() open("Town") end)
 ui:addQuickAction("▣\nRewards", UI.Colors.Rose, function() open("Quests") end)
 ui:addQuickAction("◇\nStore", Color3.fromRGB(122, 92, 224), function() open("Boutique") end)
+ui:addQuickAction("✦\nStyle", Color3.fromRGB(227, 112, 104), function() open("Themes") end)
+ui:addQuickAction("⌁\nTools", Color3.fromRGB(65, 139, 177), function() open("Tools") end)
+ui:addQuickAction("▤\nExpand", UI.Colors.Gold, function() open("Expand") end)
 
 local tutorialHints = {
     [0]="Find your first treasure in Dumpster Alley", [1]="Open your bag and inspect the mystery find",
@@ -86,7 +89,7 @@ local function nextObjective()
     local discoveries = 0; for _ in pairs(state.Collection or {}) do discoveries += 1 end
     return discoveries .. "/400 discoveries • hunt for a new " .. state.Demand .. " find"
 end
-local lastOffer, lastTutorial, adminButton
+local lastOffer, pendingOffer, lastTutorial, adminButton
 local function updateHud()
     ui.Balance.Text = tostring(math.floor(state.Cash))
     ui.Level.Text = "LV " .. state.Level
@@ -105,7 +108,6 @@ event.OnClientEvent:Connect(function(kind, payload)
         state = payload; updateHud()
         if state.IsAdmin and not adminButton then
             adminButton = ui:addQuickAction("⚙\nAdmin", UI.Colors.Gold, function() open("Admin") end)
-            ui.QuickActions.Size = UDim2.fromOffset(74, 288)
         end
         if state.Cash > oldCash then ui:cashFeedback(state.Cash - oldCash); audio:play("sale") end
         if state.Tutorial ~= lastTutorial then
@@ -115,8 +117,14 @@ event.OnClientEvent:Connect(function(kind, payload)
             elseif state.Tutorial >= 2 and state.Tutorial <= 4 then guide("Shop")
             else billboard.Enabled = false end
         end
-        if state.Offer and state.Offer.Uid ~= lastOffer then ui:notice(state.Offer.Customer .. " is browsing your shop!"); audio:play("reveal") end
-        lastOffer = state.Offer and state.Offer.Uid or nil
+        local offerId = state.Offer and state.Offer.Uid or nil
+        if offerId and offerId ~= lastOffer then
+            lastOffer = offerId; ui:notice(state.Offer.Customer .. " has made you an offer!"); audio:play("reveal")
+            if session then pendingOffer = offerId else open("Offer") end
+        elseif not offerId then
+            lastOffer = nil; pendingOffer = nil
+            if page == "Offer" then ui:hide(); page = "Town"; wasVisible = false end
+        end
         if wasVisible and not session then render() end
     elseif kind == "Notice" then ui:notice(payload)
     elseif kind == "Announcement" then ui:notice("📣  " .. tostring(payload)); audio:play("reward")
@@ -138,7 +146,9 @@ event.OnClientEvent:Connect(function(kind, payload)
         Minigames.stop(session); session = nil
         if payload.Cancelled then ui:notice("Restoration paused. Your find is safe.")
         else ui:notice(payload.Quality .. " restoration • now " .. payload.Condition); audio:play("reward") end
-        page = "Bag"; render()
+        if pendingOffer and state and state.Offer and state.Offer.Uid == pendingOffer then
+            pendingOffer = nil; open("Offer")
+        else page = "Bag"; render() end
     end
 end)
 task.spawn(function() while not state do send("Sync", {}); task.wait(2) end end)
