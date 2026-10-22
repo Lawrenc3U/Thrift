@@ -3,6 +3,7 @@ local Lighting = game:GetService("Lighting")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ServerStorage = game:GetService("ServerStorage")
 local Kit = require(script.Parent.WorldKit)
 local ItemModels = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("ItemModels"))
 local DecorPlacement = require(ReplicatedStorage.Shared.DecorPlacement)
@@ -20,6 +21,36 @@ local E = {
 local World = {}
 World.__index = World
 local shopColors = {P.Teal, P.Rose, P.Gold, P.Lavender, P.Coral, Color3.fromRGB(137, 166, 190)}
+local catalogMetadata = {
+    LargeTree = {Id = 56449188, Name = "Tree - Large"},
+    ParkBench = {Id = 23153972, Name = "Park Bench"},
+    Mailbox = {Id = 56449011, Name = "Mailbox"},
+    PicnicTable = {Id = 23153940, Name = "Picnic Table"},
+}
+local function catalogAsset(parent, key, cf, scale)
+    local folder = ServerStorage:FindFirstChild("CatalogAssets")
+    local template = folder and folder:FindFirstChild(key)
+    local metadata = catalogMetadata[key]
+    if not template or not template:IsA("Model") or not metadata then return nil end
+    local clone = template:Clone(); clone.Name = "Catalog" .. key
+    clone:SetAttribute("CatalogAssetId", metadata.Id); clone:SetAttribute("CatalogName", metadata.Name)
+    clone:SetAttribute("CatalogCreator", "Roblox"); clone:SetAttribute("CatalogScriptsReviewed", true)
+    clone.Parent = parent
+    if scale and scale ~= 1 and not pcall(function() clone:ScaleTo(scale) end) then clone:Destroy(); return nil end
+    clone:PivotTo(cf)
+    local bounds, size = clone:GetBoundingBox()
+    local lift = cf.Position.Y - (bounds.Position.Y - size.Y / 2)
+    clone:PivotTo(clone:GetPivot() + Vector3.new(0, lift, 0))
+    for _, child in ipairs(clone:GetDescendants()) do
+        if child:IsA("LuaSourceContainer") then child:Destroy()
+        elseif child:IsA("BasePart") then
+            child.Anchored = true; child.CanCollide = child:IsA("Seat"); child.CanTouch = child:IsA("Seat")
+            child.CanQuery = false; child.CastShadow = true
+        end
+    end
+    CollectionService:AddTag(clone, "CatalogScenery")
+    return clone
+end
 local function prompt(parent, text, action, owner, slot, destination)
     local p = Instance.new("ProximityPrompt"); p.ActionText = text; p.ObjectText = "Thrift Flip"
     p.MaxActivationDistance = 12; p.RequiresLineOfSight = false; p.HoldDuration = 0.15
@@ -167,7 +198,10 @@ function World:exactLandscape()
         {62,-128,1.1},{100,-112,1},{0,-138,1.3},{-62,20,1},{64,60,1},{-64,80,1.1},{64,100,1},{-62,125,1},
         {62,128,1.1},{-30,175,1.2},{30,175,1},{0,182,1.3},{-100,40,1.1},{100,20,1.2},{-110,-128,1.1},{-68,-128,.9},{-110,-96,1},
     }
-    for _, tree in ipairs(trees) do exactTree(ground, tree[1], tree[2], tree[3]) end
+    for index, tree in ipairs(trees) do
+        local asset = if index % 3 == 0 then catalogAsset(ground, "LargeTree", CFrame.new(tree[1], 0, tree[2]) * CFrame.Angles(0, index * 0.71, 0), tree[3] * 0.82) else nil
+        if not asset then exactTree(ground, tree[1], tree[2], tree[3]) end
+    end
     for side = -1, 1, 2 do local boundary = Kit.part(ground, "TownBoundary", Vector3.new(2, 70, 480), CFrame.new(side * 220, 30, 10), E.Cream); boundary.Transparency = 1 end
     for _, z in ipairs({-230, 250}) do local boundary = Kit.part(ground, "TownBoundary", Vector3.new(440, 70, 2), CFrame.new(0, 30, z), E.Cream); boundary.Transparency = 1 end
 end
@@ -195,7 +229,8 @@ function World:exactSquare()
     for index = 0, 3 do
         local angle = index * math.pi / 2 + math.pi / 2
         local position = Vector3.new(math.cos(angle) * 21, 0, -55 + math.sin(angle) * 21)
-        Kit.bench(square, CFrame.lookAt(position, Vector3.new(0, 0, -55)))
+        local facing = CFrame.lookAt(position, Vector3.new(0, 0, -55))
+        if not catalogAsset(square, "ParkBench", facing, 0.72) then Kit.bench(square, facing) end
     end
     for index = 0, 7 do
         local angle = index * math.pi / 4 + math.pi / 8
@@ -203,6 +238,9 @@ function World:exactSquare()
         Kit.cylinder(square, "Planter", 1.3, 2.2, CFrame.new(x, 1.1, z), E.Terracotta)
         Kit.ball(square, "PlanterLeaf", Vector3.new(2.6, 2.6, 2.6), CFrame.new(x, 3, z), E.Green, nil, false)
         for flower = 0, 2 do Kit.ball(square, "Flower", Vector3.new(0.8, 0.8, 0.8), CFrame.new(x + math.cos(flower * 2.1), 3.9, z + math.sin(flower * 2.1)), ({E.Coral,E.Gold,E.Cream})[flower + 1], nil, false) end
+    end
+    for _, position in ipairs({Vector3.new(-38, 0, -79), Vector3.new(38, 0, -79)}) do
+        catalogAsset(square, "PicnicTable", CFrame.lookAt(position, Vector3.new(0, 0, -55)), 0.58)
     end
     local qcf = CFrame.lookAt(Vector3.new(-26, 0, -30), Vector3.new(0, 0, -55))
     local quests = Kit.model(square, "DailyQuests")
@@ -966,6 +1004,7 @@ function World:buildPlot(index, cf)
     for _, x in ipairs({-7, 7}) do Kit.part(front, "SignPost", Vector3.new(0.5, 3.2, 0.5), cf * CFrame.new(x, 14.6, -11.5), E.Charcoal, Enum.Material.Metal) end
     local label = Kit.sign(front, "SHOP " .. index, cf * CFrame.new(0, 14.8, -11.5), Vector3.new(18, 3, 0.5), color, E.Cream)
     Kit.part(front, "FrontStep", Vector3.new(5, 0.12, 6), cf * CFrame.new(0, 0.07, -16.3), E.Stone, Enum.Material.Pavement)
+    catalogAsset(front, "Mailbox", cf * CFrame.new(11.2, 0, -17.3), 0.72)
     local forSale = Kit.model(front, "ForSale")
     for _, x in ipairs({-9.6, -4.4}) do Kit.part(forSale, "SalePost", Vector3.new(0.4, 3.4, 0.4), cf * CFrame.new(x, 1.7, -17.5), E.Wood, Enum.Material.Wood) end
     Kit.sign(forSale, "FOR SALE", cf * CFrame.new(-7, 3.6, -17.6), Vector3.new(6.6, 2.4, 0.3), E.Cream, E.Dark)

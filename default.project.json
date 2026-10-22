@@ -3,7 +3,10 @@
   "tree": {
     "$className": "DataModel",
     "Workspace": {"$properties": {"StreamingEnabled": true}},
-    "ReplicatedStorage": {"Shared": {"$path": "src/shared"}},
+    "ReplicatedStorage": {
+      "Shared": {"$path": "src/shared"}
+    },
+    "ServerStorage": {"CatalogAssets": {"$path": "assets/catalog/models"}},
     "ServerScriptService": {"Server": {"$path": "src/server"}},
     "StarterPlayer": {"StarterPlayerScripts": {"Client": {"$path": "src/client"}}}
   }

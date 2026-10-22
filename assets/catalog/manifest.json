@@ -1,0 +1,39 @@
+{
+  "reviewedUtc": "2026-10-22",
+  "source": "Roblox Creator Store",
+  "policy": "Only Roblox-authored, public-domain models with zero embedded scripts are shipped.",
+  "assets": {
+    "LargeTree": {
+      "assetId": 56449188,
+      "catalogName": "Tree - Large",
+      "creator": "Roblox",
+      "creatorId": 1,
+      "scripts": 0,
+      "catalogUrl": "https://create.roblox.com/store/asset/56449188"
+    },
+    "ParkBench": {
+      "assetId": 23153972,
+      "catalogName": "Park Bench",
+      "creator": "Roblox",
+      "creatorId": 1,
+      "scripts": 0,
+      "catalogUrl": "https://create.roblox.com/store/asset/23153972"
+    },
+    "Mailbox": {
+      "assetId": 56449011,
+      "catalogName": "Mailbox",
+      "creator": "Roblox",
+      "creatorId": 1,
+      "scripts": 0,
+      "catalogUrl": "https://create.roblox.com/store/asset/56449011"
+    },
+    "PicnicTable": {
+      "assetId": 23153940,
+      "catalogName": "Picnic Table",
+      "creator": "Roblox",
+      "creatorId": 1,
+      "scripts": 0,
+      "catalogUrl": "https://create.roblox.com/store/asset/23153940"
+    }
+  }
+}
