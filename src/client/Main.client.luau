@@ -65,6 +65,8 @@ local tutorialHints = {
 local lastOffer, lastTutorial
 local function updateHud()
     ui.Balance.Text = "$" .. tostring(math.floor(state.Cash)) .. "   LV " .. state.Level
+    local levelStart, levelEnd = 30 * (state.Level - 1) ^ 2, 30 * state.Level ^ 2
+    ui.LevelProgress.Size = UDim2.fromScale(math.clamp((state.XP - levelStart) / math.max(1, levelEnd - levelStart), 0, 1), 1)
     ui.Hint.Text = tutorialHints[state.Tutorial] or (state.Demand .. " finds are trending  •  Reputation " .. state.Reputation)
     ui:setSubtitle(if state.Ephemeral then "STUDIO PRACTICE • PROGRESS DOES NOT SAVE" else "YOUR COZY CORNER OF THRIFT STREET")
     ui.Effects = state.Settings.Effects

@@ -325,6 +325,14 @@ end
 function Pages:questsPage()
     local state = self.State
     UI.hero(self.UI.Content, "Little goals. Lovely rewards.", "A little progress, every day.", "Find something. Fix something. Make someone's day.")
+    local login = state.Login or {Streak = 1, ClaimedDay = -2}
+    local gifts = {50, 75, 100, 150, 200, 300, 500}
+    local gift = self:card("Your 7-day welcome streak")
+    UI.label(gift, "Day " .. login.Streak .. " of 7  •  today's gift " .. money(gifts[math.clamp(login.Streak, 1, 7)]), 18)
+    UI.progress(gift, login.Streak / 7, UI.Colors.Rose)
+    local today = math.floor(self:now() / 86400)
+    if login.ClaimedDay == today then UI.disabled(gift, "✓ Today's gift collected — come back tomorrow")
+    else self:button(gift, "Collect today's gift", "DailyGift", {}) end
     local definitions = {{"Find", "Find 3 new stories", "Found", 3, 65}, {"Restore", "Restore 3 forgotten finds", "Restored", 3, 100}, {"Sell", "Send 3 finds to new homes", "Sold", 3, 150}}
     for _, definition in ipairs(definitions) do
         local frame = self:card(definition[2]); local progress = math.min(definition[4], state.Daily[definition[3]] or 0)

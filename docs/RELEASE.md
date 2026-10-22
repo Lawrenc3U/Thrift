@@ -23,9 +23,9 @@ The user's target is the full game in `game-design.md`. The code now implements 
 | Market and trading | Same-server listings and two-sided trades with durable journal recovery, fees, caps, review delay and confirmations | Published-server fault injection and exploit testing |
 | Showcase | Persistent weekly neighborhood contests, bounded voting, offline cosmetic claims and themes | Moderation operations and live-scale monitoring |
 | Events | Daily style demand and estate-sale weekend rarity promotion | Scheduled seasonal content, limited cosmetics and event UI |
-| Monetization | Empty cosmetic-pass configuration and purchase-completion hook | Returning-player entitlement reconciliation, actual creator-owned passes, previews and entitlement tests; no developer products or receipts are implemented |
+| Monetization | Secure cosmetic passes and developer-product receipts, returning-player entitlement reconciliation, storefront, and purchase recovery | Add creator-owned IDs, final previews, prices, and entitlement tests in a private published experience |
 | Audio | Original generated shop/town/auction music and action WAVs | Upload in Asset Manager, paste owned IDs, and mix on devices |
-| Analytics | Best-effort custom events for several core actions | Complete funnel IDs/steps, session duration, commerce instrumentation, dashboards and measured targets |
+| Analytics | Tutorial milestones, session duration, daily-gift claims, sales and best-effort custom events | Add commerce dashboard reporting and tune measured funnels after real playtests |
 | Data | Session-locked version-1 profiles and backup copies | Migration framework, operator recovery tooling, fault-injection in live infrastructure, monitoring and load tests |
 | Decorations | Fixed-location rugs/plants/poster/sign/curtains/trophy plus themes | Free-placement editor, rotation, collision checks, more themed sets |
 

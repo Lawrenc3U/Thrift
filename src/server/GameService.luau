@@ -65,6 +65,14 @@ function GameService:resetQuests(profile)
         profile.Weekly = {Week = week, Restored = 0, Sold = 0, Claimed = false}
     end
 end
+function GameService:prepareLogin(profile, day)
+    day = day or Economy.daily(os.time())
+    profile.Login = profile.Login or {Day = -2, Streak = 0, ClaimedDay = -2}
+    if profile.Login.Day ~= day then
+        profile.Login.Streak = if profile.Login.Day == day - 1 then math.min(7, profile.Login.Streak + 1) else 1
+        profile.Login.Day = day
+    end
+end
 function GameService:stat(profile, name, amount)
     self:resetQuests(profile)
     if self.Live then self.Live:recordStat(profile, name, amount) end
@@ -112,7 +120,7 @@ function GameService:snapshot(player)
         Level = Economy.level(profile.XP), Tier = profile.Tier, Tool = profile.Tool,
         Inventory = inventory, Tutorial = profile.Tutorial, Reputation = profile.Reputation,
         DecorLayout = profile.DecorLayout, Decorations = profile.Decorations, PlacedDecor = profile.PlacedDecor, Collection = profile.Collection, Themes = profile.Themes, Theme = profile.Theme,
-        Daily = profile.Daily, Weekly = profile.Weekly, Stats = profile.Stats,
+        Daily = profile.Daily, Weekly = profile.Weekly, Login = profile.Login, Stats = profile.Stats,
         LastDelivery = profile.LastDelivery, Day = Economy.daily(os.time()),
         Settings = profile.Settings, Titles = profile.Titles, Shops = shops,
         Demand = self:demandStyle(), Auction = auction, NextAuction = self.NextAuction,
@@ -382,6 +390,17 @@ function GameService:quest(player, payload)
     end
     self:snapshot(player)
 end
+function GameService:dailyGift(player)
+    local profile = self:profile(player)
+    local day = Economy.daily(os.time()); self:prepareLogin(profile, day)
+    if profile.Login.ClaimedDay == day then return self:notify(player, "Today's welcome gift is already collected.") end
+    local rewards = {50, 75, 100, 150, 200, 300, 500}
+    local reward = rewards[math.clamp(profile.Login.Streak, 1, #rewards)]
+    profile.Login.ClaimedDay = day; profile.Cash += reward; profile.XP += 10
+    self:analytics(player, "DailyGiftDay" .. tostring(profile.Login.Streak))
+    self:notify(player, "Day " .. profile.Login.Streak .. " welcome gift: +$" .. reward)
+    self:refresh(player)
+end
 function GameService:bid(player, payload)
     local profile = self:profile(player)
     local auction = self.Auction
@@ -451,6 +470,7 @@ local handlers = {
     Display = GameService.display, Haggle = GameService.haggle, Upgrade = GameService.upgrade,
     Quest = GameService.quest, Bid = GameService.bid, Rate = GameService.rating, DecorPlace = GameService.decorPlace,
     Showcase = GameService.showcase, Settings = GameService.settings, Teleport = GameService.teleport,
+    DailyGift = GameService.dailyGift,
 }
 function GameService:request(player, action, payload)
     if self.Closing or not self:profile(player) then return end
@@ -498,7 +518,7 @@ function GameService:join(player)
     if not player.Parent then self.Data:release(player.UserId); return end
     if self.Closing then self.Data:release(player.UserId); player:Kick("Server closing. Please rejoin."); return end
     if not self.World:assign(player) then self.Data:release(player.UserId); player:Kick("This town is full. Please join another server."); return end
-    self.Ready[player.UserId] = true; self.JoinedAt[player.UserId] = os.clock(); self:resetQuests(profile)
+    self.Ready[player.UserId] = true; self.JoinedAt[player.UserId] = os.clock(); self:resetQuests(profile); self:prepareLogin(profile)
     self.NextCustomer[player.UserId] = os.time() + 10
     local leaderstats = Instance.new("Folder"); leaderstats.Name = "leaderstats"; leaderstats.Parent = player
     local cash = Instance.new("IntValue"); cash.Name = "Cash"; cash.Value = profile.Cash; cash.Parent = leaderstats

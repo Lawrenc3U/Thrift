@@ -5,6 +5,7 @@ function Profile.new()
         Inventory = {}, Collection = {}, Themes = {Cozy = true}, Theme = "Cozy",
         Stats = {Found = 0, Restored = 0, Sold = 0, Earned = 0},
         Tutorial = 0, LastDelivery = -1, Daily = {Day = -1, Claimed = {}},
+        Login = {Day = -2, Streak = 0, ClaimedDay = -2},
         Weekly = {Week = -1, Restored = 0, Sold = 0, Claimed = false},
         Decorations = {}, PlacedDecor = {}, DecorLayout = {}, Reputation = 0, RatingTotal = 0, RatingCount = 0, Rated = {},
         Settings = {Music = true, Effects = true}, Titles = {},
