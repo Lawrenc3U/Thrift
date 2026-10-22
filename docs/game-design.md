@@ -40,10 +40,10 @@ Result quality (Okay, Good, Perfect) changes the condition gain. Upgraded tools 
 3.4 Sourcing locations
 • Dumpster runs: free, low rarity, quick. Good for beginners.
 • Estate sales: paid mystery lots with better odds.
-• Auction house: live bidding events with 8 to 12 players. A single rare lot appears and players bid against each other. The most exciting multiplayer moment in the game.
+• Auction house: live bidding events with up to 8 players. A single rare lot appears and players bid against each other. The most exciting multiplayer moment in the game.
 • Daily deliveries: one free lot per day to bring players back.
 3.5 Multiplayer features
-• Shared town: a street of shops with up to 16 players per server. Players walk between shops, browse, and chat.
+• Shared town: a street of eight shops with up to 8 players per server. Players walk between shops, browse, and chat.
 • Player market: list restored items for sale to other players. Price caps and a listing fee reduce abuse.
 • Trading: confirmed two-sided trades with a cool-down. This launches after the core game is stable.
 • Shop ratings: visitors can leave a star rating once per day.

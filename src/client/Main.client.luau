@@ -23,22 +23,17 @@ local billboard = Instance.new("BillboardGui")
 billboard.Name = "Guide"; billboard.Size = UDim2.fromOffset(230, 62); billboard.AlwaysOnTop = true; billboard.Parent = marker
 local guideText = UI.label(billboard, "▼ YOUR NEXT STEP", 20, UI.Colors.Gold)
 guideText.Size = UDim2.fromScale(1, 1); guideText.AutomaticSize = Enum.AutomaticSize.None; guideText.TextXAlignment = Enum.TextXAlignment.Center
-local locations = {Source=Vector3.new(-108,8,-67),Estate=Vector3.new(-18,8,-86),Delivery=Vector3.new(100,8,40),
-    Auction=Vector3.new(-72,12,4),Market=Vector3.new(-72,9,4),Quests=Vector3.new(-87,8,14),Workbench=Vector3.new(69,8,-53)}
+local locations = {Source=Vector3.new(-82,8,-60),Estate=Vector3.new(68,8,-80),Delivery=Vector3.new(68,8,-35),
+    Auction=Vector3.new(0,12,137),Market=Vector3.new(0,9,-90),Quests=Vector3.new(-26,8,-30),Workbench=Vector3.new(-40,8,-90)}
 local guideExpires = 0
 local function guide(location)
     local target = locations[location]
     if location == "Shop" then
         for _, shop in ipairs(state and state.Shops or {}) do
             if shop.UserId == player.UserId and shop.Plot then
-                if shop.Plot == 1 then
-                    target = Vector3.new(0, 12, -11)
-                else
-                    local slot = shop.Plot - 2
-                    local row = math.floor(slot / 2) + 1
-                    local side = if slot % 2 == 0 then -1 else 1
-                    target = Vector3.new(side * 155, 12, -160 + (row - 1) * 50)
-                end
+                local left = shop.Plot <= 4
+                local row = if left then shop.Plot - 1 else shop.Plot - 5
+                target = Vector3.new(if left then -37 else 37, 12, row * 34)
                 break
             end
         end

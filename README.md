@@ -11,7 +11,7 @@ Launch key art is available at `assets/marketing/thrift-flip-key-art.png`; uploa
 1. Run `python3 tools/build.py` (Python 3.10+; no packages required).
 2. Open `dist/ThriftFlip.rbxlx` in Roblox Studio on Windows or macOS.
 3. Click **Play**. Studio practice mode is on by default and deliberately does not save. Follow the gold tutorial marker: Dumpster Alley → Bag → Inspect → your named shop → workbench → restore → display → accept your first customer's offer in Shop.
-4. Use **Test → Start** with two or more clients to exercise visits, ratings, and auctions. Configure the published experience for **16 players** in Creator Dashboard.
+4. Use **Test → Start** with two or more clients to exercise visits, ratings, and auctions. Configure the published experience for **8 players** in Creator Dashboard to match the eight claimable shops.
 
 Optional Rojo workflow: install Rojo 7, run `rojo serve default.project.json`, and connect Studio's Rojo plugin. The Python place builder provides a dependency-free alternative; it embeds all scripts with the same hierarchy.
 
@@ -20,7 +20,7 @@ Optional Rojo workflow: install Rojo 7, run `rojo serve default.project.json`, a
 - 80 individually authored, reusable item models in eight categories; five rarities and conditions; distinct silhouettes, condition wear, materials, rarity outlines, 3D inventory previews, and an exported `.rbxmx` model pack.
 - Server-owned inventory, currency, value, demand, progression, sourcing costs/cooldowns, daily delivery, collections, and milestone rewards.
 - Five restoration interactions: swipe scrub, trace polish, match rewiring pairs, paint palette/fill, and piece/outline assembly. Server validates tokens, targets, input rate, duration, ownership, and result quality.
-- A rebuilt cozy town with authored storefronts, estate yard, dumpster alley, market, auction interior, landscaping, 16 generated shops, four visual tiers, movable floor decorations, display slots, and eight customer personalities.
+- A rebuilt cozy town matching the supplied 3D preview, with Dumpster Alley, Flea Field, Parcel Post, wholesale Source, market row, Auction House, eight claimable shops, four visual tiers, movable floor decorations, display slots, and eight customer personalities.
 - Same-server auctions with reserved cash and anti-sniping; durable same-server market listings and confirmed two-sided trades; persistent weekly showcase neighborhoods; seasonal events, visiting, ratings, quests, titles, and cosmetic-only commerce hooks.
 - Responsive mobile/desktop journal UI, real-time 3D item previews, filtered inventory and collection pages, market/trade review, seasonal pages, tutorial guidance, rarity symbols plus color, settings, and polished action feedback.
 - UpdateAsync persistence with expiring session leases, retries, periodic saves, shutdown release, recovery copies, and refusal to overwrite unavailable saves. These protections are implemented and mocked in tests; live DataStore reliability still requires Studio/published-server validation.

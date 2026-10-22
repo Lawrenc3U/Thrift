@@ -194,7 +194,7 @@ function Pages:sourcePage(source)
     local state, tuning = self.State, Config.Sources[source]
     local copy = {
         Dumpster = {"Everyday treasure", "Someone's junk. Your next great find.", "Free finds, fresh possibilities. There is always another story in the alley."},
-        Estate = {"The estate collection", "Good things come with a little history.", "Browse mystery lots with better rare-find odds. Estate Sale Weekend brings an extra surprise."},
+        Estate = {"Wholesale Source", "Restock with better mystery lots.", "Browse wholesale finds with improved rare-item odds. Weekend sourcing brings an extra surprise."},
         Delivery = {"A daily little delight", "A parcel with your name on it.", "Your free daily find is ready to unwrap. Come back tomorrow for another."},
     }
     local words = copy[source]
@@ -563,7 +563,7 @@ end
 
 function Pages:townPage()
     local hero = UI.hero(self.UI.Content, "Welcome to Thrift Street", "Every treasure deserves a second chance", "Today's favorite style is " .. self.State.Demand .. ", worth 20% more when it finds the right home.")
-    for _, link in ipairs({{"Dumpster Alley","Source"},{"Estate Sale","Estate"},{"Daily delivery","Delivery"},{"Auction House","Auction"},{"Makers' Market","Market"},{"Designer Showcase","Showcase"},{"Cosmetic Store","Boutique"},{"Visit neighbors","Visit"},{"Settings","Settings"}}) do self:nav(hero,link[1],link[2]) end
+    for _, link in ipairs({{"Dumpster Alley","Source"},{"Wholesale Source","Estate"},{"Parcel Post","Delivery"},{"Auction House","Auction"},{"Market","Market"},{"Designer Showcase","Showcase"},{"Cosmetic Store","Boutique"},{"Visit neighbors","Visit"},{"Settings","Settings"}}) do self:nav(hero,link[1],link[2]) end
 end
 
 function Pages:render(page, context)
