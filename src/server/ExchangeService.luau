@@ -187,6 +187,7 @@ end
 function ExchangeService:_availableItem(userId, uid, profile)
     local item = ExchangeRules.find(profile, uid)
     if not item or not item.Inspected or item.Slot or self:itemReserved(userId, uid) then return nil end
+    if self.Service:isHeld(userId, uid) then return nil end
     local session = self.Service.Sessions[userId]
     if session and session.Uid == uid then return nil end
     return item

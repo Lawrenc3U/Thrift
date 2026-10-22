@@ -4,7 +4,9 @@ local Config = {
     StudioPracticeMode = true, -- Studio only; never disables live-server persistence.
     StartingCash = 75,
     InventoryLimit = 100,
-    MaxPlayers = 16,
+    -- The town has eight claimable storefronts. Keep the server cap aligned so
+    -- every player always receives a shop.
+    MaxPlayers = 8,
     AutosaveSeconds = 60,
     SessionLease = 180,
     Sources = {
@@ -15,6 +17,7 @@ local Config = {
     Rarities = {"Common", "Uncommon", "Rare", "Epic", "Legendary"},
     RarityIcons = {"○", "◇", "△", "✦", "★"},
     RarityColors = {"#AEB7B5", "#70C58D", "#6CABF3", "#C29AE8", "#EDC66D"},
+    RarityEffectNames = {"Found", "Fresh", "Shimmer", "Enchanted", "Golden Legend"},
     RarityMultipliers = {1, 1.8, 3.5, 7, 15},
     Conditions = {"Wrecked", "Poor", "Fair", "Good", "Mint"},
     ConditionMultipliers = {0.25, 0.5, 0.85, 1.3, 2},

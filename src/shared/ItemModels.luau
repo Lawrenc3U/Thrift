@@ -824,10 +824,45 @@ function ItemModels.create(parent, definition, item, cf, config)
         end
     end
     local rarity = item and item.Rarity
-    if rarity and rarity >= 3 and config and config.RarityColors then
-        local glow = Instance.new("Highlight"); glow.Name = "RarityGlow"; glow.FillTransparency = 0.93
-        glow.OutlineColor = Color3.fromHex(config.RarityColors[rarity]); glow.OutlineTransparency = if rarity >= 4 then 0.25 else 0.58
-        glow.DepthMode = Enum.HighlightDepthMode.Occluded; glow.Parent = model
+    if rarity and config and config.RarityColors then
+        local color = Color3.fromHex(config.RarityColors[rarity])
+        if rarity >= 2 then
+            local glow = Instance.new("Highlight"); glow.Name = "RarityGlow"
+            glow.FillColor = color; glow.FillTransparency = if rarity >= 5 then 0.78 elseif rarity >= 4 then 0.87 else 0.96
+            glow.OutlineColor = color
+            glow.OutlineTransparency = if rarity >= 5 then 0.02 elseif rarity >= 4 then 0.16 elseif rarity >= 3 then 0.42 else 0.72
+            glow.DepthMode = Enum.HighlightDepthMode.Occluded; glow.Parent = model
+        end
+        local anchor = model:FindFirstChildWhichIsA("BasePart", true)
+        if anchor and rarity >= 3 then
+            local attachment = Instance.new("Attachment"); attachment.Name = "RaritySparkOrigin"; attachment.Parent = anchor
+            local particles = Instance.new("ParticleEmitter"); particles.Name = "RaritySparkles"
+            particles.Color = ColorSequence.new(color:Lerp(Color3.new(1, 1, 1), 0.25), color)
+            particles.LightEmission = if rarity >= 5 then 0.85 else 0.55
+            particles.Rate = if rarity >= 5 then 9 elseif rarity >= 4 then 5 else 2
+            particles.Lifetime = NumberRange.new(0.65, if rarity >= 5 then 1.35 else 1.0)
+            particles.Speed = NumberRange.new(0.25, if rarity >= 5 then 1.15 else 0.7)
+            particles.SpreadAngle = Vector2.new(180, 180)
+            particles.Rotation = NumberRange.new(0, 360); particles.RotSpeed = NumberRange.new(-90, 90)
+            particles.Size = NumberSequence.new({
+                NumberSequenceKeypoint.new(0, if rarity >= 5 then 0.22 else 0.14),
+                NumberSequenceKeypoint.new(0.55, if rarity >= 5 then 0.12 else 0.08),
+                NumberSequenceKeypoint.new(1, 0),
+            })
+            particles.Transparency = NumberSequence.new({
+                NumberSequenceKeypoint.new(0, 0.25), NumberSequenceKeypoint.new(0.7, 0.05), NumberSequenceKeypoint.new(1, 1),
+            })
+            particles.Parent = attachment
+            if rarity >= 4 then
+                local light = Instance.new("PointLight"); light.Name = "RarityLight"; light.Color = color
+                light.Brightness = if rarity >= 5 then 0.7 else 0.35; light.Range = if rarity >= 5 then 8 else 5
+                light.Shadows = false; light.Parent = anchor
+            end
+            if rarity >= 5 then
+                local sparkles = Instance.new("Sparkles"); sparkles.Name = "LegendaryStars"
+                sparkles.SparkleColor = color; sparkles.Parent = anchor
+            end
+        end
     end
     return model
 end

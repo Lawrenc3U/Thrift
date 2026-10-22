@@ -1216,6 +1216,43 @@ function World:makeItem(parent, definition, item, cf, config)
     end
     return model
 end
+function World:clearHeld(player)
+    local character = player and player.Character
+    if not character then return end
+    for _, child in ipairs(character:GetChildren()) do
+        if child:GetAttribute("ThriftHeldItem") then child:Destroy() end
+    end
+end
+function World:holdItem(player, definition, item, config)
+    local character = player.Character
+    local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+    local root = character and character:FindFirstChild("HumanoidRootPart")
+    local hand = character and (character:FindFirstChild("RightHand") or character:FindFirstChild("Right Arm"))
+    if not character or not humanoid or humanoid.Health <= 0 or not root or not hand then return false end
+    self:clearHeld(player)
+
+    local model = ItemModels.create(character, definition, item, CFrame.new(), config)
+    model.Name = "Held " .. definition.Name; model:SetAttribute("ThriftHeldItem", true); model:SetAttribute("Uid", item.Uid)
+    local _, initialSize = model:GetBoundingBox()
+    local largest = math.max(initialSize.X, initialSize.Y, initialSize.Z, 0.01)
+    model:ScaleTo(math.min(1.1, 2.7 / largest))
+    local boxCF = model:GetBoundingBox()
+    local target = root.CFrame * CFrame.new(0.75, 0.05, -1.35) * CFrame.Angles(0, math.pi, 0)
+    model:PivotTo(target * boxCF:Inverse() * model:GetPivot())
+
+    local holder = Instance.new("Part"); holder.Name = "CarryGrip"; holder.Size = Vector3.new(0.2, 0.2, 0.2)
+    holder.CFrame = target; holder.Transparency = 1; holder.Anchored = true; holder.Massless = true
+    holder.CanCollide = false; holder.CanTouch = false; holder.CanQuery = false; holder.Parent = model
+    for _, part in ipairs(model:GetDescendants()) do
+        if part:IsA("BasePart") and part ~= holder then
+            part.Anchored = false; part.Massless = true; part.CanCollide = false; part.CanTouch = false; part.CanQuery = false
+            local weld = Instance.new("WeldConstraint"); weld.Part0 = holder; weld.Part1 = part; weld.Parent = holder
+        end
+    end
+    local handWeld = Instance.new("WeldConstraint"); handWeld.Name = "CarryWeld"
+    handWeld.Part0 = hand; handWeld.Part1 = holder; handWeld.Parent = holder; holder.Anchored = false
+    return true
+end
 function World:customer(userId, name)
     local plot = self.Owners[userId]; if not plot then return end
     self.CustomerSerial += 1

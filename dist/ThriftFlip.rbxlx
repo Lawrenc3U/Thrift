@@ -92,7 +92,9 @@ local Config = {
     StudioPracticeMode = true, -- Studio only; never disables live-server persistence.
     StartingCash = 75,
     InventoryLimit = 100,
-    MaxPlayers = 16,
+    -- The town has eight claimable storefronts. Keep the server cap aligned so
+    -- every player always receives a shop.
+    MaxPlayers = 8,
     AutosaveSeconds = 60,
     SessionLease = 180,
     Sources = {
@@ -103,6 +105,7 @@ local Config = {
     Rarities = {"Common", "Uncommon", "Rare", "Epic", "Legendary"},
     RarityIcons = {"○", "◇", "△", "✦", "★"},
     RarityColors = {"#AEB7B5", "#70C58D", "#6CABF3", "#C29AE8", "#EDC66D"},
+    RarityEffectNames = {"Found", "Fresh", "Shimmer", "Enchanted", "Golden Legend"},
     RarityMultipliers = {1, 1.8, 3.5, 7, 15},
     Conditions = {"Wrecked", "Poor", "Fair", "Good", "Mint"},
     ConditionMultipliers = {0.25, 0.5, 0.85, 1.3, 2},
@@ -1118,10 +1121,45 @@ function ItemModels.create(parent, definition, item, cf, config)
         end
     end
     local rarity = item and item.Rarity
-    if rarity and rarity &gt;= 3 and config and config.RarityColors then
-        local glow = Instance.new("Highlight"); glow.Name = "RarityGlow"; glow.FillTransparency = 0.93
-        glow.OutlineColor = Color3.fromHex(config.RarityColors[rarity]); glow.OutlineTransparency = if rarity &gt;= 4 then 0.25 else 0.58
-        glow.DepthMode = Enum.HighlightDepthMode.Occluded; glow.Parent = model
+    if rarity and config and config.RarityColors then
+        local color = Color3.fromHex(config.RarityColors[rarity])
+        if rarity &gt;= 2 then
+            local glow = Instance.new("Highlight"); glow.Name = "RarityGlow"
+            glow.FillColor = color; glow.FillTransparency = if rarity &gt;= 5 then 0.78 elseif rarity &gt;= 4 then 0.87 else 0.96
+            glow.OutlineColor = color
+            glow.OutlineTransparency = if rarity &gt;= 5 then 0.02 elseif rarity &gt;= 4 then 0.16 elseif rarity &gt;= 3 then 0.42 else 0.72
+            glow.DepthMode = Enum.HighlightDepthMode.Occluded; glow.Parent = model
+        end
+        local anchor = model:FindFirstChildWhichIsA("BasePart", true)
+        if anchor and rarity &gt;= 3 then
+            local attachment = Instance.new("Attachment"); attachment.Name = "RaritySparkOrigin"; attachment.Parent = anchor
+            local particles = Instance.new("ParticleEmitter"); particles.Name = "RaritySparkles"
+            particles.Color = ColorSequence.new(color:Lerp(Color3.new(1, 1, 1), 0.25), color)
+            particles.LightEmission = if rarity &gt;= 5 then 0.85 else 0.55
+            particles.Rate = if rarity &gt;= 5 then 9 elseif rarity &gt;= 4 then 5 else 2
+            particles.Lifetime = NumberRange.new(0.65, if rarity &gt;= 5 then 1.35 else 1.0)
+            particles.Speed = NumberRange.new(0.25, if rarity &gt;= 5 then 1.15 else 0.7)
+            particles.SpreadAngle = Vector2.new(180, 180)
+            particles.Rotation = NumberRange.new(0, 360); particles.RotSpeed = NumberRange.new(-90, 90)
+            particles.Size = NumberSequence.new({
+                NumberSequenceKeypoint.new(0, if rarity &gt;= 5 then 0.22 else 0.14),
+                NumberSequenceKeypoint.new(0.55, if rarity &gt;= 5 then 0.12 else 0.08),
+                NumberSequenceKeypoint.new(1, 0),
+            })
+            particles.Transparency = NumberSequence.new({
+                NumberSequenceKeypoint.new(0, 0.25), NumberSequenceKeypoint.new(0.7, 0.05), NumberSequenceKeypoint.new(1, 1),
+            })
+            particles.Parent = attachment
+            if rarity &gt;= 4 then
+                local light = Instance.new("PointLight"); light.Name = "RarityLight"; light.Color = color
+                light.Brightness = if rarity &gt;= 5 then 0.7 else 0.35; light.Range = if rarity &gt;= 5 then 8 else 5
+                light.Shadows = false; light.Parent = anchor
+            end
+            if rarity &gt;= 5 then
+                local sparkles = Instance.new("Sparkles"); sparkles.Name = "LegendaryStars"
+                sparkles.SparkleColor = color; sparkles.Parent = anchor
+            end
+        end
     end
     return model
 end
@@ -1557,6 +1595,7 @@ end
 function ExchangeService:_availableItem(userId, uid, profile)
     local item = ExchangeRules.find(profile, uid)
     if not item or not item.Inspected or item.Slot or self:itemReserved(userId, uid) then return nil end
+    if self.Service:isHeld(userId, uid) then return nil end
     local session = self.Service.Sessions[userId]
     if session and session.Uid == uid then return nil end
     return item
@@ -1813,6 +1852,7 @@ end
 function GameService.new(data, world, event)
     return setmetatable({Data = data, World = world, Event = event,
         Random = Random.new(), Sessions = {}, Offers = {}, Cooldowns = {}, Buckets = {}, TeleportAt = {},
+        Held = {},
         Auction = nil, NextAuction = os.time() + 45, NextCustomer = {}, Ready = {},
         Closing = false, JoinedAt = {}, Showcase = {Week = Economy.week(os.time()), Entries = {}, Votes = {}}}, GameService)
 end
@@ -1834,6 +1874,9 @@ function GameService:find(profile, uid)
     if type(uid) ~= "string" or #uid &gt; 60 then return nil end
     for index, item in ipairs(profile.Inventory) do if item.Uid == uid then return item, index end end
     return nil
+end
+function GameService:isHeld(userId, uid)
+    return self.Held[userId] == uid
 end
 function GameService:demandStyle()
     return Config.Styles[Economy.daily(os.time()) % #Config.Styles + 1]
@@ -1883,6 +1926,7 @@ function GameService:snapshot(player)
     for _, item in ipairs(profile.Inventory) do
         local view = shallowPublicItem(item)
         if item.Inspected then view.Value = self:value(profile, item) end
+        if self:isHeld(player.UserId, item.Uid) then view.Held = true end
         if self.Exchange and self.Exchange:itemReserved(player.UserId, item.Uid) then view.Locked = true end
         table.insert(inventory, view)
     end
@@ -1913,6 +1957,7 @@ function GameService:snapshot(player)
         Settings = profile.Settings, Titles = profile.Titles, Shops = shops,
         Demand = self:demandStyle(), Auction = auction, NextAuction = self.NextAuction,
         Offer = self.Offers[player.UserId], Ephemeral = self.Data.Ephemeral,
+        Held = self.Held[player.UserId],
         Market = market, Trade = trade, Live = self.Live and self.Live:snapshot(player),
         Showcase = self.Showcase, ServerTime = os.time(),
     })
@@ -1930,7 +1975,9 @@ function GameService:generate(source, level, tutorial)
         if definition.UnlockLevel &lt;= level then table.insert(eligible, definition) end
     end
     local definition = eligible[self.Random:NextInteger(1, #eligible)]
-    local rarity = if tutorial then 2 else Economy.pick(Config.Sources[source].Weights, self.Random:NextNumber())
+    -- The guaranteed first Rare demonstrates the collection fantasy immediately;
+    -- subsequent finds use the configured economy odds.
+    local rarity = if tutorial then 3 else Economy.pick(Config.Sources[source].Weights, self.Random:NextNumber())
     -- Free weekend event affects estate finds only; no Robux or odds manipulation.
     if source == "Estate" and (os.date("!*t").wday == 1 or os.date("!*t").wday == 7) then
         rarity = math.min(5, rarity + (if self.Random:NextNumber() &lt; 0.08 then 1 else 0))
@@ -1983,6 +2030,7 @@ function GameService:source(player, payload)
     table.insert(profile.Inventory, self:generate(source, Economy.level(profile.XP), profile.Tutorial == 0))
     profile.XP += 4; self:stat(profile, "Found", 1)
     if profile.Tutorial == 0 then profile.Tutorial = 1; self:analytics(player, "TutorialFind") end
+    if profile.Stats.Found == 2 then self:analytics(player, "SecondFind") end
     self:notify(player, "A mystery find! Open your bag to inspect it."); self:snapshot(player)
 end
 function GameService:inspect(player, payload)
@@ -1997,9 +2045,32 @@ function GameService:inspect(player, payload)
         local count = 0; for _ in pairs(profile.Collection) do count += 1 end
         if count % 10 == 0 then profile.Cash += 100; self:notify(player, "Collection milestone! +$100") end
     end
-    if profile.Tutorial == 1 then profile.Tutorial = 2 end
-    self:notify(player, Config.RarityIcons[item.Rarity] .. " " .. Config.Rarities[item.Rarity] .. " " .. Catalog.ById[item.DefId].Name)
+    if profile.Tutorial == 1 then profile.Tutorial = 2; self:analytics(player, "TutorialInspect") end
+    self:analytics(player, "ItemInspected")
     self:snapshot(player)
+    local reveal = shallowPublicItem(item); reveal.Value = self:value(profile, item)
+    self.Event:FireClient(player, "Reveal", {Item = reveal})
+end
+function GameService:hold(player, payload)
+    local profile = self:profile(player)
+    local item = self:find(profile, payload.Uid)
+    if not item or not item.Inspected then return self:notify(player, "Inspect this find before holding it.") end
+    if self:isHeld(player.UserId, item.Uid) then
+        self.Held[player.UserId] = nil; self.World:clearHeld(player)
+        self:notify(player, "Returned to your bag."); return self:snapshot(player)
+    end
+    if item.Slot then return self:notify(player, "Return this find from its display first.") end
+    if self.Exchange and self.Exchange:itemReserved(player.UserId, item.Uid) then
+        return self:notify(player, "Remove this item from its listing or trade first.")
+    end
+    local session = self.Sessions[player.UserId]
+    if session and session.Uid == item.Uid then return self:notify(player, "Finish restoring this item first.") end
+    local definition = Catalog.ById[item.DefId]
+    if not definition or not self.World:holdItem(player, definition, item, Config) then
+        return self:notify(player, "Your avatar is not ready to hold that yet.")
+    end
+    self.Held[player.UserId] = item.Uid; self:analytics(player, "ItemHeld")
+    self:notify(player, "Holding " .. definition.Name .. " — show off your find!"); self:snapshot(player)
 end
 function GameService:beginRestore(player, payload)
     local profile = self:profile(player)
@@ -2007,6 +2078,7 @@ function GameService:beginRestore(player, payload)
     if self.Sessions[player.UserId] then return self:notify(player, "Finish your current restoration first.") end
     local item = self:find(profile, payload.Uid)
     if item and self.Exchange and self.Exchange:itemReserved(player.UserId, item.Uid) then return self:notify(player, "Remove this item from its listing or trade first.") end
+    if item and self:isHeld(player.UserId, item.Uid) then return self:notify(player, "Put this item back in your bag before restoring it.") end
     if not item or not item.Inspected or item.Slot or item.Condition &gt;= 5 then return self:notify(player, "Choose an inspected item below Mint; take it off display first.") end
     local kind = payload.Kind or Catalog.ById[item.DefId].Minigame
     if not table.find({"Scrub", "Polish", "Rewire", "Repaint", "Assemble"}, kind) then return end
@@ -2017,6 +2089,7 @@ function GameService:beginRestore(player, payload)
         Started = os.clock(), Ends = os.clock() + 20, Progress = 0, Mistakes = 0, LastInput = 0,
         Targets = targets, Seen = {}, Palette = 1, RequiredPalette = self.Random:NextInteger(1, 5)}
     self.Sessions[player.UserId] = session
+    self:analytics(player, "RestoreStarted")
     self.Event:FireClient(player, "Minigame", {Token = session.Token, Kind = kind, Targets = targets,
         RequiredPalette = session.RequiredPalette, Duration = 20, Minimum = 8, Tool = profile.Tool, Item = shallowPublicItem(item), DefId = item.DefId})
 end
@@ -2083,6 +2156,7 @@ function GameService:display(player, payload)
     if not self.World:near(player, "Display") then return self:notify(player, "Visit your shop to place items.") end
     local item = self:find(profile, payload.Uid)
     if item and self.Exchange and self.Exchange:itemReserved(player.UserId, item.Uid) then return self:notify(player, "Remove this item from its listing or trade first.") end
+    if item and self:isHeld(player.UserId, item.Uid) then return self:notify(player, "Put this item back in your bag before displaying it.") end
     if not item or not item.Inspected then return end
     local session = self.Sessions[player.UserId]
     if session and session.Uid == item.Uid then return self:notify(player, "Finish restoring this item first.") end
@@ -2095,7 +2169,7 @@ function GameService:display(player, payload)
         if other.Slot == payload.Slot then return self:notify(player, "That display is occupied.") end
     end
     item.Slot = payload.Slot
-    if profile.Tutorial == 3 then profile.Tutorial = 4; self.NextCustomer[player.UserId] = os.time() + 3 end
+    if profile.Tutorial == 3 then profile.Tutorial = 4; self.NextCustomer[player.UserId] = os.time() + 3; self:analytics(player, "TutorialDisplay") end
     self:refresh(player)
 end
 function GameService:makeOffer(player)
@@ -2276,6 +2350,7 @@ function GameService:teleport(player, payload)
 end
 local handlers = {
     Source = GameService.source, Inspect = GameService.inspect, BeginRestore = GameService.beginRestore,
+    Hold = GameService.hold,
     RestoreInput = GameService.restoreInput, FinishRestore = GameService.finishRestore,
     Display = GameService.display, Haggle = GameService.haggle, Upgrade = GameService.upgrade,
     Quest = GameService.quest, Bid = GameService.bid, Rate = GameService.rating, DecorPlace = GameService.decorPlace,
@@ -2330,6 +2405,14 @@ function GameService:join(player)
     if not self.World:assign(player) then self.Data:release(player.UserId); player:Kick("This town is full. Please join another server."); return end
     self.Ready[player.UserId] = true; self.JoinedAt[player.UserId] = os.clock(); self:resetQuests(profile); self:prepareLogin(profile)
     self.NextCustomer[player.UserId] = os.time() + 10
+    player.CharacterAdded:Connect(function()
+        task.wait(0.8)
+        local uid = self.Held[player.UserId]
+        local current = self:profile(player)
+        local item = current and uid and self:find(current, uid)
+        local definition = item and Catalog.ById[item.DefId]
+        if definition and not self.World:holdItem(player, definition, item, Config) then self.Held[player.UserId] = nil end
+    end)
     local leaderstats = Instance.new("Folder"); leaderstats.Name = "leaderstats"; leaderstats.Parent = player
     local cash = Instance.new("IntValue"); cash.Name = "Cash"; cash.Value = profile.Cash; cash.Parent = leaderstats
     local level = Instance.new("IntValue"); level.Name = "Level"; level.Value = Economy.level(profile.XP); level.Parent = leaderstats
@@ -2346,6 +2429,7 @@ function GameService:leave(player)
     self.Ready[player.UserId] = nil
     if self.Auction and self.Auction.Bidder == player.UserId then self.Auction.Bidder = nil; self.Auction.Bid = 0 end
     self.Sessions[player.UserId] = nil; self.Offers[player.UserId] = nil
+    self.Held[player.UserId] = nil; self.World:clearHeld(player)
     self.Cooldowns[player.UserId] = nil; self.Buckets[player.UserId] = nil; self.NextCustomer[player.UserId] = nil
     self.World:release(player.UserId)
     self.Data:release(player.UserId)
@@ -4246,6 +4330,43 @@ function World:makeItem(parent, definition, item, cf, config)
     end
     return model
 end
+function World:clearHeld(player)
+    local character = player and player.Character
+    if not character then return end
+    for _, child in ipairs(character:GetChildren()) do
+        if child:GetAttribute("ThriftHeldItem") then child:Destroy() end
+    end
+end
+function World:holdItem(player, definition, item, config)
+    local character = player.Character
+    local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+    local root = character and character:FindFirstChild("HumanoidRootPart")
+    local hand = character and (character:FindFirstChild("RightHand") or character:FindFirstChild("Right Arm"))
+    if not character or not humanoid or humanoid.Health &lt;= 0 or not root or not hand then return false end
+    self:clearHeld(player)
+
+    local model = ItemModels.create(character, definition, item, CFrame.new(), config)
+    model.Name = "Held " .. definition.Name; model:SetAttribute("ThriftHeldItem", true); model:SetAttribute("Uid", item.Uid)
+    local _, initialSize = model:GetBoundingBox()
+    local largest = math.max(initialSize.X, initialSize.Y, initialSize.Z, 0.01)
+    model:ScaleTo(math.min(1.1, 2.7 / largest))
+    local boxCF = model:GetBoundingBox()
+    local target = root.CFrame * CFrame.new(0.75, 0.05, -1.35) * CFrame.Angles(0, math.pi, 0)
+    model:PivotTo(target * boxCF:Inverse() * model:GetPivot())
+
+    local holder = Instance.new("Part"); holder.Name = "CarryGrip"; holder.Size = Vector3.new(0.2, 0.2, 0.2)
+    holder.CFrame = target; holder.Transparency = 1; holder.Anchored = true; holder.Massless = true
+    holder.CanCollide = false; holder.CanTouch = false; holder.CanQuery = false; holder.Parent = model
+    for _, part in ipairs(model:GetDescendants()) do
+        if part:IsA("BasePart") and part ~= holder then
+            part.Anchored = false; part.Massless = true; part.CanCollide = false; part.CanTouch = false; part.CanQuery = false
+            local weld = Instance.new("WeldConstraint"); weld.Part0 = holder; weld.Part1 = part; weld.Parent = holder
+        end
+    end
+    local handWeld = Instance.new("WeldConstraint"); handWeld.Name = "CarryWeld"
+    handWeld.Part0 = hand; handWeld.Part1 = holder; handWeld.Parent = holder; holder.Anchored = false
+    return true
+end
 function World:customer(userId, name)
     local plot = self.Owners[userId]; if not plot then return end
     self.CustomerSerial += 1
@@ -4549,6 +4670,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared.Config)
+local Catalog = require(Shared.Catalog)
 local UI = require(script.Parent.UI)
 local Pages = require(script.Parent.Pages)
 local Audio = require(script.Parent.Audio)
@@ -4584,7 +4706,10 @@ local function guide(location)
             end
         end
     end
-    if target then marker.Position = target; guideText.Text = "▼ " .. string.upper(location); billboard.Enabled = true; guideExpires = os.clock() + 30 end
+    if target then
+        marker.Position = target; guideText.Text = "▼ " .. string.upper(location); billboard.Enabled = true
+        guideExpires = if state and state.Tutorial &lt; 5 then math.huge else os.clock() + 30
+    end
 end
 
 local function send(action, payload) event:FireServer(action, payload or {}) end
@@ -4610,13 +4735,31 @@ local tutorialHints = {
     [2]="Restore it at your shop workbench", [3]="Place it on one of your displays",
     [4]="Open Shop and welcome your first customer",
 }
+local function nextObjective()
+    if tutorialHints[state.Tutorial] then return tutorialHints[state.Tutorial] end
+    if state.Held then return "Show off your find, then return it to your bag" end
+    local daily = state.Daily
+    if daily and ((daily.Found or 0) &gt;= 3 and not daily.Claimed.Find
+        or (daily.Restored or 0) &gt;= 3 and not daily.Claimed.Restore
+        or (daily.Sold or 0) &gt;= 3 and not daily.Claimed.Sell) then
+        return "A daily quest reward is ready to collect"
+    end
+    local nextTier = Config.Tiers[state.Tier + 1]
+    if nextTier then
+        if state.Level &lt; nextTier.Level then return "Reach LV " .. nextTier.Level .. " to unlock " .. nextTier.Name end
+        if state.AvailableCash &lt; nextTier.Cost then return "Earn $" .. (nextTier.Cost - state.AvailableCash) .. " more for " .. nextTier.Name end
+        return "Your " .. nextTier.Name .. " upgrade is ready"
+    end
+    local discoveries = 0; for _ in pairs(state.Collection or {}) do discoveries += 1 end
+    return discoveries .. "/400 discoveries • hunt for a new " .. state.Demand .. " find"
+end
 local lastOffer, lastTutorial
 local function updateHud()
     ui.Balance.Text = tostring(math.floor(state.Cash))
     ui.Level.Text = "LV " .. state.Level
     local levelStart, levelEnd = 30 * (state.Level - 1) ^ 2, 30 * state.Level ^ 2
     ui.LevelProgress.Size = UDim2.fromScale(math.clamp((state.XP - levelStart) / math.max(1, levelEnd - levelStart), 0, 1), 1)
-    ui.Hint.Text = tutorialHints[state.Tutorial] or (state.Demand .. " finds are trending  •  Reputation " .. state.Reputation)
+    ui.Hint.Text = nextObjective()
     ui:setSubtitle(if state.Ephemeral then "STUDIO PRACTICE • PROGRESS DOES NOT SAVE" else "YOUR COZY CORNER OF THRIFT STREET")
     ui.Effects = state.Settings.Effects
     audio:setEnabled(state.Settings.Music, state.Settings.Effects)
@@ -4630,12 +4773,22 @@ event.OnClientEvent:Connect(function(kind, payload)
         if state.Cash &gt; oldCash then ui:cashFeedback(state.Cash - oldCash); audio:play("sale") end
         if state.Tutorial ~= lastTutorial then
             lastTutorial = state.Tutorial
-            if state.Tutorial == 0 then guide("Source") elseif state.Tutorial &gt;= 2 and state.Tutorial &lt;= 4 then guide("Shop") end
+            if state.Tutorial == 0 then guide("Source")
+            elseif state.Tutorial == 1 then billboard.Enabled = false; open("Bag")
+            elseif state.Tutorial &gt;= 2 and state.Tutorial &lt;= 4 then guide("Shop")
+            else billboard.Enabled = false end
         end
         if state.Offer and state.Offer.Uid ~= lastOffer then ui:notice(state.Offer.Customer .. " is browsing your shop!"); audio:play("reveal") end
         lastOffer = state.Offer and state.Offer.Uid or nil
         if wasVisible and not session then render() end
     elseif kind == "Notice" then ui:notice(payload)
+    elseif kind == "Reveal" then
+        local item = payload and payload.Item
+        local definition = item and Catalog.ById[item.DefId]
+        if definition then
+            audio:play(if item.Rarity &gt;= 4 then "reward" else "reveal")
+            ui:rarityReveal(definition, item, function() open("Item", {Uid = item.Uid}) end)
+        end
     elseif kind == "Open" then
         if payload.Page == "Visit" then open("Visit", {Owner=payload.Owner})
         elseif payload.Page == "Display" then open("Display", {Slot=payload.Slot})
@@ -5358,7 +5511,7 @@ local function remaining(seconds)
     return string.format("%d:%02d", math.floor(seconds / 60), seconds % 60)
 end
 local function inspectable(item)
-    return item.Inspected and not item.Slot and not item.ListingId and not item.TradeId and not item.Locked
+    return item.Inspected and not item.Slot and not item.ListingId and not item.TradeId and not item.Locked and not item.Held
 end
 local function findItem(state, uid)
     for _, item in ipairs(state.Inventory) do if item.Uid == uid then return item end end
@@ -5399,7 +5552,9 @@ function Pages:itemTile(parent, item, actionText, callback)
     local definition = Catalog.ById[item.DefId]
     if not definition then return end
     local tile = Instance.new("Frame"); tile.Name = "FindCard"; tile.BackgroundColor3 = UI.Colors.Panel
-    tile.Size = UDim2.new(1, 0, 0, 258); tile.Parent = parent; UI.corner(tile, 14); UI.stroke(tile, UI.Colors.Line, 1, 0.25)
+    tile.Size = UDim2.new(1, 0, 0, 258); tile.Parent = parent; UI.corner(tile, 14)
+    local rarityColor = if item.Inspected then Color3.fromHex(Config.RarityColors[item.Rarity]) else UI.Colors.Line
+    UI.stroke(tile, rarityColor, if item.Inspected and item.Rarity &gt;= 4 then 2 else 1, if item.Inspected then 0.18 else 0.25)
     local preview = UI.preview(tile, definition, item, 132, not item.Inspected)
     preview.Size = UDim2.new(1, -16, 0, 132); preview.Position = UDim2.fromOffset(8, 8)
     local title = UI.label(tile, if item.Inspected then definition.Name else "Mystery " .. definition.Category, 16)
@@ -5412,8 +5567,9 @@ function Pages:itemTile(parent, item, actionText, callback)
     detail.Size = UDim2.new(1, -24, 0, 20); detail.AutomaticSize = Enum.AutomaticSize.None; detail.TextTruncate = Enum.TextTruncate.AtEnd; detail.TextWrapped = false
     local button = UI.button(tile, actionText or "Take a closer look", callback, true)
     button.Size = UDim2.new(1, -16, 0, 44); button.Position = UDim2.new(0, 8, 1, -52); button.TextSize = 14
-    if item.Slot or item.ListingId or item.TradeId or item.Locked then
-        local status = UI.label(preview, if item.Slot then "ON DISPLAY" elseif item.ListingId then "LISTED" else "RESERVED", 10, UI.Colors.Panel)
+    if item.Slot or item.ListingId or item.TradeId or item.Locked or item.Held then
+        local statusText = if item.Held then "IN YOUR HANDS" elseif item.Slot then "ON DISPLAY" elseif item.ListingId then "LISTED" else "RESERVED"
+        local status = UI.label(preview, statusText, 10, UI.Colors.Panel)
         status.Font = Enum.Font.GothamBold; status.AutomaticSize = Enum.AutomaticSize.None
         status.Size = UDim2.new(1, 0, 0, 25); status.Position = UDim2.new(0, 0, 1, -25)
         status.BackgroundColor3 = UI.Colors.Teal; status.BackgroundTransparency = 0.1; status.TextXAlignment = Enum.TextXAlignment.Center
@@ -5517,7 +5673,11 @@ function Pages:itemPage(context)
     elseif item.Slot then
         UI.label(frame, "On display in slot " .. item.Slot .. ". Your customers can make an offer.", 17)
         self:button(frame, "Return to your bag", "Display", {Uid = item.Uid, Remove = true}, true)
+    elseif item.Held then
+        UI.label(frame, "You are carrying this find. Other players can see its rarity effects while you explore town.", 17)
+        self:button(frame, "Put it back in my bag", "Hold", {Uid = item.Uid}, false)
     else
+        self:button(frame, "Hold and show off this find", "Hold", {Uid = item.Uid}, true)
         if item.Condition &lt; 5 then self:nav(frame, "Restore at your workbench", "Restore", {Uid = item.Uid}, false)
         else UI.disabled(frame, "✓ Mint condition — beautifully restored") end
         self:nav(frame, "Display in your shop", "Slots", {Uid = item.Uid})
@@ -6086,10 +6246,21 @@ function UI.grid(parent, cellHeight, minimumWidth)
 end
 function UI.preview(parent, definition, item, height, hidden)
     local viewport = Instance.new("ViewportFrame"); viewport.Name = "ItemPreview"
+    local rarityColor = if item and item.Inspected and item.Rarity and SharedConfig
+        then Color3.fromHex(SharedConfig.RarityColors[item.Rarity]) else nil
+    if item and item.Inspected and item.Rarity and not SharedConfig then
+        SharedConfig = require(ReplicatedStorage.Shared.Config)
+        rarityColor = Color3.fromHex(SharedConfig.RarityColors[item.Rarity])
+    end
     viewport.Size = UDim2.new(1, 0, 0, height or 180); viewport.BackgroundColor3 = UI.Colors.Light
     viewport.Ambient = Color3.fromRGB(128, 143, 159); viewport.LightColor = Color3.fromRGB(255, 242, 216)
     viewport.LightDirection = Vector3.new(-1.4, -1.8, -1); viewport.Parent = parent; UI.corner(viewport, 12)
-    UI.gradient(viewport, Color3.fromRGB(247, 241, 228), Color3.fromRGB(203, 225, 224), 35)
+    if rarityColor then
+        UI.gradient(viewport, Color3.fromRGB(250, 247, 237), rarityColor:Lerp(Color3.fromRGB(237, 244, 247), 0.72), 35)
+        UI.stroke(viewport, rarityColor, if item.Rarity &gt;= 4 then 2 else 1, if item.Rarity &gt;= 4 then 0.12 else 0.42)
+    else
+        UI.gradient(viewport, Color3.fromRGB(247, 241, 228), Color3.fromRGB(203, 225, 224), 35)
+    end
     local world = Instance.new("WorldModel"); world.Parent = viewport
     local camera = Instance.new("Camera"); camera.FieldOfView = 35; camera.Parent = viewport; viewport.CurrentCamera = camera
     if hidden then
@@ -6332,6 +6503,67 @@ function UI:searchTreasure(source, callback)
         if layer.Parent then layer:Destroy() end
         self.Searching = false; callback()
     end)
+end
+function UI:rarityReveal(definition, item, callback)
+    if self.RevealLayer then self.RevealLayer:Destroy() end
+    if not SharedConfig then SharedConfig = require(ReplicatedStorage.Shared.Config) end
+    local rarity = math.clamp(item.Rarity or 1, 1, #SharedConfig.Rarities)
+    local color = Color3.fromHex(SharedConfig.RarityColors[rarity])
+    local layer = Instance.new("Frame"); layer.Name = "RarityReveal"; layer.Size = UDim2.fromScale(1, 1)
+    layer.BackgroundColor3 = UI.Colors.Night; layer.BackgroundTransparency = 0.12; layer.BorderSizePixel = 0
+    layer.ZIndex = 50; layer.Parent = self.Gui; self.RevealLayer = layer
+
+    if self.Effects then
+        for index = 1, (if rarity &gt;= 5 then 22 elseif rarity &gt;= 4 then 14 else 8) do
+            local symbol = UI.label(layer, if index % 3 == 0 then SharedConfig.RarityIcons[rarity] else "✦", 16 + index % 4 * 5, color)
+            symbol.AnchorPoint = Vector2.new(0.5, 0.5); symbol.Position = UDim2.fromScale(0.08 + ((index * 37) % 84) / 100, 0.18 + ((index * 53) % 68) / 100)
+            symbol.Size = UDim2.fromOffset(36, 36); symbol.AutomaticSize = Enum.AutomaticSize.None
+            symbol.TextXAlignment = Enum.TextXAlignment.Center; symbol.ZIndex = 51; symbol.Rotation = (index * 29) % 60 - 30
+            symbol.TextTransparency = 0.15 + (index % 3) * 0.18
+            tween(symbol, {Position = symbol.Position - UDim2.fromOffset(0, 70), TextTransparency = 1, Rotation = symbol.Rotation + 90}, 1.4 + (index % 4) * 0.18)
+        end
+    end
+
+    local aura = Instance.new("Frame"); aura.AnchorPoint = Vector2.new(0.5, 0.5); aura.Position = UDim2.fromScale(0.5, 0.49)
+    aura.Size = UDim2.fromOffset(520, 520); aura.BackgroundColor3 = color; aura.BackgroundTransparency = 0.78
+    aura.BorderSizePixel = 0; aura.ZIndex = 51; aura.Parent = layer; UI.corner(aura, 260)
+    local auraScale = Instance.new("UIScale"); auraScale.Scale = 0.72; auraScale.Parent = aura
+    if self.Effects then tween(auraScale, {Scale = 1.08}, 0.75) end
+
+    local card = Instance.new("Frame"); card.Name = "RevealCard"; card.AnchorPoint = Vector2.new(0.5, 0.5)
+    card.Position = UDim2.fromScale(0.5, 0.5); card.Size = UDim2.new(0.9, 0, 0, 535)
+    card.BackgroundColor3 = UI.Colors.Panel; card.BorderSizePixel = 0; card.ZIndex = 52; card.Parent = layer
+    UI.corner(card, 26); UI.stroke(card, color, if rarity &gt;= 4 then 3 else 2, 0.04)
+    UI.gradient(card, UI.Colors.Panel, color:Lerp(UI.Colors.Panel, 0.82), 90)
+    local limit = Instance.new("UISizeConstraint"); limit.MaxSize = Vector2.new(470, 535); limit.MinSize = Vector2.new(290, 500); limit.Parent = card
+    local scale = Instance.new("UIScale"); scale.Scale = if self.Effects then 0.72 else 1; scale.Parent = card
+    if self.Effects then tween(scale, {Scale = 1}, if rarity &gt;= 4 then 0.46 else 0.28) end
+
+    local kicker = UI.label(card, SharedConfig.RarityIcons[rarity] .. "  " .. string.upper(SharedConfig.Rarities[rarity]) .. "  " .. SharedConfig.RarityIcons[rarity], 22, color)
+    kicker.Font = Enum.Font.GothamBlack; kicker.Position = UDim2.fromOffset(18, 18); kicker.Size = UDim2.new(1, -36, 0, 34)
+    kicker.AutomaticSize = Enum.AutomaticSize.None; kicker.TextXAlignment = Enum.TextXAlignment.Center; kicker.ZIndex = 53
+    local effectName = SharedConfig.RarityEffectNames and SharedConfig.RarityEffectNames[rarity] or "Treasure"
+    local effect = UI.label(card, string.upper(effectName), 11, color:Lerp(UI.Colors.Ink, 0.3))
+    effect.Font = Enum.Font.GothamBold; effect.Position = UDim2.fromOffset(18, 53); effect.Size = UDim2.new(1, -36, 0, 20)
+    effect.AutomaticSize = Enum.AutomaticSize.None; effect.TextXAlignment = Enum.TextXAlignment.Center; effect.ZIndex = 53
+    local preview = UI.preview(card, definition, item, 265, false); preview.Position = UDim2.fromOffset(18, 80)
+    preview.Size = UDim2.new(1, -36, 0, 265); preview.ZIndex = 53
+    local name = UI.label(card, definition.Name, 25, UI.Colors.Ink); name.Font = Enum.Font.GothamBlack
+    name.Position = UDim2.fromOffset(18, 357); name.Size = UDim2.new(1, -36, 0, 34); name.AutomaticSize = Enum.AutomaticSize.None
+    name.TextXAlignment = Enum.TextXAlignment.Center; name.ZIndex = 53
+    local detail = UI.label(card, SharedConfig.Conditions[item.Condition] .. " • " .. (item.Style or definition.Style) .. " • $" .. tostring(math.floor(item.Value or 0)), 15, UI.Colors.Muted)
+    detail.Position = UDim2.fromOffset(18, 394); detail.Size = UDim2.new(1, -36, 0, 28); detail.AutomaticSize = Enum.AutomaticSize.None
+    detail.TextXAlignment = Enum.TextXAlignment.Center; detail.ZIndex = 53
+    local button = UI.button(card, if rarity &gt;= 5 then "★ Keep this legendary find" else "Add to my collection", function()
+        if self.RevealLayer ~= layer then return end
+        self.RevealLayer = nil
+        if self.Effects then
+            tween(scale, {Scale = 0.92}, 0.16); tween(layer, {BackgroundTransparency = 1}, 0.2); task.wait(0.2)
+        end
+        if layer.Parent then layer:Destroy() end
+        if callback then callback() end
+    end, false)
+    button.Position = UDim2.new(0, 18, 1, -68); button.Size = UDim2.new(1, -36, 0, 50); button.ZIndex = 54
 end
 function UI:notice(text)
     self.ToastVersion += 1; local version = self.ToastVersion

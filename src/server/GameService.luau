@@ -26,6 +26,7 @@ end
 function GameService.new(data, world, event)
     return setmetatable({Data = data, World = world, Event = event,
         Random = Random.new(), Sessions = {}, Offers = {}, Cooldowns = {}, Buckets = {}, TeleportAt = {},
+        Held = {},
         Auction = nil, NextAuction = os.time() + 45, NextCustomer = {}, Ready = {},
         Closing = false, JoinedAt = {}, Showcase = {Week = Economy.week(os.time()), Entries = {}, Votes = {}}}, GameService)
 end
@@ -47,6 +48,9 @@ function GameService:find(profile, uid)
     if type(uid) ~= "string" or #uid > 60 then return nil end
     for index, item in ipairs(profile.Inventory) do if item.Uid == uid then return item, index end end
     return nil
+end
+function GameService:isHeld(userId, uid)
+    return self.Held[userId] == uid
 end
 function GameService:demandStyle()
     return Config.Styles[Economy.daily(os.time()) % #Config.Styles + 1]
@@ -96,6 +100,7 @@ function GameService:snapshot(player)
     for _, item in ipairs(profile.Inventory) do
         local view = shallowPublicItem(item)
         if item.Inspected then view.Value = self:value(profile, item) end
+        if self:isHeld(player.UserId, item.Uid) then view.Held = true end
         if self.Exchange and self.Exchange:itemReserved(player.UserId, item.Uid) then view.Locked = true end
         table.insert(inventory, view)
     end
@@ -126,6 +131,7 @@ function GameService:snapshot(player)
         Settings = profile.Settings, Titles = profile.Titles, Shops = shops,
         Demand = self:demandStyle(), Auction = auction, NextAuction = self.NextAuction,
         Offer = self.Offers[player.UserId], Ephemeral = self.Data.Ephemeral,
+        Held = self.Held[player.UserId],
         Market = market, Trade = trade, Live = self.Live and self.Live:snapshot(player),
         Showcase = self.Showcase, ServerTime = os.time(),
     })
@@ -143,7 +149,9 @@ function GameService:generate(source, level, tutorial)
         if definition.UnlockLevel <= level then table.insert(eligible, definition) end
     end
     local definition = eligible[self.Random:NextInteger(1, #eligible)]
-    local rarity = if tutorial then 2 else Economy.pick(Config.Sources[source].Weights, self.Random:NextNumber())
+    -- The guaranteed first Rare demonstrates the collection fantasy immediately;
+    -- subsequent finds use the configured economy odds.
+    local rarity = if tutorial then 3 else Economy.pick(Config.Sources[source].Weights, self.Random:NextNumber())
     -- Free weekend event affects estate finds only; no Robux or odds manipulation.
     if source == "Estate" and (os.date("!*t").wday == 1 or os.date("!*t").wday == 7) then
         rarity = math.min(5, rarity + (if self.Random:NextNumber() < 0.08 then 1 else 0))
@@ -196,6 +204,7 @@ function GameService:source(player, payload)
     table.insert(profile.Inventory, self:generate(source, Economy.level(profile.XP), profile.Tutorial == 0))
     profile.XP += 4; self:stat(profile, "Found", 1)
     if profile.Tutorial == 0 then profile.Tutorial = 1; self:analytics(player, "TutorialFind") end
+    if profile.Stats.Found == 2 then self:analytics(player, "SecondFind") end
     self:notify(player, "A mystery find! Open your bag to inspect it."); self:snapshot(player)
 end
 function GameService:inspect(player, payload)
@@ -210,9 +219,32 @@ function GameService:inspect(player, payload)
         local count = 0; for _ in pairs(profile.Collection) do count += 1 end
         if count % 10 == 0 then profile.Cash += 100; self:notify(player, "Collection milestone! +$100") end
     end
-    if profile.Tutorial == 1 then profile.Tutorial = 2 end
-    self:notify(player, Config.RarityIcons[item.Rarity] .. " " .. Config.Rarities[item.Rarity] .. " " .. Catalog.ById[item.DefId].Name)
+    if profile.Tutorial == 1 then profile.Tutorial = 2; self:analytics(player, "TutorialInspect") end
+    self:analytics(player, "ItemInspected")
     self:snapshot(player)
+    local reveal = shallowPublicItem(item); reveal.Value = self:value(profile, item)
+    self.Event:FireClient(player, "Reveal", {Item = reveal})
+end
+function GameService:hold(player, payload)
+    local profile = self:profile(player)
+    local item = self:find(profile, payload.Uid)
+    if not item or not item.Inspected then return self:notify(player, "Inspect this find before holding it.") end
+    if self:isHeld(player.UserId, item.Uid) then
+        self.Held[player.UserId] = nil; self.World:clearHeld(player)
+        self:notify(player, "Returned to your bag."); return self:snapshot(player)
+    end
+    if item.Slot then return self:notify(player, "Return this find from its display first.") end
+    if self.Exchange and self.Exchange:itemReserved(player.UserId, item.Uid) then
+        return self:notify(player, "Remove this item from its listing or trade first.")
+    end
+    local session = self.Sessions[player.UserId]
+    if session and session.Uid == item.Uid then return self:notify(player, "Finish restoring this item first.") end
+    local definition = Catalog.ById[item.DefId]
+    if not definition or not self.World:holdItem(player, definition, item, Config) then
+        return self:notify(player, "Your avatar is not ready to hold that yet.")
+    end
+    self.Held[player.UserId] = item.Uid; self:analytics(player, "ItemHeld")
+    self:notify(player, "Holding " .. definition.Name .. " — show off your find!"); self:snapshot(player)
 end
 function GameService:beginRestore(player, payload)
     local profile = self:profile(player)
@@ -220,6 +252,7 @@ function GameService:beginRestore(player, payload)
     if self.Sessions[player.UserId] then return self:notify(player, "Finish your current restoration first.") end
     local item = self:find(profile, payload.Uid)
     if item and self.Exchange and self.Exchange:itemReserved(player.UserId, item.Uid) then return self:notify(player, "Remove this item from its listing or trade first.") end
+    if item and self:isHeld(player.UserId, item.Uid) then return self:notify(player, "Put this item back in your bag before restoring it.") end
     if not item or not item.Inspected or item.Slot or item.Condition >= 5 then return self:notify(player, "Choose an inspected item below Mint; take it off display first.") end
     local kind = payload.Kind or Catalog.ById[item.DefId].Minigame
     if not table.find({"Scrub", "Polish", "Rewire", "Repaint", "Assemble"}, kind) then return end
@@ -230,6 +263,7 @@ function GameService:beginRestore(player, payload)
         Started = os.clock(), Ends = os.clock() + 20, Progress = 0, Mistakes = 0, LastInput = 0,
         Targets = targets, Seen = {}, Palette = 1, RequiredPalette = self.Random:NextInteger(1, 5)}
     self.Sessions[player.UserId] = session
+    self:analytics(player, "RestoreStarted")
     self.Event:FireClient(player, "Minigame", {Token = session.Token, Kind = kind, Targets = targets,
         RequiredPalette = session.RequiredPalette, Duration = 20, Minimum = 8, Tool = profile.Tool, Item = shallowPublicItem(item), DefId = item.DefId})
 end
@@ -296,6 +330,7 @@ function GameService:display(player, payload)
     if not self.World:near(player, "Display") then return self:notify(player, "Visit your shop to place items.") end
     local item = self:find(profile, payload.Uid)
     if item and self.Exchange and self.Exchange:itemReserved(player.UserId, item.Uid) then return self:notify(player, "Remove this item from its listing or trade first.") end
+    if item and self:isHeld(player.UserId, item.Uid) then return self:notify(player, "Put this item back in your bag before displaying it.") end
     if not item or not item.Inspected then return end
     local session = self.Sessions[player.UserId]
     if session and session.Uid == item.Uid then return self:notify(player, "Finish restoring this item first.") end
@@ -308,7 +343,7 @@ function GameService:display(player, payload)
         if other.Slot == payload.Slot then return self:notify(player, "That display is occupied.") end
     end
     item.Slot = payload.Slot
-    if profile.Tutorial == 3 then profile.Tutorial = 4; self.NextCustomer[player.UserId] = os.time() + 3 end
+    if profile.Tutorial == 3 then profile.Tutorial = 4; self.NextCustomer[player.UserId] = os.time() + 3; self:analytics(player, "TutorialDisplay") end
     self:refresh(player)
 end
 function GameService:makeOffer(player)
@@ -489,6 +524,7 @@ function GameService:teleport(player, payload)
 end
 local handlers = {
     Source = GameService.source, Inspect = GameService.inspect, BeginRestore = GameService.beginRestore,
+    Hold = GameService.hold,
     RestoreInput = GameService.restoreInput, FinishRestore = GameService.finishRestore,
     Display = GameService.display, Haggle = GameService.haggle, Upgrade = GameService.upgrade,
     Quest = GameService.quest, Bid = GameService.bid, Rate = GameService.rating, DecorPlace = GameService.decorPlace,
@@ -543,6 +579,14 @@ function GameService:join(player)
     if not self.World:assign(player) then self.Data:release(player.UserId); player:Kick("This town is full. Please join another server."); return end
     self.Ready[player.UserId] = true; self.JoinedAt[player.UserId] = os.clock(); self:resetQuests(profile); self:prepareLogin(profile)
     self.NextCustomer[player.UserId] = os.time() + 10
+    player.CharacterAdded:Connect(function()
+        task.wait(0.8)
+        local uid = self.Held[player.UserId]
+        local current = self:profile(player)
+        local item = current and uid and self:find(current, uid)
+        local definition = item and Catalog.ById[item.DefId]
+        if definition and not self.World:holdItem(player, definition, item, Config) then self.Held[player.UserId] = nil end
+    end)
     local leaderstats = Instance.new("Folder"); leaderstats.Name = "leaderstats"; leaderstats.Parent = player
     local cash = Instance.new("IntValue"); cash.Name = "Cash"; cash.Value = profile.Cash; cash.Parent = leaderstats
     local level = Instance.new("IntValue"); level.Name = "Level"; level.Value = Economy.level(profile.XP); level.Parent = leaderstats
@@ -559,6 +603,7 @@ function GameService:leave(player)
     self.Ready[player.UserId] = nil
     if self.Auction and self.Auction.Bidder == player.UserId then self.Auction.Bidder = nil; self.Auction.Bid = 0 end
     self.Sessions[player.UserId] = nil; self.Offers[player.UserId] = nil
+    self.Held[player.UserId] = nil; self.World:clearHeld(player)
     self.Cooldowns[player.UserId] = nil; self.Buckets[player.UserId] = nil; self.NextCustomer[player.UserId] = nil
     self.World:release(player.UserId)
     self.Data:release(player.UserId)

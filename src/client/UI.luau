@@ -158,10 +158,21 @@ function UI.grid(parent, cellHeight, minimumWidth)
 end
 function UI.preview(parent, definition, item, height, hidden)
     local viewport = Instance.new("ViewportFrame"); viewport.Name = "ItemPreview"
+    local rarityColor = if item and item.Inspected and item.Rarity and SharedConfig
+        then Color3.fromHex(SharedConfig.RarityColors[item.Rarity]) else nil
+    if item and item.Inspected and item.Rarity and not SharedConfig then
+        SharedConfig = require(ReplicatedStorage.Shared.Config)
+        rarityColor = Color3.fromHex(SharedConfig.RarityColors[item.Rarity])
+    end
     viewport.Size = UDim2.new(1, 0, 0, height or 180); viewport.BackgroundColor3 = UI.Colors.Light
     viewport.Ambient = Color3.fromRGB(128, 143, 159); viewport.LightColor = Color3.fromRGB(255, 242, 216)
     viewport.LightDirection = Vector3.new(-1.4, -1.8, -1); viewport.Parent = parent; UI.corner(viewport, 12)
-    UI.gradient(viewport, Color3.fromRGB(247, 241, 228), Color3.fromRGB(203, 225, 224), 35)
+    if rarityColor then
+        UI.gradient(viewport, Color3.fromRGB(250, 247, 237), rarityColor:Lerp(Color3.fromRGB(237, 244, 247), 0.72), 35)
+        UI.stroke(viewport, rarityColor, if item.Rarity >= 4 then 2 else 1, if item.Rarity >= 4 then 0.12 else 0.42)
+    else
+        UI.gradient(viewport, Color3.fromRGB(247, 241, 228), Color3.fromRGB(203, 225, 224), 35)
+    end
     local world = Instance.new("WorldModel"); world.Parent = viewport
     local camera = Instance.new("Camera"); camera.FieldOfView = 35; camera.Parent = viewport; viewport.CurrentCamera = camera
     if hidden then
@@ -404,6 +415,67 @@ function UI:searchTreasure(source, callback)
         if layer.Parent then layer:Destroy() end
         self.Searching = false; callback()
     end)
+end
+function UI:rarityReveal(definition, item, callback)
+    if self.RevealLayer then self.RevealLayer:Destroy() end
+    if not SharedConfig then SharedConfig = require(ReplicatedStorage.Shared.Config) end
+    local rarity = math.clamp(item.Rarity or 1, 1, #SharedConfig.Rarities)
+    local color = Color3.fromHex(SharedConfig.RarityColors[rarity])
+    local layer = Instance.new("Frame"); layer.Name = "RarityReveal"; layer.Size = UDim2.fromScale(1, 1)
+    layer.BackgroundColor3 = UI.Colors.Night; layer.BackgroundTransparency = 0.12; layer.BorderSizePixel = 0
+    layer.ZIndex = 50; layer.Parent = self.Gui; self.RevealLayer = layer
+
+    if self.Effects then
+        for index = 1, (if rarity >= 5 then 22 elseif rarity >= 4 then 14 else 8) do
+            local symbol = UI.label(layer, if index % 3 == 0 then SharedConfig.RarityIcons[rarity] else "✦", 16 + index % 4 * 5, color)
+            symbol.AnchorPoint = Vector2.new(0.5, 0.5); symbol.Position = UDim2.fromScale(0.08 + ((index * 37) % 84) / 100, 0.18 + ((index * 53) % 68) / 100)
+            symbol.Size = UDim2.fromOffset(36, 36); symbol.AutomaticSize = Enum.AutomaticSize.None
+            symbol.TextXAlignment = Enum.TextXAlignment.Center; symbol.ZIndex = 51; symbol.Rotation = (index * 29) % 60 - 30
+            symbol.TextTransparency = 0.15 + (index % 3) * 0.18
+            tween(symbol, {Position = symbol.Position - UDim2.fromOffset(0, 70), TextTransparency = 1, Rotation = symbol.Rotation + 90}, 1.4 + (index % 4) * 0.18)
+        end
+    end
+
+    local aura = Instance.new("Frame"); aura.AnchorPoint = Vector2.new(0.5, 0.5); aura.Position = UDim2.fromScale(0.5, 0.49)
+    aura.Size = UDim2.fromOffset(520, 520); aura.BackgroundColor3 = color; aura.BackgroundTransparency = 0.78
+    aura.BorderSizePixel = 0; aura.ZIndex = 51; aura.Parent = layer; UI.corner(aura, 260)
+    local auraScale = Instance.new("UIScale"); auraScale.Scale = 0.72; auraScale.Parent = aura
+    if self.Effects then tween(auraScale, {Scale = 1.08}, 0.75) end
+
+    local card = Instance.new("Frame"); card.Name = "RevealCard"; card.AnchorPoint = Vector2.new(0.5, 0.5)
+    card.Position = UDim2.fromScale(0.5, 0.5); card.Size = UDim2.new(0.9, 0, 0, 535)
+    card.BackgroundColor3 = UI.Colors.Panel; card.BorderSizePixel = 0; card.ZIndex = 52; card.Parent = layer
+    UI.corner(card, 26); UI.stroke(card, color, if rarity >= 4 then 3 else 2, 0.04)
+    UI.gradient(card, UI.Colors.Panel, color:Lerp(UI.Colors.Panel, 0.82), 90)
+    local limit = Instance.new("UISizeConstraint"); limit.MaxSize = Vector2.new(470, 535); limit.MinSize = Vector2.new(290, 500); limit.Parent = card
+    local scale = Instance.new("UIScale"); scale.Scale = if self.Effects then 0.72 else 1; scale.Parent = card
+    if self.Effects then tween(scale, {Scale = 1}, if rarity >= 4 then 0.46 else 0.28) end
+
+    local kicker = UI.label(card, SharedConfig.RarityIcons[rarity] .. "  " .. string.upper(SharedConfig.Rarities[rarity]) .. "  " .. SharedConfig.RarityIcons[rarity], 22, color)
+    kicker.Font = Enum.Font.GothamBlack; kicker.Position = UDim2.fromOffset(18, 18); kicker.Size = UDim2.new(1, -36, 0, 34)
+    kicker.AutomaticSize = Enum.AutomaticSize.None; kicker.TextXAlignment = Enum.TextXAlignment.Center; kicker.ZIndex = 53
+    local effectName = SharedConfig.RarityEffectNames and SharedConfig.RarityEffectNames[rarity] or "Treasure"
+    local effect = UI.label(card, string.upper(effectName), 11, color:Lerp(UI.Colors.Ink, 0.3))
+    effect.Font = Enum.Font.GothamBold; effect.Position = UDim2.fromOffset(18, 53); effect.Size = UDim2.new(1, -36, 0, 20)
+    effect.AutomaticSize = Enum.AutomaticSize.None; effect.TextXAlignment = Enum.TextXAlignment.Center; effect.ZIndex = 53
+    local preview = UI.preview(card, definition, item, 265, false); preview.Position = UDim2.fromOffset(18, 80)
+    preview.Size = UDim2.new(1, -36, 0, 265); preview.ZIndex = 53
+    local name = UI.label(card, definition.Name, 25, UI.Colors.Ink); name.Font = Enum.Font.GothamBlack
+    name.Position = UDim2.fromOffset(18, 357); name.Size = UDim2.new(1, -36, 0, 34); name.AutomaticSize = Enum.AutomaticSize.None
+    name.TextXAlignment = Enum.TextXAlignment.Center; name.ZIndex = 53
+    local detail = UI.label(card, SharedConfig.Conditions[item.Condition] .. " • " .. (item.Style or definition.Style) .. " • $" .. tostring(math.floor(item.Value or 0)), 15, UI.Colors.Muted)
+    detail.Position = UDim2.fromOffset(18, 394); detail.Size = UDim2.new(1, -36, 0, 28); detail.AutomaticSize = Enum.AutomaticSize.None
+    detail.TextXAlignment = Enum.TextXAlignment.Center; detail.ZIndex = 53
+    local button = UI.button(card, if rarity >= 5 then "★ Keep this legendary find" else "Add to my collection", function()
+        if self.RevealLayer ~= layer then return end
+        self.RevealLayer = nil
+        if self.Effects then
+            tween(scale, {Scale = 0.92}, 0.16); tween(layer, {BackgroundTransparency = 1}, 0.2); task.wait(0.2)
+        end
+        if layer.Parent then layer:Destroy() end
+        if callback then callback() end
+    end, false)
+    button.Position = UDim2.new(0, 18, 1, -68); button.Size = UDim2.new(1, -36, 0, 50); button.ZIndex = 54
 end
 function UI:notice(text)
     self.ToastVersion += 1; local version = self.ToastVersion

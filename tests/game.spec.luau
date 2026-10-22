@@ -13,7 +13,9 @@ local function fixture()
     local profile = Profile.new()
     local data = {Profiles = {[101] = profile}, Closing = {}, Ephemeral = true}
     local world = {Allowed = true, Owners = {[101] = {Index = 1}}, near = function(self) return self.Allowed end,
-        render = function() end, customer = function() end}
+        render = function() end, customer = function() end,
+        holdItem = function(self, _, _, item) self.Holding = item.Uid; return true end,
+        clearHeld = function(self) self.Holding = nil end}
     local event = {FireClient = function(_, _, kind, payload) table.insert(events, {Kind = kind, Payload = payload}) end}
     local service = GameService.new(data, world, event)
     service.Ready[101] = true; roster = {player}
@@ -154,6 +156,14 @@ test("display rejects occupied and locked slots", function()
     s:display(p, {Uid = first.Uid, Slot = 1}); equal(first.Slot, 1)
     local second = addItem(profile); second.Uid = "two"
     s:display(p, {Uid = second.Uid, Slot = 1}); assert(second.Slot == nil)
+end)
+test("held items are visible in state and blocked from conflicting actions", function()
+    local s, p, profile, world, events = fixture(); local item = addItem(profile)
+    s:hold(p, {Uid = item.Uid}); equal(s.Held[p.UserId], item.Uid); equal(world.Holding, item.Uid)
+    s:snapshot(p); assert(events[#events].Payload.Inventory[1].Held)
+    s:beginRestore(p, {Uid = item.Uid, Kind = "Scrub"}); assert(s.Sessions[p.UserId] == nil)
+    s:display(p, {Uid = item.Uid, Slot = 1}); assert(item.Slot == nil)
+    s:hold(p, {Uid = item.Uid}); assert(s.Held[p.UserId] == nil and world.Holding == nil)
 end)
 test("sale executes once and removes the exact inventory item", function()
     local s, p, profile = fixture(); local item = addItem(profile); item.Slot = 1

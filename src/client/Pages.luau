@@ -23,7 +23,7 @@ local function remaining(seconds)
     return string.format("%d:%02d", math.floor(seconds / 60), seconds % 60)
 end
 local function inspectable(item)
-    return item.Inspected and not item.Slot and not item.ListingId and not item.TradeId and not item.Locked
+    return item.Inspected and not item.Slot and not item.ListingId and not item.TradeId and not item.Locked and not item.Held
 end
 local function findItem(state, uid)
     for _, item in ipairs(state.Inventory) do if item.Uid == uid then return item end end
@@ -64,7 +64,9 @@ function Pages:itemTile(parent, item, actionText, callback)
     local definition = Catalog.ById[item.DefId]
     if not definition then return end
     local tile = Instance.new("Frame"); tile.Name = "FindCard"; tile.BackgroundColor3 = UI.Colors.Panel
-    tile.Size = UDim2.new(1, 0, 0, 258); tile.Parent = parent; UI.corner(tile, 14); UI.stroke(tile, UI.Colors.Line, 1, 0.25)
+    tile.Size = UDim2.new(1, 0, 0, 258); tile.Parent = parent; UI.corner(tile, 14)
+    local rarityColor = if item.Inspected then Color3.fromHex(Config.RarityColors[item.Rarity]) else UI.Colors.Line
+    UI.stroke(tile, rarityColor, if item.Inspected and item.Rarity >= 4 then 2 else 1, if item.Inspected then 0.18 else 0.25)
     local preview = UI.preview(tile, definition, item, 132, not item.Inspected)
     preview.Size = UDim2.new(1, -16, 0, 132); preview.Position = UDim2.fromOffset(8, 8)
     local title = UI.label(tile, if item.Inspected then definition.Name else "Mystery " .. definition.Category, 16)
@@ -77,8 +79,9 @@ function Pages:itemTile(parent, item, actionText, callback)
     detail.Size = UDim2.new(1, -24, 0, 20); detail.AutomaticSize = Enum.AutomaticSize.None; detail.TextTruncate = Enum.TextTruncate.AtEnd; detail.TextWrapped = false
     local button = UI.button(tile, actionText or "Take a closer look", callback, true)
     button.Size = UDim2.new(1, -16, 0, 44); button.Position = UDim2.new(0, 8, 1, -52); button.TextSize = 14
-    if item.Slot or item.ListingId or item.TradeId or item.Locked then
-        local status = UI.label(preview, if item.Slot then "ON DISPLAY" elseif item.ListingId then "LISTED" else "RESERVED", 10, UI.Colors.Panel)
+    if item.Slot or item.ListingId or item.TradeId or item.Locked or item.Held then
+        local statusText = if item.Held then "IN YOUR HANDS" elseif item.Slot then "ON DISPLAY" elseif item.ListingId then "LISTED" else "RESERVED"
+        local status = UI.label(preview, statusText, 10, UI.Colors.Panel)
         status.Font = Enum.Font.GothamBold; status.AutomaticSize = Enum.AutomaticSize.None
         status.Size = UDim2.new(1, 0, 0, 25); status.Position = UDim2.new(0, 0, 1, -25)
         status.BackgroundColor3 = UI.Colors.Teal; status.BackgroundTransparency = 0.1; status.TextXAlignment = Enum.TextXAlignment.Center
@@ -182,7 +185,11 @@ function Pages:itemPage(context)
     elseif item.Slot then
         UI.label(frame, "On display in slot " .. item.Slot .. ". Your customers can make an offer.", 17)
         self:button(frame, "Return to your bag", "Display", {Uid = item.Uid, Remove = true}, true)
+    elseif item.Held then
+        UI.label(frame, "You are carrying this find. Other players can see its rarity effects while you explore town.", 17)
+        self:button(frame, "Put it back in my bag", "Hold", {Uid = item.Uid}, false)
     else
+        self:button(frame, "Hold and show off this find", "Hold", {Uid = item.Uid}, true)
         if item.Condition < 5 then self:nav(frame, "Restore at your workbench", "Restore", {Uid = item.Uid}, false)
         else UI.disabled(frame, "✓ Mint condition — beautifully restored") end
         self:nav(frame, "Display in your shop", "Slots", {Uid = item.Uid})

@@ -3,6 +3,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared.Config)
+local Catalog = require(Shared.Catalog)
 local UI = require(script.Parent.UI)
 local Pages = require(script.Parent.Pages)
 local Audio = require(script.Parent.Audio)
@@ -38,7 +39,10 @@ local function guide(location)
             end
         end
     end
-    if target then marker.Position = target; guideText.Text = "▼ " .. string.upper(location); billboard.Enabled = true; guideExpires = os.clock() + 30 end
+    if target then
+        marker.Position = target; guideText.Text = "▼ " .. string.upper(location); billboard.Enabled = true
+        guideExpires = if state and state.Tutorial < 5 then math.huge else os.clock() + 30
+    end
 end
 
 local function send(action, payload) event:FireServer(action, payload or {}) end
@@ -64,13 +68,31 @@ local tutorialHints = {
     [2]="Restore it at your shop workbench", [3]="Place it on one of your displays",
     [4]="Open Shop and welcome your first customer",
 }
+local function nextObjective()
+    if tutorialHints[state.Tutorial] then return tutorialHints[state.Tutorial] end
+    if state.Held then return "Show off your find, then return it to your bag" end
+    local daily = state.Daily
+    if daily and ((daily.Found or 0) >= 3 and not daily.Claimed.Find
+        or (daily.Restored or 0) >= 3 and not daily.Claimed.Restore
+        or (daily.Sold or 0) >= 3 and not daily.Claimed.Sell) then
+        return "A daily quest reward is ready to collect"
+    end
+    local nextTier = Config.Tiers[state.Tier + 1]
+    if nextTier then
+        if state.Level < nextTier.Level then return "Reach LV " .. nextTier.Level .. " to unlock " .. nextTier.Name end
+        if state.AvailableCash < nextTier.Cost then return "Earn $" .. (nextTier.Cost - state.AvailableCash) .. " more for " .. nextTier.Name end
+        return "Your " .. nextTier.Name .. " upgrade is ready"
+    end
+    local discoveries = 0; for _ in pairs(state.Collection or {}) do discoveries += 1 end
+    return discoveries .. "/400 discoveries • hunt for a new " .. state.Demand .. " find"
+end
 local lastOffer, lastTutorial
 local function updateHud()
     ui.Balance.Text = tostring(math.floor(state.Cash))
     ui.Level.Text = "LV " .. state.Level
     local levelStart, levelEnd = 30 * (state.Level - 1) ^ 2, 30 * state.Level ^ 2
     ui.LevelProgress.Size = UDim2.fromScale(math.clamp((state.XP - levelStart) / math.max(1, levelEnd - levelStart), 0, 1), 1)
-    ui.Hint.Text = tutorialHints[state.Tutorial] or (state.Demand .. " finds are trending  •  Reputation " .. state.Reputation)
+    ui.Hint.Text = nextObjective()
     ui:setSubtitle(if state.Ephemeral then "STUDIO PRACTICE • PROGRESS DOES NOT SAVE" else "YOUR COZY CORNER OF THRIFT STREET")
     ui.Effects = state.Settings.Effects
     audio:setEnabled(state.Settings.Music, state.Settings.Effects)
@@ -84,12 +106,22 @@ event.OnClientEvent:Connect(function(kind, payload)
         if state.Cash > oldCash then ui:cashFeedback(state.Cash - oldCash); audio:play("sale") end
         if state.Tutorial ~= lastTutorial then
             lastTutorial = state.Tutorial
-            if state.Tutorial == 0 then guide("Source") elseif state.Tutorial >= 2 and state.Tutorial <= 4 then guide("Shop") end
+            if state.Tutorial == 0 then guide("Source")
+            elseif state.Tutorial == 1 then billboard.Enabled = false; open("Bag")
+            elseif state.Tutorial >= 2 and state.Tutorial <= 4 then guide("Shop")
+            else billboard.Enabled = false end
         end
         if state.Offer and state.Offer.Uid ~= lastOffer then ui:notice(state.Offer.Customer .. " is browsing your shop!"); audio:play("reveal") end
         lastOffer = state.Offer and state.Offer.Uid or nil
         if wasVisible and not session then render() end
     elseif kind == "Notice" then ui:notice(payload)
+    elseif kind == "Reveal" then
+        local item = payload and payload.Item
+        local definition = item and Catalog.ById[item.DefId]
+        if definition then
+            audio:play(if item.Rarity >= 4 then "reward" else "reveal")
+            ui:rarityReveal(definition, item, function() open("Item", {Uid = item.Uid}) end)
+        end
     elseif kind == "Open" then
         if payload.Page == "Visit" then open("Visit", {Owner=payload.Owner})
         elseif payload.Page == "Display" then open("Display", {Slot=payload.Slot})
