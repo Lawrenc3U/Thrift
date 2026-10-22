@@ -6228,6 +6228,7 @@ end
 function Pages:townPage()
     local hero = UI.hero(self.UI.Content, "Welcome to Thrift Street", "Every treasure deserves a second chance", "Today's favorite style is " .. self.State.Demand .. ", worth 20% more when it finds the right home.")
     for _, link in ipairs({{"Dumpster Alley","Source"},{"Wholesale Source","Estate"},{"Parcel Post","Delivery"},{"Auction House","Auction"},{"Market","Market"},{"Designer Showcase","Showcase"},{"Cosmetic Store","Boutique"},{"Visit neighbors","Visit"},{"Settings","Settings"}}) do self:nav(hero,link[1],link[2]) end
+    if self.State.IsAdmin then self:nav(hero, "⚙ Admin control room", "Admin", nil, false) end
 end
 
 function Pages:render(page, context)
