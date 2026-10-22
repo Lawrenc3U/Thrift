@@ -2005,7 +2005,10 @@ function GameService:studioLegendary(player, query)
     local item = {Uid = HttpService:GenerateGUID(false), DefId = definition.Id, Rarity = 5,
         Condition = 5, Variance = 1.08, Inspected = true, Style = definition.Style}
     table.insert(profile.Inventory, item); profile.Collection[definition.Id .. ":5"] = true
-    self:refresh(player); self:notify(player, "Studio test item added: Legendary " .. definition.Name)
+    self:refresh(player)
+    local reveal = shallowPublicItem(item); reveal.Value = self:value(profile, item)
+    self.Event:FireClient(player, "Reveal", {Item = reveal})
+    self:notify(player, "Studio test item added: Legendary " .. definition.Name)
     return true, definition.Name
 end
 function GameService:source(player, payload)
