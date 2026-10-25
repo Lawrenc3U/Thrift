@@ -10424,6 +10424,14 @@ local CollectionService = game:GetService("CollectionService")
 local MarketplaceService = game:GetService("MarketplaceService")
 local RunService = game:GetService("RunService")
 local ServerStorage = game:GetService("ServerStorage")
+local StarterPlayer = game:GetService("StarterPlayer")
+
+-- Studio can try to load private or moderated items from the developer's
+-- current avatar before the game begins. Use Roblox's asset-free default
+-- character for local tests; published servers keep each player's avatar.
+if RunService:IsStudio() then
+    StarterPlayer.LoadCharacterAppearance = false
+end
 
 -- Install Studio tools before building the world. The town can take several
 -- seconds to generate, so commands registered after World.new() are easy to

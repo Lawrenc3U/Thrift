@@ -70,6 +70,10 @@ def build(output: Path) -> tuple[int, int, int]:
                 assert prop.tag == 'Content', (
                     f'{path.name} encodes {prop_name} as {prop.tag}, expected Content'
                 )
+                content = ''.join(prop.itertext()).strip()
+                assert not content, (
+                    f'{path.name} depends on external {prop_name} content: {content}'
+                )
         ref_map = {}
         for node in source_item.iter('Item'):
             old_ref = node.attrib.get('referent')
