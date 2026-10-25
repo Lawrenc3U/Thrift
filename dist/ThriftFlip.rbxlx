@@ -10697,12 +10697,13 @@ function World.new()
     if existing then existing:Destroy() end
     self.Root = Kit.model(workspace, "ThriftStreet")
     self.Root:SetAttribute("AssetOrigin", "Converted from the supplied Thrift Flip town preview")
-    self.Root:SetAttribute("LayoutSource", "Thrift Flip Town 3D Preview.html")
+    self.Root:SetAttribute("LayoutSource", "Thrift Flip Town 3D Preview (2).html")
     self:lighting()
     self:exactLandscape()
     self:exactSquare()
     self:exactSourcing()
     self:exactDistrict()
+    self:exactEnvironment()
     for i = 1, 8 do
         local left = i &lt;= 4
         local row = if left then i - 1 else i - 5
@@ -10737,7 +10738,7 @@ function World:lighting()
 end
 function World:exactLandscape()
     local ground = Kit.model(self.Root, "ExactTownGround")
-    ground:SetAttribute("Source", "Thrift Flip Town 3D Preview.html")
+    ground:SetAttribute("Source", "Thrift Flip Town 3D Preview (2).html")
     Kit.part(ground, "Grass", Vector3.new(440, 1, 480), CFrame.new(0, -0.5, 10), E.Grass, Enum.Material.Grass)
     Kit.part(ground, "ThriftStreet", Vector3.new(44, 0.2, 160), CFrame.new(0, 0, 60), E.Road, Enum.Material.Pavement)
     Kit.part(ground, "LeftCurb", Vector3.new(1.6, 0.5, 160), CFrame.new(-22.8, 0.2, 60), E.Stone, Enum.Material.Concrete)
@@ -10918,7 +10919,7 @@ function World:exactSourcing()
 end
 function World:exactDistrict()
     local district = Kit.model(self.Root, "ExactPublicBuildings")
-    district:SetAttribute("Source", "Thrift Flip Town 3D Preview.html")
+    district:SetAttribute("Source", "Thrift Flip Town 3D Preview (2).html")
     local marketCF = CFrame.new(0, 0, -105) * CFrame.Angles(0, math.pi, 0)
     local market = Kit.model(district, "Market")
     Kit.part(market, "MarketFloor", Vector3.new(36, 0.4, 28), marketCF * CFrame.new(0, 0.2, 0), E.Stone, Enum.Material.Pavement)
@@ -10943,12 +10944,251 @@ function World:exactDistrict()
     Kit.sign(designer, "DESIGNER SHOWCASE", designerCF * CFrame.new(0, 14.4, -14.3), Vector3.new(20, 3, 0.3), E.Cream, E.Dark)
     local designerTrigger = Kit.part(designer, "ShowcaseInteraction", Vector3.new(6, 8, 1), designerCF * CFrame.new(0, 4, -15), E.Cream, nil, nil, false); designerTrigger.Transparency = 1
     prompt(designerTrigger, "Enter designer showcase", "Showcase")
-    local auctionCF = CFrame.new(0, 0, 152)
-    local auction = exactShell(district, "AuctionHouse", auctionCF, 36, 18, 32, E.Stone, E.Charcoal, {{-3,3,0,9}})
-    Kit.sign(auction, "AUCTION HOUSE", auctionCF * CFrame.new(0, 16.4, -16.3), Vector3.new(20, 3, 0.3), E.Teal, E.Cream)
-    for index = 0, 5 do Kit.cylinder(auction, "AuctionColumn", 1.1, 11, auctionCF * CFrame.new(-12.5 + index * 5, 7.1, -23.5), E.Cream, Enum.Material.Marble) end
-    local auctionTrigger = Kit.part(auction, "AuctionInteraction", Vector3.new(8, 8, 1), auctionCF * CFrame.new(0, 4, -24), E.Cream, nil, nil, false); auctionTrigger.Transparency = 1
-    prompt(auctionTrigger, "Join the auction", "Auction")
+    self:exactAuctionHouse(district)
+end
+function World:exactAuctionHouse(parent)
+    local cf = CFrame.new(0, 0, 152)
+    local auction = exactShell(parent, "AuctionHouse", cf, 36, 18, 32, Color3.fromRGB(245, 238, 225), E.Teal,
+        {{-3.5,3.5,0,11},{-16.5,-13.5,3.5,10.5},{13.5,16.5,3.5,10.5}})
+    auction:SetAttribute("PreviewLandmark", "ClockTowerAuctionHouse")
+    local marble = Color3.fromRGB(245, 238, 225)
+    local marbleDark = Color3.fromRGB(226, 218, 200)
+    local glass = Color3.fromRGB(207, 233, 230)
+    local function archedWindow(x, baseY, width, height, frontZ)
+        local bodyHeight = height - width / 2
+        local pane = Kit.part(auction, "ArchedGlass", Vector3.new(width, bodyHeight, 0.2),
+            cf * CFrame.new(x, baseY + bodyHeight / 2, frontZ), glass, Enum.Material.Glass, nil, false)
+        pane.Transparency = 0.38; pane.Reflectance = 0.12
+        local crown = Kit.ball(auction, "ArchedGlassCrown", Vector3.new(width, width, 0.2),
+            cf * CFrame.new(x, baseY + bodyHeight, frontZ), glass, Enum.Material.Glass, false)
+        crown.Transparency = 0.38
+        for _, side in ipairs({-1, 1}) do
+            Kit.part(auction, "GoldWindowFrame", Vector3.new(0.55, bodyHeight + 1, 0.5),
+                cf * CFrame.new(x + side * width / 2, baseY + bodyHeight / 2, frontZ - 0.15), E.Gold, Enum.Material.Metal, nil, false)
+        end
+        Kit.part(auction, "GoldWindowSill", Vector3.new(width + 1.6, 0.6, 1.2),
+            cf * CFrame.new(x, baseY - 0.3, frontZ - 0.3), E.Gold, Enum.Material.Metal)
+    end
+    archedWindow(-15, 3.5, 3, 8.5, -16.15); archedWindow(15, 3.5, 3, 8.5, -16.15)
+    for _, x in ipairs({-3.9, 3.9}) do
+        Kit.part(auction, "DoorFrame", Vector3.new(0.6, 11, 1.2), cf * CFrame.new(x, 5.5, -16.1), E.Gold, Enum.Material.Metal)
+    end
+    Kit.part(auction, "DoorHeader", Vector3.new(8.2, 0.6, 1.2), cf * CFrame.new(0, 11.3, -16.1), E.Gold, Enum.Material.Metal)
+    for _, side in ipairs({-1, 1}) do
+        Kit.part(auction, "FrontQuoin", Vector3.new(1.4, 18, 1.6), cf * CFrame.new(side * 18, 9, -16.1), marbleDark, Enum.Material.Marble)
+    end
+    Kit.part(auction, "GoldCornice", Vector3.new(37.4, 1, 2), cf * CFrame.new(0, 17.5, -16.4), E.Gold, Enum.Material.Metal)
+    -- Columned portico and broad entrance steps from the supplied preview.
+    Kit.part(auction, "PorticoFloor", Vector3.new(34, 1, 10), cf * CFrame.new(0, 0.5, -21), marble, Enum.Material.Marble)
+    Kit.part(auction, "LowerStep", Vector3.new(36, 0.5, 2.5), cf * CFrame.new(0, 0.25, -27.25), marble, Enum.Material.Marble)
+    Kit.part(auction, "UpperStep", Vector3.new(35, 0.75, 1.5), cf * CFrame.new(0, 0.375, -26.25), marble, Enum.Material.Marble)
+    for _, x in ipairs({-12, -4, 4, 12}) do
+        Kit.part(auction, "ColumnBase", Vector3.new(3.6, 0.8, 3.6), cf * CFrame.new(x, 1.4, -23.5), marbleDark, Enum.Material.Marble)
+        Kit.cylinder(auction, "PorticoColumn", 1.3, 10.4, cf * CFrame.new(x, 7.2, -23.5), marble, Enum.Material.Marble)
+        Kit.part(auction, "ColumnCapital", Vector3.new(3.8, 1, 3.8), cf * CFrame.new(x, 13.1, -23.5), E.Gold, Enum.Material.Metal)
+    end
+    Kit.part(auction, "PorticoRoof", Vector3.new(30, 2.4, 10), cf * CFrame.new(0, 14.8, -21), marble, Enum.Material.Marble)
+    Kit.part(auction, "PorticoGoldBand", Vector3.new(30.6, 0.5, 10.4), cf * CFrame.new(0, 13.45, -21), E.Gold, Enum.Material.Metal)
+    Kit.sign(auction, "AUCTION HOUSE", cf * CFrame.new(0, 14.8, -26.2), Vector3.new(22, 1.8, 0.3), E.Teal, E.Cream)
+    for tier, width in ipairs({30, 24, 18, 12, 6}) do
+        Kit.part(auction, "SteppedPediment", Vector3.new(width, 1.1, 10), cf * CFrame.new(0, 15.45 + tier * 1.1, -21), marble, Enum.Material.Marble)
+    end
+    -- Side wings, window displays, event signs and planting soften the monumental facade.
+    for _, side in ipairs({-1, 1}) do
+        local wingX = side * 23
+        Kit.part(auction, "SideWing", Vector3.new(10, 11, 26), cf * CFrame.new(wingX, 5.5, 0), marble, Enum.Material.Marble)
+        Kit.part(auction, "WingRoof", Vector3.new(11, 1, 27), cf * CFrame.new(wingX, 11.5, 0), E.Teal, Enum.Material.Slate)
+        Kit.part(auction, "WingGoldBand", Vector3.new(11, 0.8, 1.6), cf * CFrame.new(wingX, 10.6, -13.2), E.Gold, Enum.Material.Metal)
+        archedWindow(wingX, 2.5, 4, 6, -13.2)
+        Kit.part(auction, "DisplayPlinth", Vector3.new(9, 2.2, 2.6), cf * CFrame.new(wingX, 1.1, -15.2), E.Green)
+        for flower = 0, 4 do
+            Kit.ball(auction, "DisplayFlower", Vector3.new(0.9, 0.9, 0.9),
+                cf * CFrame.new(wingX - 3.6 + flower * 1.8, 2.4, -15.2), ({E.Coral,E.Gold,E.Cream})[flower % 3 + 1], nil, false)
+        end
+        exactPost(auction, side * 19.2, 138.4)
+    end
+    Kit.sign(auction, "LIVE 5:00", cf * CFrame.new(-23, 9.3, -13.35), Vector3.new(7, 1.5, 0.2), E.Red, E.Cream)
+    Kit.sign(auction, "BIDS OPEN", cf * CFrame.new(23, 9.3, -13.35), Vector3.new(7, 1.5, 0.2), E.Gold, Color3.fromRGB(58, 42, 0))
+    -- Clock tower, tiered teal roof, finial and flag.
+    Kit.part(auction, "ClockTower", Vector3.new(10, 9, 10), cf * CFrame.new(0, 23.5, -5), marble, Enum.Material.Marble)
+    Kit.part(auction, "TowerLowerBand", Vector3.new(10.8, 0.8, 10.8), cf * CFrame.new(0, 19.4, -5), E.Teal, Enum.Material.Slate)
+    Kit.part(auction, "TowerGoldBand", Vector3.new(10.8, 0.8, 10.8), cf * CFrame.new(0, 27.6, -5), E.Gold, Enum.Material.Metal)
+    local clockFace = Kit.cylinder(auction, "ClockFace", 3.3, 0.3,
+        cf * CFrame.new(0, 24, -10.2) * CFrame.Angles(math.pi / 2, 0, 0), E.Gold, Enum.Material.Metal, false)
+    Kit.cylinder(auction, "ClockInset", 2.9, 0.32,
+        cf * CFrame.new(0, 24, -10.4) * CFrame.Angles(math.pi / 2, 0, 0), E.Cream, Enum.Material.SmoothPlastic, false)
+    Kit.part(auction, "MinuteHand", Vector3.new(0.28, 1.8, 0.18), cf * CFrame.new(0, 24.8, -10.65), E.Charcoal, Enum.Material.Metal, nil, false)
+    Kit.part(auction, "HourHand", Vector3.new(2.2, 0.28, 0.18), cf * CFrame.new(1, 24, -10.65), E.Charcoal, Enum.Material.Metal, nil, false)
+    for tier = 0, 4 do
+        local width = 11 - tier * 2
+        Kit.part(auction, "TowerRoofTier", Vector3.new(width, 1.3, width), cf * CFrame.new(0, 28.65 + tier * 1.3, -5), E.Teal, Enum.Material.Slate)
+    end
+    Kit.ball(auction, "TowerFinial", Vector3.new(2, 2, 2), cf * CFrame.new(0, 35.4, -5), E.Gold, Enum.Material.Metal, false)
+    Kit.part(auction, "FlagPole", Vector3.new(0.2, 5, 0.2), cf * CFrame.new(0, 38, -5), E.Steel, Enum.Material.Metal, nil, false)
+    Kit.part(auction, "AuctionFlag", Vector3.new(3, 1.8, 0.15), cf * CFrame.new(1.6, 39.4, -5), E.Coral, Enum.Material.Fabric, nil, false)
+    local trigger = Kit.part(auction, "AuctionInteraction", Vector3.new(8, 8, 1), cf * CFrame.new(0, 4, -28), E.Cream, nil, nil, false)
+    trigger.Transparency = 1; prompt(trigger, "Join the auction", "Auction")
+    local podium = Kit.part(auction, "AuctionPodium", Vector3.new(3.5, 4.2, 2.5), cf * CFrame.new(7, 3, 9), E.Wood, Enum.Material.Wood)
+    prompt(podium, "View the current lot", "Auction")
+    return auction, clockFace
+end
+function World:exactEnvironment()
+    local environment = Kit.model(self.Root, "PreviewEnvironment")
+    environment:SetAttribute("Source", "Thrift Flip Town 3D Preview (2).html")
+    environment:SetAttribute("Purpose", "Hills, skyline, street dressing, cafe and Riverside Park")
+    Kit.part(environment, "OuterGround", Vector3.new(1600, 1, 1600), CFrame.new(0, -0.9, 10), Color3.fromRGB(134, 194, 117), Enum.Material.Grass)
+    local seed = 7
+    local function random()
+        seed = seed * 16807 % 2147483647
+        return seed / 2147483647
+    end
+    -- Layered horizon from the preview: soft green foothills, pale mountains and clouds.
+    for index = 0, 23 do
+        local angle = index / 24 * math.pi * 2 + (random() - 0.5) * 0.2
+        local distance, radius, height = 285 + random() * 55, 55 + random() * 40, 18 + random() * 22
+        Kit.ball(environment, "HorizonHill", Vector3.new(radius * 2, radius * 2, radius * 2),
+            CFrame.new(math.cos(angle) * distance, height - radius, 10 + math.sin(angle) * distance),
+            if index % 3 == 0 then Color3.fromRGB(143, 197, 122) else Color3.fromRGB(125, 186, 110), Enum.Material.Grass, false)
+    end
+    for index = 0, 13 do
+        local angle = index / 14 * math.pi * 2 + (random() - 0.5) * 0.3
+        local distance, radius, height = 430 + random() * 35, 110 + random() * 50, 90 + random() * 60
+        local x, z = math.cos(angle) * distance, 10 + math.sin(angle) * distance
+        Kit.ball(environment, "Mountain", Vector3.new(radius * 2, radius * 2, radius * 2), CFrame.new(x, height - radius, z), Color3.fromRGB(139, 152, 163), Enum.Material.Slate, false)
+        Kit.ball(environment, "SnowCap", Vector3.new(radius, radius * 0.55, radius), CFrame.new(x, height - radius * 0.275, z), Color3.fromRGB(244, 248, 250), Enum.Material.Snow, false)
+    end
+    for cloud = 1, 9 do
+        local angle, distance = random() * math.pi * 2, 250 + random() * 200
+        local x, z, y = math.cos(angle) * distance, 10 + math.sin(angle) * distance, 130 + random() * 50
+        for puff = 0, 3 do
+            local diameter = 26 + random() * 16
+            local part = Kit.ball(environment, "Cloud", Vector3.new(diameter, diameter * 0.45, diameter),
+                CFrame.new(x + puff * 14 - 20, y + puff % 2 * 4, z + (random() - 0.5) * 10), E.Cream, Enum.Material.SmoothPlastic, false)
+            part.Transparency = 0.12; part.CastShadow = false
+        end
+    end
+    local function backdropTree(x, z, scale, pine)
+        if pine then
+            Kit.cylinder(environment, "PineTrunk", 0.6 * scale, 5 * scale, CFrame.new(x, 2.5 * scale, z), E.Wood, Enum.Material.Wood, false)
+            for tier = 0, 3 do
+                Kit.cylinder(environment, "PineTier", (5 - tier * 1.2) * scale, 3.4 * scale,
+                    CFrame.new(x, (3.5 + tier * 2.8) * scale, z), Color3.fromRGB(58 + tier * 8, 120 + tier * 6, 80), Enum.Material.Grass, false)
+            end
+        else
+            local trunk = Kit.cylinder(environment, "TreeLineTrunk", 0.8 * scale, 7 * scale, CFrame.new(x, 3.5 * scale, z), E.Wood, Enum.Material.Wood, false); trunk.CastShadow = false
+            Kit.ball(environment, "TreeLineCrown", Vector3.new(9, 9, 9) * scale, CFrame.new(x, 9 * scale, z), E.Green, Enum.Material.Grass, false)
+        end
+    end
+    for index = 1, 110 do
+        local angle, distance, scale = random() * math.pi * 2, 240 + random() * 45, 0.9 + random() * 0.8
+        backdropTree(math.cos(angle) * distance, 10 + math.sin(angle) * distance, scale, random() &lt; 0.6)
+    end
+    local flowerColors = {E.Coral,E.Gold,E.Cream,Color3.fromRGB(240,150,180),E.Purple}
+    for index = 1, 160 do
+        local x, z = (random() - 0.5) * 430, -225 + random() * 470
+        local centralTown = x &gt; -130 and x &lt; 130 and z &gt; -155 and z &lt; 200
+        local eastDistrict = x &gt; 100 and x &lt; 205 and z &gt; -130 and z &lt; -10
+        if not centralTown and not eastDistrict then
+            for blossom = 0, 2 do
+                Kit.ball(environment, "Wildflower", Vector3.new(0.9, 0.9, 0.9),
+                    CFrame.new(x + random() * 3, 1.2, z + random() * 3), flowerColors[(index + blossom - 1) % #flowerColors + 1], nil, false)
+            end
+        end
+    end
+    -- Sidewalk furniture, banners and warm overhead string lights along Thrift Street.
+    for _, side in ipairs({-1, 1}) do
+        Kit.part(environment, "Sidewalk", Vector3.new(6, 0.12, 160), CFrame.new(side * 19, 0.08, 60), Color3.fromRGB(214, 206, 190), Enum.Material.Pavement)
+        Kit.part(environment, "SidewalkEdge", Vector3.new(0.6, 0.25, 160), CFrame.new(side * 15.7, 0.125, 60), E.Stone, Enum.Material.Concrete)
+    end
+    for row, z in ipairs({17,51,85,119}) do
+        for sideIndex, side in ipairs({-1,1}) do
+            local benchCF = CFrame.new(side * 18, 0, z) * CFrame.Angles(0, if side &lt; 0 then math.pi / 2 else -math.pi / 2, 0)
+            if not catalogAsset(environment, "ParkBench", benchCF, 0.58) then Kit.bench(environment, benchCF) end
+            Kit.cylinder(environment, "StreetBin", 0.9, 2.4, CFrame.new(side * 18, 1.2, z + 5), Color3.fromRGB(52,100,80), Enum.Material.Metal)
+            Kit.part(environment, "StreetBanner", Vector3.new(2.2, 5, 0.3), CFrame.new(side * 19.2, 7.2, z), if (row + sideIndex) % 2 == 0 then E.Coral else E.Teal, Enum.Material.Fabric, nil, false)
+            Kit.cylinder(environment, "BannerFinial", 0.8, 0.2, CFrame.new(side * 19.2, 7.6, z - 0.25) * CFrame.Angles(math.pi / 2, 0, 0), E.Gold, Enum.Material.Metal, false)
+        end
+        local previous
+        for point = 0, 20 do
+            local x = -20.5 + point * 2.05
+            local y = 11.2 - 1.6 * (1 - (x / 20.5) ^ 2)
+            local current = Vector3.new(x, y, z)
+            if previous then Kit.beam(environment, "StringLightCable", previous, current, 0.08, E.Charcoal, Enum.Material.Metal) end
+            if point % 2 == 1 then
+                local bulb = Kit.ball(environment, "StringLightBulb", Vector3.new(0.45,0.55,0.45), CFrame.new(x,y-0.7,z), Color3.fromRGB(255,233,168), Enum.Material.Neon, false)
+                bulb.CastShadow = false
+            end
+            previous = current
+        end
+    end
+    local signpost = Kit.model(environment, "TownSignpost")
+    Kit.cylinder(signpost, "Post", 0.45, 12, CFrame.new(10, 6, -74), E.Wood, Enum.Material.Wood)
+    Kit.ball(signpost, "Finial", Vector3.new(1.4,1.4,1.4), CFrame.new(10,12.2,-74), E.Gold, Enum.Material.Metal, false)
+    local directions = {{"↑ THRIFT STREET",E.Teal,E.Cream},{"DUMPSTER ALLEY →",E.Charcoal,E.Gold},{"← PARCEL POST",E.Gold,Color3.fromRGB(58,42,0)},{"← SOURCE",E.Red,E.Cream},{"FLEA FIELD →",E.Coral,E.Cream}}
+    for index, direction in ipairs(directions) do
+        Kit.sign(signpost, direction[1], CFrame.new(10, 12.55 - index * 1.55, -74.7), Vector3.new(8,1.3,0.2), direction[2], direction[3])
+    end
+    local cafe = Kit.model(environment, "PlazaCafe")
+    for _, location in ipairs({{33,-34},{43,-34},{38,-43}}) do
+        local x, z = location[1], location[2]
+        Kit.cylinder(cafe, "CafeTable", 2, 0.3, CFrame.new(x, 3.2, z), E.Cream, Enum.Material.Marble)
+        Kit.cylinder(cafe, "TablePost", 0.25, 3, CFrame.new(x, 1.6, z), E.Charcoal, Enum.Material.Metal)
+        Kit.cylinder(cafe, "Umbrella", 4.5, 0.4, CFrame.new(x, 8.3, z), E.Coral, Enum.Material.Fabric, false)
+        Kit.cylinder(cafe, "UmbrellaPole", 0.15, 8, CFrame.new(x, 4.2, z), E.Steel, Enum.Material.Metal)
+        for _, offset in ipairs({{3,0},{-3,0},{0,3},{0,-3}}) do
+            Kit.part(cafe, "CafeChair", Vector3.new(1.8,1.8,1.8), CFrame.new(x+offset[1],1.4,z+offset[2]), E.LightWood, Enum.Material.Wood)
+        end
+    end
+    -- Riverside Park occupies the east side exactly as shown in the preview.
+    local park = Kit.model(environment, "RiversidePark")
+    local px, pz = 158, -56.5
+    Kit.part(park, "ParkWalk", Vector3.new(72,0.15,8), CFrame.new(86,0.04,pz), E.Stone, Enum.Material.Pavement)
+    Kit.cylinder(park, "OuterPark", 33, 0.12, CFrame.new(px,0.08,pz), E.Stone, Enum.Material.Concrete)
+    Kit.cylinder(park, "ParkLawn", 29, 0.14, CFrame.new(px,0.09,pz), Color3.fromRGB(176,214,140), Enum.Material.Grass)
+    Kit.cylinder(park, "PondEdge", 25.5, 0.3, CFrame.new(px,0.1,pz), E.Stone, Enum.Material.Concrete)
+    local pond = Kit.cylinder(park, "PondWater", 24, 0.2, CFrame.new(px,0.16,pz), E.Water, Enum.Material.Glass, false); pond.Transparency = 0.2
+    for _, offset in ipairs({-5.2,5.2}) do
+        Kit.part(park, "ParkGate", Vector3.new(1.6,8,1.6), CFrame.new(122,4,pz+offset), E.Stone, Enum.Material.Concrete)
+        Kit.part(park, "ParkGateCap", Vector3.new(2.2,0.6,2.2), CFrame.new(122,8.3,pz+offset), E.Teal)
+    end
+    local parkSignCF = CFrame.lookAt(Vector3.new(122,0,pz), Vector3.new(0,0,pz))
+    Kit.sign(park, "RIVERSIDE PARK", parkSignCF * CFrame.new(0,7,0), Vector3.new(11,2,0.25), E.Teal, E.Cream)
+    for index = 0, 24 do
+        Kit.part(park, "BridgeSlat", Vector3.new(1.9,0.3,5.5), CFrame.new(px-25+index*2.08,1.4+0.5*math.sin(index/24*math.pi),pz), E.LightWood, Enum.Material.Wood)
+    end
+    for _, offset in ipairs({-2.6,2.6}) do
+        Kit.part(park, "BridgeRail", Vector3.new(52,0.3,0.3), CFrame.new(px,3.3,pz+offset), E.Wood, Enum.Material.Wood)
+        for index = 0, 10 do Kit.part(park, "BridgePost", Vector3.new(0.4,2.2,0.4), CFrame.new(px-25+index*5,2.4,pz+offset), E.Wood, Enum.Material.Wood) end
+    end
+    for _, offset in ipairs({{-10,10},{8,-12},{12,9},{-14,-8}}) do
+        Kit.part(park, "DuckBody", Vector3.new(2,1,1.4), CFrame.new(px+offset[1],0.8,pz+offset[2]), Color3.fromRGB(245,245,245), nil, nil, false)
+        Kit.ball(park, "DuckHead", Vector3.new(1,1,1), CFrame.new(px+offset[1]+1,1.6,pz+offset[2]), Color3.fromRGB(245,245,245), nil, false)
+        Kit.part(park, "DuckBill", Vector3.new(0.6,0.25,0.5), CFrame.new(px+offset[1]+1.6,1.5,pz+offset[2]), Color3.fromRGB(240,150,50), nil, nil, false)
+    end
+    for index = 1, 14 do
+        local angle, radius = random()*math.pi*2, 6+random()*13
+        Kit.cylinder(park, "PondReed", 0.9+random()*0.6, 0.1, CFrame.new(px+math.cos(angle)*radius,0.3,pz+math.sin(angle)*radius), Color3.fromRGB(70,150,80), nil, false)
+        if index % 3 == 0 then Kit.ball(park, "WaterFlower", Vector3.new(0.8,0.8,0.8), CFrame.new(px+math.cos(angle)*radius,0.5,pz+math.sin(angle)*radius), Color3.fromRGB(240,150,180), nil, false) end
+    end
+    for index = 0, 27 do
+        local angle = index/28*math.pi*2
+        Kit.cylinder(park, "PondStone", 0.125, 3+random()*2, CFrame.new(px+math.cos(angle)*25.5,2,pz+math.sin(angle)*25.5), Color3.fromRGB(110,150,70), Enum.Material.Rock)
+    end
+    for index = 0, 3 do
+        local angle = index*math.pi/2+math.pi/4
+        local benchCF = CFrame.lookAt(Vector3.new(px+math.cos(angle)*32,0,pz+math.sin(angle)*32), Vector3.new(px,0,pz))
+        if not catalogAsset(park, "ParkBench", benchCF, 0.65) then Kit.bench(park, benchCF) end
+        exactPost(park, px+math.cos(angle+math.pi/4)*33, pz+math.sin(angle+math.pi/4)*33)
+    end
+    local willowX, willowZ = px+20, pz-30
+    Kit.cylinder(park, "WillowTrunk", 1.2, 9, CFrame.new(willowX,4.5,willowZ), E.Wood, Enum.Material.Wood)
+    Kit.ball(park, "WillowCrown", Vector3.new(12,12,12), CFrame.new(willowX,11,willowZ), Color3.fromRGB(110,170,90), Enum.Material.Grass, false)
+    for strand = 0, 27 do
+        local angle, length = strand/28*math.pi*2, 5+random()*3
+        Kit.part(park, "WillowBranch", Vector3.new(0.3,length,0.3), CFrame.new(willowX+math.cos(angle)*5.2,11-length/2,willowZ+math.sin(angle)*5.2), Color3.fromRGB(120,180,100), Enum.Material.Grass, nil, false)
+    end
+    local parkTrees = {{8,22},{-6,30},{24,22},{36,-8},{38,18}}
+    for index, offset in ipairs(parkTrees) do exactTree(park, px+offset[1]+20, pz+offset[2], 1.1 + index%2*0.08) end
 end
 function World:previewLandscape()
     local world = Kit.model(self.Root, "ThriftStreetWorldPreview")
