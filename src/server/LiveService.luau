@@ -3,6 +3,7 @@
 local Shared = game:GetService("ReplicatedStorage"):WaitForChild("Shared")
 local LiveConfig = require(Shared.LiveConfig)
 local Config = require(Shared.Config)
+local Catalog = require(Shared.Catalog)
 local LiveService = {}
 LiveService.__index = LiveService
 local WEEK = 7 * 86400
@@ -101,6 +102,19 @@ function LiveService.new(data, gameService, options)
     end
     return self
 end
+function LiveService:updateWorldShowcase(record, preferredUserId)
+    local world = self.Game and self.Game.World
+    if not world or not world.setShowcaseItems or not record then return end
+    local entries = record.Entries or {}
+    local entry = preferredUserId and entries[tostring(preferredUserId)]
+    if not entry then
+        for _, candidate in pairs(entries) do
+            if not entry or (candidate.Votes or 0) > (entry.Votes or 0)
+                or ((candidate.Votes or 0) == (entry.Votes or 0) and (candidate.UserId or math.huge) < (entry.UserId or math.huge)) then entry = candidate end
+        end
+    end
+    world:setShowcaseItems(entry and entry.Preview or nil, Catalog, Config, entry and entry.Name or nil)
+end
 function LiveService:rawProfile(userId)
     if self.Data.Closing[userId] then return nil end
     return self.Data.Profiles[userId]
@@ -133,7 +147,8 @@ function LiveService:refresh(player)
     if not profile then return end
     local week = LiveService.week(self.Now())
     local neighborhood = LiveService.neighborhood(player.UserId)
-    self:read(week, neighborhood, true)
+    local record = self:read(week, neighborhood, true)
+    self:updateWorldShowcase(record)
     if self:rawProfile(player.UserId) == profile and player.Parent then self.Game:snapshot(player) end
 end
 function LiveService:grant(player, mutate)
@@ -216,6 +231,7 @@ function LiveService:enter(player)
     end)
     if ok and accepted and record then
         self.Cache[key] = {At = now, Record = record}
+        self:updateWorldShowcase(record, player.UserId)
         self:notice(player, "Your shop is entered! Your display travels with the entry across servers.")
     else self:notice(player, reason) end
     if self:rawProfile(player.UserId) == profile then self.Game:snapshot(player) end
@@ -242,7 +258,7 @@ function LiveService:vote(player, payload)
             return current
         end)
     end)
-    if ok and accepted and record then self.Cache[key] = {At = now, Record = record}; self:notice(player, "Vote counted. Thank you for supporting another creator!")
+    if ok and accepted and record then self.Cache[key] = {At = now, Record = record}; self:updateWorldShowcase(record); self:notice(player, "Vote counted. Thank you for supporting another creator!")
     else self:notice(player, reason) end
     if self:rawProfile(player.UserId) == profile then self.Game:snapshot(player) end
 end

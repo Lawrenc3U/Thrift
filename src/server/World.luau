@@ -231,7 +231,7 @@ function World:exactSquare()
         local angle = index * math.pi / 2 + math.pi / 2
         local position = Vector3.new(math.cos(angle) * 21, 0, -55 + math.sin(angle) * 21)
         local facing = CFrame.lookAt(position, Vector3.new(0, 0, -55))
-        if not catalogAsset(square, "ParkBench", facing, 0.72) then Kit.bench(square, facing) end
+        if not catalogAsset(square, "ParkBench", facing * CFrame.Angles(0, math.pi, 0), 0.72) then Kit.bench(square, facing) end
     end
     for index = 0, 7 do
         local angle = index * math.pi / 4 + math.pi / 8
@@ -379,6 +379,19 @@ function World:exactDistrict()
     Kit.sign(designer, "DESIGNER SHOWCASE", designerCF * CFrame.new(0, 14.4, -14.3), Vector3.new(20, 3, 0.3), E.Cream, E.Dark)
     local designerTrigger = Kit.part(designer, "ShowcaseInteraction", Vector3.new(6, 8, 1), designerCF * CFrame.new(0, 4, -15), E.Cream, nil, nil, false); designerTrigger.Transparency = 1
     prompt(designerTrigger, "Enter designer showcase", "Showcase")
+    local showcase = Kit.model(designer, "LiveItemShowcase")
+    Kit.part(showcase, "Runway", Vector3.new(30, 0.15, 13), designerCF * CFrame.new(0, 0.58, 3), E.Cream, Enum.Material.Marble)
+    Kit.part(showcase, "RunwayCenter", Vector3.new(8, 0.06, 12), designerCF * CFrame.new(0, 0.68, 3), E.Coral, Enum.Material.Fabric, nil, false)
+    local showcaseHeader = Kit.sign(showcase, "WEEKLY ITEM SHOWCASE", designerCF * CFrame.new(0, 11.2, 13.35), Vector3.new(24, 2.2, 0.2), E.Gold, E.Dark)
+    local displayRoot = Kit.model(showcase, "FeaturedItems")
+    local displayCFs, displayLabels = {}, {}
+    for index, x in ipairs({-9, 0, 9}) do
+        Kit.part(showcase, "ShowcasePlinth", Vector3.new(5.5, 2, 5.5), designerCF * CFrame.new(x, 1.6, 3), E.Cream, Enum.Material.Marble)
+        Kit.part(showcase, "GoldPlinthBand", Vector3.new(5.8, 0.3, 5.8), designerCF * CFrame.new(x, 2.75, 3), E.Gold, Enum.Material.Metal)
+        local label = Kit.sign(showcase, "DISPLAY " .. index, designerCF * CFrame.new(x, 4.4, 5.85), Vector3.new(5.2, 1.2, 0.12), E.Dark, E.Cream)
+        table.insert(displayLabels, label); table.insert(displayCFs, designerCF * CFrame.new(x, 2.95, 3))
+    end
+    self.ShowcaseDisplay = {Root = displayRoot, CFrames = displayCFs, Labels = displayLabels, Header = showcaseHeader}
     self:exactAuctionHouse(district)
 end
 function World:exactAuctionHouse(parent)
@@ -461,6 +474,12 @@ function World:exactAuctionHouse(parent)
     Kit.ball(auction, "TowerFinial", Vector3.new(2, 2, 2), cf * CFrame.new(0, 35.4, -5), E.Gold, Enum.Material.Metal, false)
     Kit.part(auction, "FlagPole", Vector3.new(0.2, 5, 0.2), cf * CFrame.new(0, 38, -5), E.Steel, Enum.Material.Metal, nil, false)
     Kit.part(auction, "AuctionFlag", Vector3.new(3, 1.8, 0.15), cf * CFrame.new(1.6, 39.4, -5), E.Coral, Enum.Material.Fabric, nil, false)
+    local display = Kit.model(auction, "CurrentLotDisplay")
+    Kit.part(display, "LotPlinth", Vector3.new(6.5, 3, 6.5), cf * CFrame.new(0, 2, 8), E.Cream, Enum.Material.Marble)
+    Kit.part(display, "LotGoldBand", Vector3.new(6.9, 0.35, 6.9), cf * CFrame.new(0, 3.65, 8), E.Gold, Enum.Material.Metal)
+    local auctionLabel = Kit.sign(display, "NEXT LOT\nCOMING SOON", cf * CFrame.new(0, 8.2, 13.25), Vector3.new(16, 3.5, 0.25), E.Charcoal, E.Gold)
+    local auctionItemRoot = Kit.model(display, "CurrentLotItem")
+    self.AuctionDisplay = {Root = auctionItemRoot, CF = cf * CFrame.new(0, 3.9, 8), Label = auctionLabel}
     local trigger = Kit.part(auction, "AuctionInteraction", Vector3.new(8, 8, 1), cf * CFrame.new(0, 4, -28), E.Cream, nil, nil, false)
     trigger.Transparency = 1; prompt(trigger, "Join the auction", "Auction")
     local podium = Kit.part(auction, "AuctionPodium", Vector3.new(3.5, 4.2, 2.5), cf * CFrame.new(7, 3, 9), E.Wood, Enum.Material.Wood)
@@ -537,8 +556,8 @@ function World:exactEnvironment()
     end
     for row, z in ipairs({17,51,85,119}) do
         for sideIndex, side in ipairs({-1,1}) do
-            local benchCF = CFrame.new(side * 18, 0, z) * CFrame.Angles(0, if side < 0 then math.pi / 2 else -math.pi / 2, 0)
-            if not catalogAsset(environment, "ParkBench", benchCF, 0.58) then Kit.bench(environment, benchCF) end
+            local benchCF = CFrame.lookAt(Vector3.new(side * 18, 0, z), Vector3.new(0, 0, z))
+            if not catalogAsset(environment, "ParkBench", benchCF * CFrame.Angles(0, math.pi, 0), 0.58) then Kit.bench(environment, benchCF) end
             Kit.cylinder(environment, "StreetBin", 0.9, 2.4, CFrame.new(side * 18, 1.2, z + 5), Color3.fromRGB(52,100,80), Enum.Material.Metal)
             Kit.part(environment, "StreetBanner", Vector3.new(2.2, 5, 0.3), CFrame.new(side * 19.2, 7.2, z), if (row + sideIndex) % 2 == 0 then E.Coral else E.Teal, Enum.Material.Fabric, nil, false)
             Kit.cylinder(environment, "BannerFinial", 0.8, 0.2, CFrame.new(side * 19.2, 7.6, z - 0.25) * CFrame.Angles(math.pi / 2, 0, 0), E.Gold, Enum.Material.Metal, false)
@@ -571,7 +590,13 @@ function World:exactEnvironment()
         Kit.cylinder(cafe, "Umbrella", 4.5, 0.4, CFrame.new(x, 8.3, z), E.Coral, Enum.Material.Fabric, false)
         Kit.cylinder(cafe, "UmbrellaPole", 0.15, 8, CFrame.new(x, 4.2, z), E.Steel, Enum.Material.Metal)
         for _, offset in ipairs({{3,0},{-3,0},{0,3},{0,-3}}) do
-            Kit.part(cafe, "CafeChair", Vector3.new(1.8,1.8,1.8), CFrame.new(x+offset[1],1.4,z+offset[2]), E.LightWood, Enum.Material.Wood)
+            local chairPosition = Vector3.new(x + offset[1], 0, z + offset[2])
+            local chairCF = CFrame.lookAt(chairPosition, Vector3.new(x, 0, z))
+            Kit.part(cafe, "CafeChairSeat", Vector3.new(1.8,0.35,1.8), chairCF * CFrame.new(0,1.65,0), E.LightWood, Enum.Material.Wood)
+            Kit.part(cafe, "CafeChairBack", Vector3.new(1.8,2.2,0.3), chairCF * CFrame.new(0,2.65,0.75), E.LightWood, Enum.Material.Wood)
+            for _, leg in ipairs({{-0.65,-0.65},{0.65,-0.65},{-0.65,0.65},{0.65,0.65}}) do
+                Kit.part(cafe, "CafeChairLeg", Vector3.new(0.22,1.5,0.22), chairCF * CFrame.new(leg[1],0.75,leg[2]), E.Wood, Enum.Material.Wood)
+            end
         end
     end
     -- Riverside Park occupies the east side exactly as shown in the preview.
@@ -612,7 +637,7 @@ function World:exactEnvironment()
     for index = 0, 3 do
         local angle = index*math.pi/2+math.pi/4
         local benchCF = CFrame.lookAt(Vector3.new(px+math.cos(angle)*32,0,pz+math.sin(angle)*32), Vector3.new(px,0,pz))
-        if not catalogAsset(park, "ParkBench", benchCF, 0.65) then Kit.bench(park, benchCF) end
+        if not catalogAsset(park, "ParkBench", benchCF * CFrame.Angles(0, math.pi, 0), 0.65) then Kit.bench(park, benchCF) end
         exactPost(park, px+math.cos(angle+math.pi/4)*33, pz+math.sin(angle+math.pi/4)*33)
     end
     local willowX, willowZ = px+20, pz-30
@@ -624,6 +649,57 @@ function World:exactEnvironment()
     end
     local parkTrees = {{8,22},{-6,30},{24,22},{36,-8},{38,18}}
     for index, offset in ipairs(parkTrees) do exactTree(park, px+offset[1]+20, pz+offset[2], 1.1 + index%2*0.08) end
+end
+local function fitFeaturedItem(parent, definition, item, cf, config, maximum)
+    if not definition then return nil end
+    local model = ItemModels.create(parent, definition, item, cf, config)
+    local _, initialSize = model:GetBoundingBox()
+    local largest = math.max(initialSize.X, initialSize.Y, initialSize.Z, 0.01)
+    local scale = math.min(1.75, maximum / largest)
+    if math.abs(scale - 1) > 0.01 then model:ScaleTo(scale) end
+    local bounds, size = model:GetBoundingBox()
+    local bottom = bounds.Position.Y - size.Y / 2
+    model:PivotTo(model:GetPivot() + Vector3.new(0, cf.Position.Y - bottom, 0))
+    model:SetAttribute("FeaturedDisplay", true)
+    return model
+end
+function World:setAuctionItem(item, catalog, config, bid)
+    local display = self.AuctionDisplay
+    if not display then return end
+    for _, child in ipairs(display.Root:GetChildren()) do child:Destroy() end
+    display.ItemName = nil; display.RarityName = nil
+    if not item then
+        display.Label.Text = "NEXT LOT\nCOMING SOON"
+        return
+    end
+    local definition = catalog.ById[item.DefId]
+    if not definition then display.Label.Text = "LOT UNAVAILABLE"; return end
+    local model = fitFeaturedItem(display.Root, definition, item, display.CF, config, 5.2)
+    if model then model.Name = "Current Lot · " .. definition.Name end
+    display.ItemName = definition.Name
+    local rarity = config.Rarities[item.Rarity] or "Special"
+    display.RarityName = rarity
+    display.Label.Text = string.upper(definition.Name) .. "\n" .. string.upper(rarity) .. "  •  CURRENT BID $" .. tostring(bid or 0)
+end
+function World:updateAuctionBid(bid)
+    local display = self.AuctionDisplay
+    if not display or not display.ItemName then return end
+    display.Label.Text = string.upper(display.ItemName) .. "\n" .. string.upper(display.RarityName or "Special") .. "  •  CURRENT BID $" .. tostring(bid or 0)
+end
+function World:setShowcaseItems(items, catalog, config, ownerName)
+    local display = self.ShowcaseDisplay
+    if not display then return end
+    for _, child in ipairs(display.Root:GetChildren()) do child:Destroy() end
+    display.Header.Text = if ownerName and ownerName ~= "" then string.upper(ownerName) .. "'S FEATURED COLLECTION" else "WEEKLY ITEM SHOWCASE"
+    for index, label in ipairs(display.Labels) do
+        local item = items and items[index]
+        local definition = item and catalog.ById[item.DefId]
+        if definition then
+            local model = fitFeaturedItem(display.Root, definition, item, display.CFrames[index], config, 4.5)
+            if model then model.Name = "Showcase " .. index .. " · " .. definition.Name end
+            label.Text = string.upper(definition.Name) .. "\n" .. string.upper(config.Rarities[item.Rarity] or "Special")
+        else label.Text = "DISPLAY " .. index .. "\nAWAITING ENTRY" end
+    end
 end
 function World:previewLandscape()
     local world = Kit.model(self.Root, "ThriftStreetWorldPreview")

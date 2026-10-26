@@ -14,6 +14,8 @@ local function fixture()
     local data = {Profiles = {[101] = profile}, Closing = {}, Ephemeral = true}
     local world = {Allowed = true, Owners = {[101] = {Index = 1}}, near = function(self) return self.Allowed end,
         render = function() end, customer = function() end,
+        setAuctionItem = function(self, item) self.AuctionVisual = item; self.AuctionVisualUpdates = (self.AuctionVisualUpdates or 0) + 1 end,
+        updateAuctionBid = function(self, bid) self.AuctionVisualBid = bid end,
         holdItem = function(self, _, _, item) self.Holding = item.Uid; return true end,
         clearHeld = function(self) self.Holding = nil end}
     local event = {FireClient = function(_, _, kind, payload) table.insert(events, {Kind = kind, Payload = payload}) end}
@@ -191,9 +193,9 @@ test("daily and weekly rewards cannot be claimed twice", function()
     s:quest(p, {Id = "Weekly"}); equal(profile.Cash, 1340)
 end)
 test("auction reservations prevent overspending without persisting escrow", function()
-    local s, p, profile = fixture(); profile.Cash = 1000; profile.XP = 1000
+    local s, p, profile, world = fixture(); profile.Cash = 1000; profile.XP = 1000
     s.Auction = {Bid = 0, Started = os.time(), Ends = os.time() + 30}
-    s:bid(p, {Amount = 900}); equal(profile.Cash, 1000); equal(s:spendable(p, profile), 100)
+    s:bid(p, {Amount = 900}); equal(profile.Cash, 1000); equal(s:spendable(p, profile), 100); equal(world.AuctionVisualBid, 900)
     s:upgrade(p, {Kind = "Tool"}); equal(profile.Tool, 0); equal(profile.Cash, 1000)
     s:bid(p, {Amount = 999999}); equal(s.Auction.Bid, 900)
 end)
@@ -204,9 +206,9 @@ test("sidebar shop upgrades work from anywhere in town", function()
     equal(profile.Tool, 1); assert(profile.Cash < 1000)
 end)
 test("auction settles cash and item in the same winning profile", function()
-    local s, p, profile = fixture(); local item = addItem(profile); table.clear(profile.Inventory)
+    local s, p, profile, world = fixture(); local item = addItem(profile); table.clear(profile.Inventory)
     s.Auction = {Bid = 50, Bidder = p.UserId, Started = os.time() - 60, Ends = os.time() - 1, Item = item}
-    s:tick(); equal(profile.Cash, 25); equal(#profile.Inventory, 1); assert(s.Auction == nil)
+    s:tick(); equal(profile.Cash, 25); equal(#profile.Inventory, 1); assert(s.Auction == nil); assert(world.AuctionVisual == nil and world.AuctionVisualUpdates == 1)
     s:tick(); equal(profile.Cash, 25); equal(#profile.Inventory, 1)
 end)
 test("remote input rejects nested data, non-finite numbers and unknown actions", function()

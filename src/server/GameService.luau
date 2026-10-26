@@ -493,6 +493,7 @@ function GameService:bid(player, payload)
     auction.Bid = payload.Amount; auction.Bidder = player.UserId
     -- Cash is reserved, never removed before a win. Save cannot persist an orphan escrow.
     auction.Ends = math.max(auction.Ends, math.min(auction.Started + 90, os.time() + 8))
+    if self.World.updateAuctionBid then self.World:updateAuctionBid(auction.Bid) end
     self:broadcast()
 end
 function GameService:rating(player, payload)
@@ -712,6 +713,7 @@ function GameService:tick()
         local item = self:generate("Estate", 100, false); item.Rarity = math.max(3, item.Rarity); item.Inspected = true
         self.Auction = {Item = item, PublicItem = shallowPublicItem(item), Bid = 0, Bidder = nil,
             Started = now, Ends = now + Config.AuctionDuration}
+        if self.World.setAuctionItem then self.World:setAuctionItem(item, Catalog, Config, 0) end
         self:broadcast()
     elseif self.Auction and now >= self.Auction.Ends then
         local auction = self.Auction
@@ -725,7 +727,9 @@ function GameService:tick()
             profile.Collection[auction.Item.DefId .. ":" .. auction.Item.Rarity] = true
             self:notify(winner, "Going, going, yours! Your auction find is in your bag.")
         end
-        self.Auction = nil; self.NextAuction = now + Config.AuctionInterval; self:broadcast()
+        self.Auction = nil; self.NextAuction = now + Config.AuctionInterval
+        if self.World.setAuctionItem then self.World:setAuctionItem(nil, Catalog, Config, 0) end
+        self:broadcast()
     end
     for _, player in ipairs(Players:GetPlayers()) do
         local profile = self:profile(player)
