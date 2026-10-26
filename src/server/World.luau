@@ -592,11 +592,7 @@ function World:exactEnvironment()
         for _, offset in ipairs({{3,0},{-3,0},{0,3},{0,-3}}) do
             local chairPosition = Vector3.new(x + offset[1], 0, z + offset[2])
             local chairCF = CFrame.lookAt(chairPosition, Vector3.new(x, 0, z))
-            Kit.part(cafe, "CafeChairSeat", Vector3.new(1.8,0.35,1.8), chairCF * CFrame.new(0,1.65,0), E.LightWood, Enum.Material.Wood)
-            Kit.part(cafe, "CafeChairBack", Vector3.new(1.8,2.2,0.3), chairCF * CFrame.new(0,2.65,0.75), E.LightWood, Enum.Material.Wood)
-            for _, leg in ipairs({{-0.65,-0.65},{0.65,-0.65},{-0.65,0.65},{0.65,0.65}}) do
-                Kit.part(cafe, "CafeChairLeg", Vector3.new(0.22,1.5,0.22), chairCF * CFrame.new(leg[1],0.75,leg[2]), E.Wood, Enum.Material.Wood)
-            end
+            Kit.chair(cafe, chairCF, E.Wood, E.Cream)
         end
     end
     -- Riverside Park occupies the east side exactly as shown in the preview.
@@ -1010,9 +1006,8 @@ function World:auctionHouse()
         for column = 1, 4 do
             local x = (column - 2.5) * 8
             local seatCF = cf * CFrame.new(x, 0.95, -15 + row * 6)
-            Kit.part(model, "Seat", Vector3.new(3, 0.5, 3), seatCF * CFrame.new(0, 1.8, 0), P.Rose, Enum.Material.Fabric)
-            Kit.part(model, "SeatBack", Vector3.new(3, 3, 0.4), seatCF * CFrame.new(0, 3.1, -1.3), P.Rose, Enum.Material.Fabric)
-            for side = -1, 1, 2 do Kit.part(model, "SeatLeg", Vector3.new(0.25, 1.7, 2.5), seatCF * CFrame.new(side * 1.2, 0.85, 0), P.Wood, Enum.Material.Wood) end
+            -- The stage is local +Z, so rotate the chair's -Z front toward it.
+            Kit.chair(model, seatCF * CFrame.Angles(0, math.pi, 0), P.Wood, P.Rose)
         end
     end
     -- Ceiling beams leave the central camera view open in the authored building.

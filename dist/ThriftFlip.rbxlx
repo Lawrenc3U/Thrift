@@ -11188,11 +11188,7 @@ function World:exactEnvironment()
         for _, offset in ipairs({{3,0},{-3,0},{0,3},{0,-3}}) do
             local chairPosition = Vector3.new(x + offset[1], 0, z + offset[2])
             local chairCF = CFrame.lookAt(chairPosition, Vector3.new(x, 0, z))
-            Kit.part(cafe, "CafeChairSeat", Vector3.new(1.8,0.35,1.8), chairCF * CFrame.new(0,1.65,0), E.LightWood, Enum.Material.Wood)
-            Kit.part(cafe, "CafeChairBack", Vector3.new(1.8,2.2,0.3), chairCF * CFrame.new(0,2.65,0.75), E.LightWood, Enum.Material.Wood)
-            for _, leg in ipairs({{-0.65,-0.65},{0.65,-0.65},{-0.65,0.65},{0.65,0.65}}) do
-                Kit.part(cafe, "CafeChairLeg", Vector3.new(0.22,1.5,0.22), chairCF * CFrame.new(leg[1],0.75,leg[2]), E.Wood, Enum.Material.Wood)
-            end
+            Kit.chair(cafe, chairCF, E.Wood, E.Cream)
         end
     end
     -- Riverside Park occupies the east side exactly as shown in the preview.
@@ -11606,9 +11602,8 @@ function World:auctionHouse()
         for column = 1, 4 do
             local x = (column - 2.5) * 8
             local seatCF = cf * CFrame.new(x, 0.95, -15 + row * 6)
-            Kit.part(model, "Seat", Vector3.new(3, 0.5, 3), seatCF * CFrame.new(0, 1.8, 0), P.Rose, Enum.Material.Fabric)
-            Kit.part(model, "SeatBack", Vector3.new(3, 3, 0.4), seatCF * CFrame.new(0, 3.1, -1.3), P.Rose, Enum.Material.Fabric)
-            for side = -1, 1, 2 do Kit.part(model, "SeatLeg", Vector3.new(0.25, 1.7, 2.5), seatCF * CFrame.new(side * 1.2, 0.85, 0), P.Wood, Enum.Material.Wood) end
+            -- The stage is local +Z, so rotate the chair's -Z front toward it.
+            Kit.chair(model, seatCF * CFrame.Angles(0, math.pi, 0), P.Wood, P.Rose)
         end
     end
     -- Ceiling beams leave the central camera view open in the authored building.
@@ -12418,6 +12413,40 @@ function Kit.bench(parent, cf)
     end
     for i = 1, 3 do
         Kit.part(model, "BackSlat", Vector3.new(5.4, 0.4, 0.2), cf * CFrame.new(0, 2.2 + i * 0.5, 0.9) * CFrame.Angles(-0.15, 0, 0), P.Oak, Enum.Material.Wood)
+    end
+    return model
+end
+function Kit.chair(parent, cf, woodColor, cushionColor)
+    -- A compact bistro chair built around a real Seat.  The chair's local -Z
+    -- direction is its front, matching CFrame.lookAt(position, tablePosition).
+    local model = Kit.model(parent, "BistroChair")
+    local wood = woodColor or P.Wood
+    local cushion = cushionColor or P.Cream
+
+    local seat = Instance.new("Seat")
+    seat.Name = "ChairSeat"; seat.Size = Vector3.new(2.35, 0.35, 2.25)
+    seat.CFrame = cf * CFrame.new(0, 1.75, 0); seat.Color = wood
+    seat.Material = Enum.Material.Wood; seat.Anchored = true; seat.CanCollide = true
+    seat.TopSurface = Enum.SurfaceType.Smooth; seat.BottomSurface = Enum.SurfaceType.Smooth
+    seat.Parent = model
+    Kit.part(model, "SeatCushion", Vector3.new(2.08, 0.18, 1.95), cf * CFrame.new(0, 2.02, -0.05), cushion, Enum.Material.Fabric, nil, false)
+
+    -- Splayed legs and side braces give the silhouette enough depth to read
+    -- correctly from the normal third-person camera.
+    for _, leg in ipairs({{-0.92,-0.82,-0.07},{0.92,-0.82,0.07},{-0.92,0.82,0.07},{0.92,0.82,-0.07}}) do
+        Kit.part(model, "ChairLeg", Vector3.new(0.28, 1.7, 0.28),
+            cf * CFrame.new(leg[1], 0.88, leg[2]) * CFrame.Angles(leg[3], 0, -leg[1] * 0.045),
+            wood, Enum.Material.Wood, nil, false)
+    end
+    for _, side in ipairs({-1, 1}) do
+        Kit.part(model, "SideBrace", Vector3.new(0.18, 0.18, 1.75), cf * CFrame.new(side * 0.94, 0.95, 0), wood, Enum.Material.Wood, nil, false)
+        Kit.part(model, "BackPost", Vector3.new(0.3, 2.7, 0.3),
+            cf * CFrame.new(side * 0.96, 3.05, 0.92) * CFrame.Angles(-0.08, 0, 0), wood, Enum.Material.Wood, nil, false)
+    end
+    for index, y in ipairs({2.75, 3.35, 3.92}) do
+        local width = if index == 2 then 1.92 else 2.12
+        Kit.part(model, "BackRail", Vector3.new(width, 0.34, 0.28),
+            cf * CFrame.new(0, y, 1.02) * CFrame.Angles(-0.08, 0, 0), wood, Enum.Material.Wood, nil, false)
     end
     return model
 end
@@ -14580,37 +14609,127 @@ end
 function UI:searchTreasure(source, callback)
     if self.Searching then return end
     self.Searching = true
-    local layer = Instance.new("Frame"); layer.Name = "TreasureSearch"; layer.Size = UDim2.fromScale(1, 1)
-    layer.BackgroundColor3 = UI.Colors.Night; layer.BackgroundTransparency = 0.28; layer.BorderSizePixel = 0; layer.ZIndex = 40; layer.Parent = self.Gui
-    local card = Instance.new("Frame"); card.AnchorPoint = Vector2.new(0.5, 0.5); card.Position = UDim2.fromScale(0.5, 0.5)
-    card.Size = UDim2.new(0.86, 0, 0, 250); card.BackgroundColor3 = UI.Colors.Cream; card.ZIndex = 41; card.Parent = layer; UI.corner(card, 24); UI.stroke(card, UI.Colors.White, 2, 0.08)
-    local limit = Instance.new("UISizeConstraint"); limit.MaxSize = Vector2.new(390, 250); limit.Parent = card
-    local scale = Instance.new("UIScale"); scale.Scale = 0.9; scale.Parent = card; tween(scale, {Scale = 1}, 0.2)
-    local title = UI.label(card, if source == "Delivery" then "Unwrapping your parcel…" elseif source == "Estate" then "Browsing the estate…" else "Searching for treasure…", 22, Color3.fromRGB(8, 91, 84))
-    title.Font = Enum.Font.GothamBold; title.Position = UDim2.fromOffset(18, 18); title.Size = UDim2.new(1, -36, 0, 32); title.AutomaticSize = Enum.AutomaticSize.None; title.TextXAlignment = Enum.TextXAlignment.Center; title.ZIndex = 42
-    local bin = Instance.new("Frame"); bin.AnchorPoint = Vector2.new(0.5, 0); bin.Position = UDim2.new(0.5, 0, 0, 68); bin.Size = UDim2.fromOffset(112, 82)
-    bin.BackgroundColor3 = Color3.fromRGB(20, 132, 124); bin.ZIndex = 42; bin.Parent = card; UI.corner(bin, 13)
-    local lid = Instance.new("Frame"); lid.AnchorPoint = Vector2.new(0.5, 1); lid.Position = UDim2.new(0.5, 0, 0, 3); lid.Size = UDim2.fromOffset(122, 17)
-    lid.BackgroundColor3 = Color3.fromRGB(8, 91, 84); lid.ZIndex = 43; lid.Parent = bin; UI.corner(lid, 8)
-    local shine = UI.label(card, "✦   ◇   ✦", 24, UI.Colors.Gold); shine.Position = UDim2.new(0.5, -80, 0, 53); shine.Size = UDim2.fromOffset(160, 36)
-    shine.AutomaticSize = Enum.AutomaticSize.None; shine.TextXAlignment = Enum.TextXAlignment.Center; shine.ZIndex = 44
-    local status = UI.label(card, "Rummaging through forgotten finds", 13, UI.Colors.Muted); status.Position = UDim2.fromOffset(18, 166)
-    status.Size = UDim2.new(1, -36, 0, 24); status.AutomaticSize = Enum.AutomaticSize.None; status.TextXAlignment = Enum.TextXAlignment.Center; status.ZIndex = 42
-    local track = Instance.new("Frame"); track.Position = UDim2.fromOffset(24, 207); track.Size = UDim2.new(1, -48, 0, 10)
-    track.BackgroundColor3 = Color3.fromRGB(218, 225, 211); track.ZIndex = 42; track.Parent = card; UI.corner(track, 6)
-    local fill = Instance.new("Frame"); fill.Size = UDim2.fromScale(0, 1); fill.BackgroundColor3 = UI.Colors.Teal; fill.ZIndex = 43; fill.Parent = track; UI.corner(fill, 6)
-    tween(fill, {Size = UDim2.fromScale(1, 1)}, 2.25)
-    task.spawn(function()
-        for step = 1, 6 do
-            lid.Rotation = if step % 2 == 0 then 7 else -7; bin.Rotation = if step % 2 == 0 then -2 else 2
-            shine.TextTransparency = if step % 2 == 0 then 0.15 else 0.55
-            if step == 3 then status.Text = "Something interesting is in here…" elseif step == 5 then status.Text = "You found something!" end
-            task.wait(0.36)
+    local baseZ = 40
+    local function block(parent, name, size, position, color, z)
+        local frame = Instance.new("Frame"); frame.Name = name; frame.Size = size; frame.Position = position
+        frame.BackgroundColor3 = color; frame.BorderSizePixel = 0; frame.ZIndex = z or baseZ + 2; frame.Parent = parent
+        return frame
+    end
+
+    local layer = block(self.Gui, "TreasureSearch", UDim2.fromScale(1, 1), UDim2.fromScale(0, 0), UI.Colors.Night, baseZ)
+    layer.BackgroundTransparency = 0.18; layer.Active = true
+    local panel = block(layer, "SearchPanel", UDim2.new(0.92, 0, 0, 400), UDim2.fromScale(0.5, 0.5), UI.Colors.Cream, baseZ + 1)
+    panel.AnchorPoint = Vector2.new(0.5, 0.5); panel.ClipsDescendants = true; UI.corner(panel, 26); UI.stroke(panel, UI.Colors.White, 2, 0.12)
+    local limit = Instance.new("UISizeConstraint"); limit.MaxSize = Vector2.new(520, 400); limit.MinSize = Vector2.new(300, 360); limit.Parent = panel
+    local panelScale = Instance.new("UIScale"); panelScale.Scale = 0.92; panelScale.Parent = panel
+    if self.Effects then tween(panelScale, {Scale = 1}, 0.22) else panelScale.Scale = 1 end
+
+    local header = block(panel, "Header", UDim2.new(1, 0, 0, 66), UDim2.fromOffset(0, 0), UI.Colors.Teal, baseZ + 2)
+    local heading = UI.label(header, "Source", 25, UI.Colors.Cream); heading.Font = Enum.Font.GothamBold
+    heading.Position = UDim2.fromOffset(20, 8); heading.Size = UDim2.new(1, -40, 0, 30); heading.AutomaticSize = Enum.AutomaticSize.None; heading.ZIndex = baseZ + 3
+    local sourceCopy = if source == "Delivery" then "PARCEL POST · DAILY DELIVERY" elseif source == "Estate" then "THRIFT STREET · WHOLESALE" else "DUMPSTER ALLEY · FREE FINDS"
+    local eyebrow = UI.label(header, sourceCopy, 11, UI.Colors.Cream); eyebrow.Font = Enum.Font.GothamBold
+    eyebrow.TextTransparency = 0.08; eyebrow.Position = UDim2.fromOffset(20, 38); eyebrow.Size = UDim2.new(1, -40, 0, 17); eyebrow.AutomaticSize = Enum.AutomaticSize.None; eyebrow.ZIndex = baseZ + 3
+
+    local stage = block(panel, "SearchStage", UDim2.new(1, 0, 0, 270), UDim2.fromOffset(0, 66), Color3.fromRGB(74, 86, 84), baseZ + 2)
+    stage.ClipsDescendants = true
+    local wall = block(stage, "BrickWall", UDim2.new(1, 0, 0, 202), UDim2.fromOffset(0, 0), Color3.fromRGB(104, 70, 62), baseZ + 2)
+    for row = 1, 8 do
+        local mortar = block(wall, "Mortar", UDim2.new(1, 0, 0, 2), UDim2.fromOffset(0, row * 24), Color3.fromRGB(65, 55, 52), baseZ + 3)
+        mortar.BackgroundTransparency = 0.55
+    end
+    local ground = block(stage, "Ground", UDim2.new(1, 0, 0, 70), UDim2.new(0, 0, 1, -70), Color3.fromRGB(58, 68, 66), baseZ + 3)
+
+    local lamp = block(stage, "Lamp", UDim2.fromOffset(17, 17), UDim2.new(1, -64, 0, 27), Color3.fromRGB(255, 233, 168), baseZ + 4)
+    UI.corner(lamp, 9)
+    local lampGlow = block(stage, "LampGlow", UDim2.fromOffset(58, 58), UDim2.new(1, -84, 0, 6), Color3.fromRGB(255, 233, 168), baseZ + 3)
+    lampGlow.BackgroundTransparency = 0.76; UI.corner(lampGlow, 29)
+
+    local dumpster = Instance.new("Frame"); dumpster.Name = "Dumpster"; dumpster.AnchorPoint = Vector2.new(0.5, 1)
+    dumpster.Position = UDim2.new(0.5, 0, 1, -48); dumpster.Size = UDim2.fromOffset(190, 128)
+    dumpster.BackgroundTransparency = 1; dumpster.ZIndex = baseZ + 5; dumpster.Parent = stage
+    local body = block(dumpster, "Body", UDim2.fromOffset(190, 92), UDim2.fromOffset(0, 36), Color3.fromRGB(62, 142, 90), baseZ + 6)
+    UI.corner(body, 9); UI.gradient(body, Color3.fromRGB(71, 157, 99), Color3.fromRGB(45, 110, 68), 90)
+    local band = block(body, "Band", UDim2.new(1, 0, 0, 10), UDim2.fromOffset(0, 34), Color3.fromRGB(46, 110, 68), baseZ + 7)
+    local lid = block(dumpster, "Lid", UDim2.fromOffset(198, 17), UDim2.fromOffset(-4, 29), Color3.fromRGB(43, 43, 51), baseZ + 9)
+    lid.AnchorPoint = Vector2.new(0, 1); UI.corner(lid, 6)
+    for _, x in ipairs({14, 158}) do
+        local wheel = block(dumpster, "Wheel", UDim2.fromOffset(19, 19), UDim2.fromOffset(x, 116), Color3.fromRGB(43, 43, 51), baseZ + 8); UI.corner(wheel, 10)
+    end
+    local props = {
+        {26, 14, 22, 47, Color3.fromRGB(127, 200, 232), -8},
+        {83, 22, 51, 27, UI.Colors.Red, 6},
+        {140, 17, 31, 35, UI.Colors.Gold, -5},
+    }
+    local finds = {}
+    for index, data in ipairs(props) do
+        local prop = block(dumpster, "PeekFind" .. index, UDim2.fromOffset(data[3], data[4]), UDim2.fromOffset(data[1], data[2]), data[5], baseZ + 5)
+        prop.Rotation = data[6]; UI.corner(prop, if index == 3 then 14 else 7); table.insert(finds, {Frame = prop, Y = data[2], Rotation = data[6]})
+    end
+
+    local flash = block(stage, "RevealFlash", UDim2.fromScale(1, 1), UDim2.fromScale(0, 0), UI.Colors.White, baseZ + 18)
+    flash.BackgroundTransparency = 1
+    local status = UI.label(panel, "Digging through the bags…", 17, UI.Colors.Ink); status.Font = Enum.Font.GothamBold
+    status.Position = UDim2.new(0, 18, 1, -56); status.Size = UDim2.new(1, -36, 0, 26); status.AutomaticSize = Enum.AutomaticSize.None
+    status.TextXAlignment = Enum.TextXAlignment.Center; status.ZIndex = baseZ + 4
+    local track = block(panel, "SearchProgress", UDim2.new(1, -40, 0, 7), UDim2.new(0, 20, 1, -18), Color3.fromRGB(218, 225, 211), baseZ + 3); UI.corner(track, 5)
+    local fill = block(track, "Fill", UDim2.fromScale(0, 1), UDim2.fromScale(0, 0), UI.Colors.Red, baseZ + 4); UI.corner(fill, 5)
+    TweenService:Create(fill, TweenInfo.new(2.3, Enum.EasingStyle.Linear), {Size = UDim2.fromScale(1, 1)}):Play()
+
+    local function dust(step)
+        if not self.Effects or not stage.Parent then return end
+        local puff = block(stage, "Dust", UDim2.fromOffset(8 + step % 3 * 3, 8 + step % 3 * 3), UDim2.new(0.5, -72 + (step * 29) % 144, 1, -126), Color3.fromRGB(232, 226, 212), baseZ + 11)
+        puff.BackgroundTransparency = 0.28; UI.corner(puff, 12)
+        local drift = -22 + (step * 17) % 45
+        TweenService:Create(puff, TweenInfo.new(0.85, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+            Position = puff.Position + UDim2.fromOffset(drift, -68), Size = UDim2.fromOffset(20, 20), BackgroundTransparency = 1,
+        }):Play(); task.delay(0.9, function() if puff.Parent then puff:Destroy() end end)
+    end
+    local function burst()
+        if not self.Effects then return end
+        local colors = {UI.Colors.Gold, UI.Colors.Rose, UI.Colors.Cream, UI.Colors.Teal, Color3.fromRGB(91, 133, 240)}
+        for index = 1, 18 do
+            local angle = index / 18 * math.pi * 2 + (index % 3) * 0.12
+            local distance = 75 + (index * 23) % 105
+            local spark = UI.label(stage, if index % 3 == 0 then "◆" else "✦", 14 + index % 4 * 3, colors[index % #colors + 1])
+            spark.AnchorPoint = Vector2.new(0.5, 0.5); spark.Position = UDim2.fromScale(0.5, 0.56); spark.Size = UDim2.fromOffset(28, 28)
+            spark.AutomaticSize = Enum.AutomaticSize.None; spark.TextXAlignment = Enum.TextXAlignment.Center; spark.ZIndex = baseZ + 17; spark.Rotation = index * 21
+            tween(spark, {Position = spark.Position + UDim2.fromOffset(math.cos(angle) * distance, math.sin(angle) * distance - 32), TextTransparency = 1, Rotation = spark.Rotation + 180}, 0.9)
+            task.delay(0.95, function() if spark.Parent then spark:Destroy() end end)
         end
-        lid.Rotation = -18; bin.Rotation = 0; shine.TextTransparency = 0
-        task.wait(0.2)
-        if layer.Parent then layer:Destroy() end
-        self.Searching = false; callback()
+    end
+
+    task.spawn(function()
+        local messages = {"Digging through the bags…", "Checking the corners…", "Something shiny…"}
+        for step = 1, 21 do
+            if not layer.Parent then self.Searching = false; return end
+            if step == 8 then status.Text = messages[2] elseif step == 15 then status.Text = messages[3] end
+            if self.Effects then
+                dumpster.Rotation = if step % 2 == 0 then 1.2 else -1.2
+                dumpster.Position = UDim2.new(0.5, if step % 2 == 0 then 2 else -3, 1, -48 + step % 3 - 1)
+                lid.Rotation = if step % 2 == 0 then -4 else -19
+                for index, entry in ipairs(finds) do
+                    entry.Frame.Position = UDim2.fromOffset(props[index][1], entry.Y - (step + index * 2) % 5 * 3)
+                    entry.Frame.Rotation = if step % 2 == 0 then -entry.Rotation else entry.Rotation
+                end
+                if step % 2 == 0 then dust(step) end
+            end
+            task.wait(0.11)
+        end
+        dumpster.Rotation = 0; dumpster.Position = UDim2.new(0.5, 0, 1, -48); lid.Rotation = -58
+        status.Text = "You found something!"; fill.BackgroundColor3 = UI.Colors.Gold
+        if self.Effects then
+            flash.BackgroundTransparency = 0.12; tween(flash, {BackgroundTransparency = 1}, 0.42); burst()
+            tween(dumpster, {Position = UDim2.new(0.5, 0, 1, -12)}, 0.42)
+        end
+        task.wait(if self.Effects then 0.42 else 0.06)
+        self.Searching = false
+        local ok, message = pcall(callback)
+        if not ok then warn("Treasure search callback failed: " .. tostring(message)) end
+        if layer.Parent then
+            tween(layer, {BackgroundTransparency = 1}, 0.16); tween(panelScale, {Scale = 0.96}, 0.16)
+            task.wait(0.16); layer:Destroy()
+        end
     end)
 end
 function UI:rarityReveal(definition, item, callback)

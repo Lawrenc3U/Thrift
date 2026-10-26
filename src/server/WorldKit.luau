@@ -92,6 +92,40 @@ function Kit.bench(parent, cf)
     end
     return model
 end
+function Kit.chair(parent, cf, woodColor, cushionColor)
+    -- A compact bistro chair built around a real Seat.  The chair's local -Z
+    -- direction is its front, matching CFrame.lookAt(position, tablePosition).
+    local model = Kit.model(parent, "BistroChair")
+    local wood = woodColor or P.Wood
+    local cushion = cushionColor or P.Cream
+
+    local seat = Instance.new("Seat")
+    seat.Name = "ChairSeat"; seat.Size = Vector3.new(2.35, 0.35, 2.25)
+    seat.CFrame = cf * CFrame.new(0, 1.75, 0); seat.Color = wood
+    seat.Material = Enum.Material.Wood; seat.Anchored = true; seat.CanCollide = true
+    seat.TopSurface = Enum.SurfaceType.Smooth; seat.BottomSurface = Enum.SurfaceType.Smooth
+    seat.Parent = model
+    Kit.part(model, "SeatCushion", Vector3.new(2.08, 0.18, 1.95), cf * CFrame.new(0, 2.02, -0.05), cushion, Enum.Material.Fabric, nil, false)
+
+    -- Splayed legs and side braces give the silhouette enough depth to read
+    -- correctly from the normal third-person camera.
+    for _, leg in ipairs({{-0.92,-0.82,-0.07},{0.92,-0.82,0.07},{-0.92,0.82,0.07},{0.92,0.82,-0.07}}) do
+        Kit.part(model, "ChairLeg", Vector3.new(0.28, 1.7, 0.28),
+            cf * CFrame.new(leg[1], 0.88, leg[2]) * CFrame.Angles(leg[3], 0, -leg[1] * 0.045),
+            wood, Enum.Material.Wood, nil, false)
+    end
+    for _, side in ipairs({-1, 1}) do
+        Kit.part(model, "SideBrace", Vector3.new(0.18, 0.18, 1.75), cf * CFrame.new(side * 0.94, 0.95, 0), wood, Enum.Material.Wood, nil, false)
+        Kit.part(model, "BackPost", Vector3.new(0.3, 2.7, 0.3),
+            cf * CFrame.new(side * 0.96, 3.05, 0.92) * CFrame.Angles(-0.08, 0, 0), wood, Enum.Material.Wood, nil, false)
+    end
+    for index, y in ipairs({2.75, 3.35, 3.92}) do
+        local width = if index == 2 then 1.92 else 2.12
+        Kit.part(model, "BackRail", Vector3.new(width, 0.34, 0.28),
+            cf * CFrame.new(0, y, 1.02) * CFrame.Angles(-0.08, 0, 0), wood, Enum.Material.Wood, nil, false)
+    end
+    return model
+end
 function Kit.lamp(parent, cf)
     local model = Kit.model(parent, "StreetLantern")
     Kit.cylinder(model, "Plinth", 0.65, 0.4, cf * CFrame.new(0, 0.2, 0), P.Ink, Enum.Material.Metal)
