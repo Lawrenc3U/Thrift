@@ -13,6 +13,8 @@ Create these in Creator Dashboard, then add their numeric IDs to `LiveConfig.Pas
 | Curator Club | Game pass | R$129 | Exclusive gallery theme, trophy, poster and title |
 | Thrift Street Supporter | Developer product | R$19 | Supporter title and Second Chances poster |
 
+Admins can grant any complete bundle to an online player without charging Robux. Open **More > Admin**, select the player, then use **Gift a permanent store reward**. The server validates the admin, saves the entitlement immediately, and prevents duplicate grants.
+
 The four offers already appear as disabled previews in Studio. Create each offer under the same owner as the experience, then replace its `Id = 0` value in `src/shared/LiveConfig.luau`. Suggested prices are planning guidance; live buttons display the price returned by Roblox.
 
 Every paid offer must describe the exact cosmetic reward. Do not sell random finds, restoration scores, cash, inventory capacity, or auction advantages. Those offers weaken the collection loop and create refund and trust problems.

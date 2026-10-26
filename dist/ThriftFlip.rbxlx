@@ -9828,7 +9828,10 @@ function GameService:admin(player, payload)
     local profile = self:profile(target)
     if not profile then return self:notify(player, "That player's profile is not ready.") end
 
-    if command == "GiveItem" then
+    if command == "GiftBundle" then
+        if not self.Live then return self:notify(player, "The cosmetic service is not ready.") end
+        self.Live:giftBundle(player, target, payload.Key); return
+    elseif command == "GiveItem" then
         if #profile.Inventory &gt;= Config.InventoryLimit then return self:notify(player, "That player's bag is full.") end
         local rarity = payload.Rarity
         if not Economy.validAmount(rarity, 1, 5) then return self:notify(player, "Choose a rarity from 1 to 5.") end
@@ -10200,6 +10203,32 @@ function LiveService:grant(player, mutate)
     if self.Data.MutationLocks[userId] == token then self.Data.MutationLocks[userId] = nil end
     if not ok then warn("Live cosmetic award failed: " .. tostring(result)); return false end
     return result == true
+end
+function LiveService:giftBundle(requester, target, key)
+    if not self.Game:isAdmin(requester) then return self:notice(requester, "Admin access denied.") end
+    if type(key) ~= "string" or #key &lt; 1 or #key &gt; 50 then return self:notice(requester, "Choose a valid store reward.") end
+    local definition
+    for _, entries in ipairs({LiveConfig.Passes, LiveConfig.Products}) do
+        for _, candidate in ipairs(entries) do
+            if candidate.Key == key then definition = candidate; break end
+        end
+        if definition then break end
+    end
+    if not definition then return self:notice(requester, "That store reward does not exist.") end
+    local profile = self:rawProfile(target.UserId)
+    if not profile then return self:notice(requester, "That player's profile is not ready.") end
+    if LiveService.ownsReward(profile, definition.Reward) then
+        return self:notice(requester, target.DisplayName .. " already owns " .. definition.Name .. ".")
+    end
+    local saved = self:grant(target, function(current)
+        LiveService.applyReward(current, definition.Reward)
+    end)
+    if not saved then return self:notice(requester, "The gift could not be saved. Please try again.") end
+    self.Game:refresh(target)
+    self:notice(requester, "Gifted " .. definition.Name .. " to " .. target.DisplayName .. ".")
+    if target ~= requester then self:notice(target, requester.DisplayName .. " gifted you " .. definition.Name .. "!") end
+    if self.Game.analytics then self.Game:analytics(target, "StoreRewardGifted") end
+    warn("[THRIFT ADMIN] " .. requester.Name .. " gifted " .. definition.Key .. " to " .. target.Name)
 end
 function LiveService:recordStat(profile, name, amount)
     if (name ~= "Found" and name ~= "Restored" and name ~= "Sold") or type(amount) ~= "number" or amount &lt;= 0 then return end
@@ -14215,6 +14244,22 @@ function Pages:adminPage()
         choice.TextSize = 12; choice.TextTruncate = Enum.TextTruncate.AtEnd
         if draft.Query == itemDefinition.Id then
             choice.BackgroundColor3 = UI.Colors.Teal; choice.TextColor3 = UI.Colors.White
+        end
+    end
+
+    local giftCard = self:card("Gift a permanent store reward")
+    UI.label(giftCard, "Grants the full cosmetic bundle without charging Robux. The gift is saved to the selected player's account.", 14, UI.Colors.Muted)
+    local shopRewards = self.State.Live and self.State.Live.Shop or {}
+    if #shopRewards == 0 then
+        UI.disabled(giftCard, "Store rewards are still loading")
+    else
+        for _, offer in ipairs(shopRewards) do
+            local reward = offer
+            local button = UI.button(giftCard, "Gift  •  " .. reward.Name, function()
+                draft.Target = target.Text
+                self.Send("Admin", {Command = "GiftBundle", Target = target.Text, Key = reward.Key})
+            end, true)
+            button.TextSize = 14
         end
     end
 

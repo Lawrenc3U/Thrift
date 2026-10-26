@@ -169,8 +169,16 @@ test("held items are visible in state and blocked from conflicting actions", fun
 end)
 test("admin tools reject ordinary players and validate server-side grants", function()
     local s, p, profile = fixture(); local startingCash = profile.Cash
+    local gifted
+    s.Live = {
+        giftBundle = function(_, requester, target, key) gifted = {requester, target, key} end,
+        snapshot = function() return nil end,
+    }
+    s:admin(p, {Command = "GiftBundle", Key = "curator_club"}); assert(gifted == nil)
     s:admin(p, {Command = "Cash", Amount = 1000}); equal(profile.Cash, startingCash)
     s.isAdmin = function() return true end
+    s:admin(p, {Command = "GiftBundle", Key = "curator_club"})
+    assert(gifted[1] == p and gifted[2] == p and gifted[3] == "curator_club")
     s:admin(p, {Command = "Cash", Amount = 1000}); equal(profile.Cash, startingCash + 1000)
     s:admin(p, {Command = "GiveItem", Query = "lamp", Rarity = 5})
     equal(#profile.Inventory, 1); equal(profile.Inventory[1].Rarity, 5); assert(profile.Inventory[1].Inspected)

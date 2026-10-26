@@ -162,6 +162,32 @@ function LiveService:grant(player, mutate)
     if not ok then warn("Live cosmetic award failed: " .. tostring(result)); return false end
     return result == true
 end
+function LiveService:giftBundle(requester, target, key)
+    if not self.Game:isAdmin(requester) then return self:notice(requester, "Admin access denied.") end
+    if type(key) ~= "string" or #key < 1 or #key > 50 then return self:notice(requester, "Choose a valid store reward.") end
+    local definition
+    for _, entries in ipairs({LiveConfig.Passes, LiveConfig.Products}) do
+        for _, candidate in ipairs(entries) do
+            if candidate.Key == key then definition = candidate; break end
+        end
+        if definition then break end
+    end
+    if not definition then return self:notice(requester, "That store reward does not exist.") end
+    local profile = self:rawProfile(target.UserId)
+    if not profile then return self:notice(requester, "That player's profile is not ready.") end
+    if LiveService.ownsReward(profile, definition.Reward) then
+        return self:notice(requester, target.DisplayName .. " already owns " .. definition.Name .. ".")
+    end
+    local saved = self:grant(target, function(current)
+        LiveService.applyReward(current, definition.Reward)
+    end)
+    if not saved then return self:notice(requester, "The gift could not be saved. Please try again.") end
+    self.Game:refresh(target)
+    self:notice(requester, "Gifted " .. definition.Name .. " to " .. target.DisplayName .. ".")
+    if target ~= requester then self:notice(target, requester.DisplayName .. " gifted you " .. definition.Name .. "!") end
+    if self.Game.analytics then self.Game:analytics(target, "StoreRewardGifted") end
+    warn("[THRIFT ADMIN] " .. requester.Name .. " gifted " .. definition.Key .. " to " .. target.Name)
+end
 function LiveService:recordStat(profile, name, amount)
     if (name ~= "Found" and name ~= "Restored" and name ~= "Sold") or type(amount) ~= "number" or amount <= 0 then return end
     local live = ensure(profile)

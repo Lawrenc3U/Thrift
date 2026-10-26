@@ -549,7 +549,10 @@ function GameService:admin(player, payload)
     local profile = self:profile(target)
     if not profile then return self:notify(player, "That player's profile is not ready.") end
 
-    if command == "GiveItem" then
+    if command == "GiftBundle" then
+        if not self.Live then return self:notify(player, "The cosmetic service is not ready.") end
+        self.Live:giftBundle(player, target, payload.Key); return
+    elseif command == "GiveItem" then
         if #profile.Inventory >= Config.InventoryLimit then return self:notify(player, "That player's bag is full.") end
         local rarity = payload.Rarity
         if not Economy.validAmount(rarity, 1, 5) then return self:notify(player, "Choose a rarity from 1 to 5.") end

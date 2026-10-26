@@ -648,6 +648,22 @@ function Pages:adminPage()
         end
     end
 
+    local giftCard = self:card("Gift a permanent store reward")
+    UI.label(giftCard, "Grants the full cosmetic bundle without charging Robux. The gift is saved to the selected player's account.", 14, UI.Colors.Muted)
+    local shopRewards = self.State.Live and self.State.Live.Shop or {}
+    if #shopRewards == 0 then
+        UI.disabled(giftCard, "Store rewards are still loading")
+    else
+        for _, offer in ipairs(shopRewards) do
+            local reward = offer
+            local button = UI.button(giftCard, "Gift  •  " .. reward.Name, function()
+                draft.Target = target.Text
+                self.Send("Admin", {Command = "GiftBundle", Target = target.Text, Key = reward.Key})
+            end, true)
+            button.TextSize = 14
+        end
+    end
+
     local economy = self:card("Economy and progression")
     local cash = UI.input(economy, "Cash amount", draft.Cash, true)
     cash.FocusLost:Connect(function() draft.Cash = cash.Text end)
