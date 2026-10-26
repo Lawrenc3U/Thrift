@@ -101,7 +101,7 @@ function Pages:itemSummary(parent, item, height)
     else UI.label(parent, "Your mystery " .. definition.Category, 23).Font = Enum.Font.GothamBold end
 end
 function Pages:guideButton(parent, location, label)
-    return UI.button(parent, "⚡  " .. (label or "Teleport there"), function()
+    return UI.button(parent, "TRAVEL  |  " .. (label or "Teleport there"), function()
         self.Send("Teleport", {Destination = location})
         self.Guide(location)
         self.UI:hide()
@@ -164,9 +164,9 @@ function Pages:inventory(context, mode)
     end
     if pageCount > 1 then
         local pageRow = UI.row(self.UI.Content)
-        UI.rowButton(pageRow, "‹ Previous", function() self.BagPage = math.max(1, self.BagPage - 1); self.Open(mode or "Bag", context) end, 3, true)
+        UI.rowButton(pageRow, "< Previous", function() self.BagPage = math.max(1, self.BagPage - 1); self.Open(mode or "Bag", context) end, 3, true)
         UI.rowButton(pageRow, self.BagPage .. " / " .. pageCount, function() end, 3, true)
-        UI.rowButton(pageRow, "Next ›", function() self.BagPage = math.min(pageCount, self.BagPage + 1); self.Open(mode or "Bag", context) end, 3, true)
+        UI.rowButton(pageRow, "Next >", function() self.BagPage = math.min(pageCount, self.BagPage + 1); self.Open(mode or "Bag", context) end, 3, true)
     end
 end
 function Pages:itemPage(context)
@@ -175,7 +175,7 @@ function Pages:itemPage(context)
     local frame = self:card(); self:itemSummary(frame, item, 245)
     if not item.Inspected then
         UI.label(frame, "There is a story under all that dust. Inspect to reveal its rarity, style, and value.", 17, UI.Colors.Muted)
-        self:button(frame, "✦ Reveal your find", "Inspect", {Uid = item.Uid}); return
+        self:button(frame, "REVEAL  |  Open your find", "Inspect", {Uid = item.Uid}); return
     end
     local value = UI.label(frame, money(item.Value), 30, UI.Colors.Teal); value.Font = Enum.Font.GothamBold
     UI.eyebrow(frame, "Estimated value • includes today's demand and shop style")
@@ -191,7 +191,7 @@ function Pages:itemPage(context)
     else
         self:button(frame, "Hold and show off this find", "Hold", {Uid = item.Uid}, true)
         if item.Condition < 5 then self:nav(frame, "Restore at your workbench", "Restore", {Uid = item.Uid}, false)
-        else UI.disabled(frame, "✓ Mint condition — beautifully restored") end
+        else UI.disabled(frame, "MINT  |  Beautifully restored") end
         self:nav(frame, "Display in your shop", "Slots", {Uid = item.Uid})
         if self.State.Market then self:nav(frame, "List in the player market", "ListingEditor", {Uid = item.Uid}) end
     end
@@ -209,7 +209,7 @@ function Pages:sourcePage(source)
     local info = self:card()
     UI.eyebrow(info, "Level " .. tuning.Level .. "+ • " .. (if tuning.Cost == 0 then "Always free" else money(tuning.Cost) .. " per lot"))
     if source == "Delivery" and state.LastDelivery == state.Day then
-        UI.disabled(info, "✓ Today's parcel is yours")
+        UI.disabled(info, "DONE  |  Today's parcel is yours")
         self:timer(info, "Next delivery in ", (state.Day + 1) * 86400)
     elseif state.Level < tuning.Level then
         UI.disabled(info, "Unlock at level " .. tuning.Level)
@@ -238,11 +238,11 @@ function Pages:restorePage(context)
     UI.label(frame, "Work at your own shop bench. Every attempt improves the item, and careful work gives a bigger condition boost.", 16, UI.Colors.Muted)
     self:guideButton(frame, "Workbench", "Guide me to my workbench")
     local techniques = {
-        {"Scrub", "✦", "Swipe away the grime", "Relaxing, generous and satisfying."},
-        {"Polish", "◇", "Trace a clean shine", "Follow the path with a steady hand."},
-        {"Rewire", "↔", "Bring it back to life", "Match wire colors and symbols."},
-        {"Repaint", "▧", "Make it your own", "Choose paint, fill the surface, change its style."},
-        {"Assemble", "▦", "Put the story together", "Fit the missing pieces into their outlines."},
+        {"Scrub", "S", "Swipe away the grime", "Relaxing, generous and satisfying."},
+        {"Polish", "P", "Trace a clean shine", "Follow the path with a steady hand."},
+        {"Rewire", "W", "Bring it back to life", "Match wire colors and symbols."},
+        {"Repaint", "R", "Make it your own", "Choose paint, fill the surface, change its style."},
+        {"Assemble", "A", "Put the story together", "Fit the missing pieces into their outlines."},
     }
     for _, technique in ipairs(techniques) do
         local choice = self:card(technique[2] .. " " .. technique[1])
@@ -258,7 +258,7 @@ function Pages:slotsPage(context)
         if occupied[slot] then
             local button = UI.button(grid, "Display " .. slot .. "\n" .. Catalog.ById[occupied[slot].DefId].Name, function() self.Open("Item", {Uid = occupied[slot].Uid}) end, true)
             button.TextSize = 14
-        else self:button(grid, "＋ Display " .. slot, "Display", {Uid = context.Uid, Slot = slot}) end
+        else self:button(grid, "+ Display " .. slot, "Display", {Uid = context.Uid, Slot = slot}) end
     end
     self:guideButton(self.UI.Content, "Shop", "Guide me to my shop")
 end
@@ -306,14 +306,14 @@ function Pages:expandPage()
         UI.label(upgrades, "Unlocks at level " .. nextTier.Level .. " • " .. money(nextTier.Cost), 15, UI.Colors.Muted)
         if state.Level >= nextTier.Level and state.AvailableCash >= nextTier.Cost then self:button(upgrades, "Upgrade your shop", "Upgrade", {Kind = "Shop"})
         else UI.disabled(upgrades, if state.Level < nextTier.Level then "Keep creating to reach level " .. nextTier.Level else "Save up " .. money(nextTier.Cost)) end
-    else UI.disabled(upgrades, "✦ Your shop has reached its grandest tier") end
+    else UI.disabled(upgrades, "MAX  |  Your shop has reached its grandest tier") end
 end
 function Pages:toolsPage()
     local state = self.State
     local tools = self:card("The right tools, a little more magic")
     UI.label(tools, "Tool level " .. state.Tool .. "/" .. #Config.ToolCosts .. " • steadier restoration and better results", 17)
     local cost = Config.ToolCosts[state.Tool + 1]
-    if cost then self:button(tools, "Upgrade tools · " .. money(cost), "Upgrade", {Kind = "Tool"}) else UI.disabled(tools, "✓ Your workshop is fully equipped") end
+    if cost then self:button(tools, "Upgrade tools · " .. money(cost), "Upgrade", {Kind = "Tool"}) else UI.disabled(tools, "DONE  |  Your workshop is fully equipped") end
 end
 function Pages:displaysPage()
     local displayed = {}; for _, item in ipairs(self.State.Inventory) do if item.Slot then displayed[item.Slot] = item end end
@@ -332,7 +332,7 @@ function Pages:themesPage()
     for _, theme in ipairs(Config.Themes) do
         local frame = self:card(theme.Name)
         local swatch = Instance.new("Frame"); swatch.Size = UDim2.new(1, 0, 0, 60); swatch.BackgroundColor3 = Color3.new(unpack(theme.Color)); swatch.Parent = frame; UI.corner(swatch, 10)
-        UI.eyebrow(frame, if self.State.Theme == theme.Id then "✓ Your current signature" elseif self.State.Themes[theme.Id] then "In your collection" else "Make it yours • " .. money(theme.Cost))
+        UI.eyebrow(frame, if self.State.Theme == theme.Id then "CURRENT  |  Your signature" elseif self.State.Themes[theme.Id] then "In your collection" else "Make it yours • " .. money(theme.Cost))
         self:button(frame, if self.State.Themes[theme.Id] then "Use this theme" else "Unlock theme · " .. money(theme.Cost), "Upgrade", {Kind = "Theme", Theme = theme.Id}, self.State.Themes[theme.Id])
     end
     self:nav(self.UI.Content, "Visit the cosmetic boutique", "Boutique")
@@ -356,21 +356,21 @@ function Pages:questsPage()
     UI.label(gift, "Day " .. login.Streak .. " of 7  •  today's gift " .. money(gifts[math.clamp(login.Streak, 1, 7)]), 18)
     UI.progress(gift, login.Streak / 7, UI.Colors.Rose)
     local today = math.floor(self:now() / 86400)
-    if login.ClaimedDay == today then UI.disabled(gift, "✓ Today's gift collected — come back tomorrow")
+    if login.ClaimedDay == today then UI.disabled(gift, "DONE  |  Today's gift collected - come back tomorrow")
     else self:button(gift, "Collect today's gift", "DailyGift", {}) end
     local definitions = {{"Find", "Find 3 new stories", "Found", 3, 65}, {"Restore", "Restore 3 forgotten finds", "Restored", 3, 100}, {"Sell", "Send 3 finds to new homes", "Sold", 3, 150}}
     for _, definition in ipairs(definitions) do
         local frame = self:card(definition[2]); local progress = math.min(definition[4], state.Daily[definition[3]] or 0)
         UI.label(frame, progress .. " / " .. definition[4] .. " • " .. money(definition[5]) .. " reward", 16, UI.Colors.Muted)
         UI.progress(frame, progress / definition[4])
-        if state.Daily.Claimed[definition[1]] then UI.disabled(frame, "✓ Collected — beautifully done")
+        if state.Daily.Claimed[definition[1]] then UI.disabled(frame, "DONE  |  Collected")
         elseif progress >= definition[4] then self:button(frame, "Collect " .. money(definition[5]), "Quest", {Id = definition[1]})
         else UI.disabled(frame, "Keep going — " .. (definition[4] - progress) .. " to go") end
     end
     local weekly = self:card("The weekly workshop challenge")
     UI.label(weekly, "Restore " .. math.min(20, state.Weekly.Restored) .. "/20 • Sell " .. math.min(15, state.Weekly.Sold) .. "/15", 17)
     UI.progress(weekly, (math.min(20, state.Weekly.Restored) / 20 + math.min(15, state.Weekly.Sold) / 15) / 2, UI.Colors.Gold)
-    if state.Weekly.Claimed then UI.disabled(weekly, "✓ Weekly Wonder title earned")
+    if state.Weekly.Claimed then UI.disabled(weekly, "DONE  |  Weekly Wonder title earned")
     elseif state.Weekly.Restored >= 20 and state.Weekly.Sold >= 15 then self:button(weekly, "Collect $1,200 + Weekly Wonder", "Quest", {Id = "Weekly"})
     else UI.label(weekly, "$1,200 and a title for a week of good work.", 16, UI.Colors.Muted) end
     self:nav(weekly, "What's happening this season?", "Events")
@@ -384,9 +384,9 @@ function Pages:collectionPage()
     local categories = Catalog.Categories
     local index = table.find(categories, self.CollectionCategory) or 1
     local row = UI.row(tabs)
-    UI.rowButton(row, "‹", function() self.CollectionCategory = categories[(index - 2) % #categories + 1]; self.Open("Collection") end, 3, true)
+    UI.rowButton(row, "<", function() self.CollectionCategory = categories[(index - 2) % #categories + 1]; self.Open("Collection") end, 3, true)
     UI.rowButton(row, self.CollectionCategory, function() end, 3, true)
-    UI.rowButton(row, "›", function() self.CollectionCategory = categories[index % #categories + 1]; self.Open("Collection") end, 3, true)
+    UI.rowButton(row, ">", function() self.CollectionCategory = categories[index % #categories + 1]; self.Open("Collection") end, 3, true)
     local grid = UI.grid(self.UI.Content, 258, 183)
     for _, definition in ipairs(Catalog.Items) do
         if definition.Category == self.CollectionCategory then
@@ -395,7 +395,7 @@ function Pages:collectionPage()
             for rarity = 1, 5 do
                 local discovered = self.State.Collection[definition.Id .. ":" .. rarity]
                 if discovered then highest = rarity; found = true end
-                table.insert(stamps, if discovered then Config.RarityIcons[rarity] else "–")
+            table.insert(stamps, if discovered then Config.RarityIcons[rarity] else "-")
             end
             local previewItem = {DefId = definition.Id, Rarity = highest, Condition = 5, Style = definition.Style, Inspected = found, Value = 0}
             local tile = self:itemTile(grid, previewItem, table.concat(stamps, "   "), function()
@@ -422,7 +422,7 @@ function Pages:auctionPage()
     UI.label(frame, "Current bid  " .. money(auction.Bid), 28, UI.Colors.Panel).Font = Enum.Font.GothamBold
     self:timer(frame, "Gavel falls in ", auction.Ends)
     local minimum = auction.Bid + math.max(10, math.floor(auction.Bid * 0.1))
-    if auction.Bidder == player.UserId then UI.eyebrow(frame, "✓ YOU'RE LEADING — " .. money(auction.Bid) .. " RESERVED", UI.Colors.Gold) end
+    if auction.Bidder == player.UserId then UI.eyebrow(frame, "LEADING  |  " .. money(auction.Bid) .. " RESERVED", UI.Colors.Gold) end
     self:button(frame, "Bid " .. money(minimum), "Bid", {Amount = minimum})
     self:button(frame, "Bid " .. money(minimum + math.max(50, math.floor(minimum * 0.2))), "Bid", {Amount = minimum + math.max(50, math.floor(minimum * 0.2))}, true)
     self:guideButton(frame, "Auction", "Show me the auction house")
@@ -482,7 +482,7 @@ function Pages:tradePage()
         self:button(frame, "Decline", "TradeCancel", {TradeId = trade.Id}, true); return
     end
     local function offerCard(title, offer)
-        local card = self:card(title .. (if offer.Confirmed then "  ✓ CONFIRMED" else ""))
+        local card = self:card(title .. (if offer.Confirmed then "  |  CONFIRMED" else ""))
         UI.label(card, "Cash offered: " .. money(offer.Cash), 18)
         for _, item in ipairs(offer.Items) do self:itemSummary(card, item, 100) end
         if #offer.Items == 0 then UI.label(card, "No finds offered", 14, UI.Colors.Muted) end
@@ -501,7 +501,7 @@ function Pages:tradePage()
         end
     end
     if self:now() >= trade.ConfirmAfter then
-        self:button(frame, if trade.You.Confirmed then "✓ Waiting for partner" else "Confirm revision " .. trade.Revision,
+    self:button(frame, if trade.You.Confirmed then "CONFIRMED  |  Waiting for partner" else "Confirm revision " .. trade.Revision,
             "TradeConfirm", {TradeId = trade.Id, Revision = trade.Revision})
     else self:timer(frame, "Review unlocks in ", trade.ConfirmAfter) end
     self:button(frame, "Cancel trade", "TradeCancel", {TradeId = trade.Id}, true)
@@ -512,7 +512,7 @@ function Pages:showcasePage()
     if not showcase then UI.label(self:card(), "The showcase is loading…", 18); self:button(self.UI.Content, "Refresh", "LiveRefresh", {}); return end
     local hero = UI.hero(self.UI.Content, "Weekly designer showcase", showcase.Theme .. " week", "Compete with a small persistent neighborhood across servers. One vote per player; winners can collect cosmetic prizes after the week closes.")
     self:timer(hero, "Voting ends in ", showcase.Ends)
-    if showcase.Entered then UI.disabled(hero, "✓ Your shop is entered") else self:button(hero, "Enter my displayed collection", "Showcase", {Choice = "Enter"}) end
+    if showcase.Entered then UI.disabled(hero, "DONE  |  Your shop is entered") else self:button(hero, "Enter my displayed collection", "Showcase", {Choice = "Enter"}) end
     self:button(hero, "Collect past prizes", "Showcase", {Choice = "Claim"}, true)
     self:button(hero, "Refresh results", "Showcase", {Choice = "Refresh"}, true)
     if #showcase.Entries == 0 then UI.label(self:card(), "No shops entered in your neighborhood yet.", 17) end
@@ -537,7 +537,7 @@ function Pages:eventsPage()
             UI.label(frame, stat .. "  " .. progress .. "/" .. goal, 16); UI.progress(frame, progress / goal)
         end
         UI.eyebrow(frame, "REWARD • " .. event.RewardName)
-        if event.Claimed then UI.disabled(frame, "✓ Reward collected") elseif complete then self:button(frame, "Collect event reward", "EventClaim", {Id = event.Id}) end
+        if event.Claimed then UI.disabled(frame, "DONE  |  Reward collected") elseif complete then self:button(frame, "Collect event reward", "EventClaim", {Id = event.Id}) end
     end
 end
 
@@ -547,7 +547,7 @@ function Pages:boutiquePage()
     if #shop == 0 then UI.label(self:card(), "No Robux cosmetics are configured for this experience yet. In-game themes and decor remain available in your shop.", 17); return end
     for _, item in ipairs(shop) do
         local frame = self:card(item.Name); UI.label(frame, item.Description, 16, UI.Colors.Muted)
-        if item.Owned then UI.disabled(frame, "✓ Owned") elseif item.Price then self:button(frame, "Get for R$" .. item.Price, "ShopPurchase", {Kind = item.Kind, Id = item.Id}) else UI.disabled(frame, "Currently unavailable") end
+        if item.Owned then UI.disabled(frame, "OWNED") elseif item.Price then self:button(frame, "Get for R$" .. item.Price, "ShopPurchase", {Kind = item.Kind, Id = item.Id}) else UI.disabled(frame, "Currently unavailable") end
     end
 end
 
@@ -558,7 +558,7 @@ function Pages:arrangePage(context)
     local draft = self.Drafts[id] or {X = current.X, Z = current.Z, Rotation = current.Rotation}; self.Drafts[id] = draft
     local frame = self:card("Arrange " .. id)
     UI.label(frame, "Position: " .. draft.X .. ", " .. draft.Z .. "  •  rotation " .. draft.Rotation .. "°", 16)
-    local controls = {{"←",-1,0},{"→",1,0},{"↑",0,1},{"↓",0,-1}}
+    local controls = {{"<",-1,0},{">",1,0},{"^",0,1},{"v",0,-1}}
     for _, control in ipairs(controls) do self:button(frame, control[1] .. " Move", "DecorPlace", {Decor=id,X=draft.X+control[2],Z=draft.Z+control[3],Rotation=draft.Rotation}, true) end
     self:button(frame, "Rotate 90°", "DecorPlace", {Decor=id,X=draft.X,Z=draft.Z,Rotation=(draft.Rotation+90)%360}, true)
     self:button(frame, "Reset position", "DecorPlace", {Decor=id,Reset=true}, true)
@@ -569,8 +569,8 @@ function Pages:visitPage(context)
     for _, shop in ipairs(self.State.Shops) do
         if not context.Owner or context.Owner == shop.UserId then
             local frame = self:card(shop.Name .. "'s " .. Config.Tiers[shop.Tier].Name)
-            UI.label(frame, "★ " .. string.format("%.1f", shop.Rating) .. "  •  Shop " .. tostring(shop.Plot), 18)
-            if shop.UserId ~= player.UserId then for stars=1,5 do self:button(frame,string.rep("★",stars),"Rate",{UserId=shop.UserId,Stars=stars},true) end end
+        UI.label(frame, "RATING " .. string.format("%.1f", shop.Rating) .. "  •  Shop " .. tostring(shop.Plot), 18)
+        if shop.UserId ~= player.UserId then for stars=1,5 do self:button(frame,string.rep("*",stars),"Rate",{UserId=shop.UserId,Stars=stars},true) end end
         end
     end
 end
@@ -671,7 +671,7 @@ end
 function Pages:townPage()
     local hero = UI.hero(self.UI.Content, "Welcome to Thrift Street", "Every treasure deserves a second chance", "Today's favorite style is " .. self.State.Demand .. ", worth 20% more when it finds the right home.")
     for _, link in ipairs({{"Dumpster Alley","Source"},{"Wholesale Source","Estate"},{"Parcel Post","Delivery"},{"Auction House","Auction"},{"Market","Market"},{"Designer Showcase","Showcase"},{"Cosmetic Store","Boutique"},{"Visit neighbors","Visit"},{"Settings","Settings"}}) do self:nav(hero,link[1],link[2]) end
-    if self.State.IsAdmin then self:nav(hero, "⚙ Admin control room", "Admin", nil, false) end
+    if self.State.IsAdmin then self:nav(hero, "Admin control room", "Admin", nil, false) end
 end
 
 function Pages:render(page, context)

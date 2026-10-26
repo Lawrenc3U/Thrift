@@ -21,8 +21,8 @@ local wireColors = {
     Color3.fromRGB(147, 164, 221), Color3.fromRGB(200, 153, 198), Color3.fromRGB(133, 191, 126),
     Color3.fromRGB(114, 183, 210), Color3.fromRGB(231, 169, 112),
 }
-local wireSymbols = {"●", "▲", "■", "◆", "★", "✚", "○", "☀"}
-local pieceSymbols = {"◒", "▰", "◈", "◕"}
+local wireSymbols = {"1", "2", "3", "4", "5", "6", "7", "8"}
+local pieceSymbols = {"A", "B", "C", "D"}
 
 local function corner(object, amount)
     local value = Instance.new("UICorner")
@@ -212,7 +212,7 @@ local function selectPalette(session, index)
     table.insert(session.Queue, {Palette = index})
     for i, button in ipairs(session.PaletteButtons) do
         local selected = i == index
-        button.Text = (if selected then "✓ " else "") .. session.Config.Styles[i]
+            button.Text = (if selected then "OK  " else "") .. session.Config.Styles[i]
         session.PaletteStrokes[i].Thickness = if selected then 3 else 1
         session.PaletteStrokes[i].Color = if selected then session.Colors.Ink else Color3.fromRGB(255, 249, 234)
     end
@@ -270,7 +270,7 @@ function Minigames.start(ui, UI, challenge, send, config)
     previewArea.BackgroundTransparency = 0.83
     local viewport = preview(previewArea, challenge, config)
     if not viewport then
-        local fallback = text(previewArea, "✦", 150, Color3.fromRGB(177, 150, 104))
+    local fallback = text(previewArea, "ITEM", 42, Color3.fromRGB(177, 150, 104))
         fallback.TextTransparency = 0.45
     end
     if challenge.Kind == "Rewire" then
@@ -367,7 +367,7 @@ function Minigames.start(ui, UI, challenge, send, config)
         elseif challenge.Kind == "Repaint" then
             button.BackgroundColor3 = Color3.fromRGB(230, 221, 202)
             button.BackgroundTransparency = 0.38
-            local patch = text(button, "◌", 24, Color3.fromRGB(168, 153, 125))
+        local patch = text(button, "O", 24, Color3.fromRGB(168, 153, 125))
             patch.ZIndex = 6
             session.CellStyles[cell].Label = patch
         else
@@ -588,16 +588,16 @@ local function completeCell(session, cell)
         end
     elseif session.Kind == "Repaint" then
         ease(button, 0.2, {BackgroundColor3 = paintColors[session.Challenge.RequiredPalette], BackgroundTransparency = 0.18})
-        if style.Label then style.Label.Text = "✓"; style.Label.TextColor3 = Color3.fromRGB(255, 252, 234) end
+            if style.Label then style.Label.Text = "OK"; style.Label.TextColor3 = Color3.fromRGB(255, 252, 234) end
         style.Stroke.Transparency = 0.6
     elseif session.Kind == "Polish" then
-        button.Text = "✦"
+            button.Text = "+"
         button.TextColor3 = Color3.fromRGB(255, 247, 205)
         ease(button, 0.3, {BackgroundTransparency = 1})
         style.Stroke.Transparency = 1
     elseif session.Kind == "Assemble" then
         ease(button, 0.18, {BackgroundColor3 = session.Colors.Teal, BackgroundTransparency = 0.1})
-        button.Text = "✓ " .. session.Ranks[cell]
+            button.Text = "OK " .. session.Ranks[cell]
         style.Stroke.Color = Color3.fromRGB(217, 234, 205)
     else
         ease(button, 0.18, {BackgroundTransparency = 0.15})

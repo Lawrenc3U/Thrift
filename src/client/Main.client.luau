@@ -22,7 +22,7 @@ marker.Name = "LocalGuide"; marker.Size = Vector3.one; marker.Anchored = true
 marker.CanCollide = false; marker.CanTouch = false; marker.CanQuery = false; marker.Transparency = 1; marker.Parent = workspace
 local billboard = Instance.new("BillboardGui")
 billboard.Name = "Guide"; billboard.Size = UDim2.fromOffset(230, 62); billboard.AlwaysOnTop = true; billboard.Parent = marker
-local guideText = UI.label(billboard, "▼ YOUR NEXT STEP", 20, UI.Colors.Gold)
+local guideText = UI.label(billboard, "YOUR NEXT STEP", 20, UI.Colors.Gold)
 guideText.Size = UDim2.fromScale(1, 1); guideText.AutomaticSize = Enum.AutomaticSize.None; guideText.TextXAlignment = Enum.TextXAlignment.Center
 local locations = {Source=Vector3.new(-82,8,-60),Estate=Vector3.new(68,8,-80),Delivery=Vector3.new(68,8,-35),
     Auction=Vector3.new(0,12,137),Market=Vector3.new(0,9,-90),Quests=Vector3.new(-26,8,-30),Workbench=Vector3.new(-40,8,-90)}
@@ -40,7 +40,7 @@ local function guide(location)
         end
     end
     if target then
-        marker.Position = target; guideText.Text = "▼ " .. string.upper(location); billboard.Enabled = true
+        marker.Position = target; guideText.Text = "NEXT: " .. string.upper(location); billboard.Enabled = true
         guideExpires = if state and state.Tutorial < 5 then math.huge else os.clock() + 30
     end
 end
@@ -56,15 +56,15 @@ local function open(name, data)
     page, context = name, data or {}; render()
 end
 pages = Pages.new(ui, send, open, guide)
-for _, entry in ipairs({{"Town","⌂"},{"Bag","▣"},{"Shop","✦"},{"Find","⌕"},{"Quests","✓"}}) do
+for _, entry in ipairs({{"Town","home"},{"Bag","bag"},{"Shop","shop"},{"Find","search"},{"Quests","quests"}}) do
     ui:addNav(entry[1], entry[2], function() open(if entry[1] == "Find" then "Source" else entry[1]) end)
 end
-ui:addQuickAction("ϟ\nTravel", UI.Colors.Teal, function() open("Town") end)
-local rewardsButton = ui:addQuickAction("▣\nRewards", UI.Colors.Rose, function() open("Quests") end)
-ui:addQuickAction("◇\nStore", Color3.fromRGB(122, 92, 224), function() open("Boutique") end)
-ui:addMoreAction("✎  Style", function() open("Themes") end)
-ui:addMoreAction("⌁  Tools", function() open("Tools") end)
-ui:addMoreAction("↖  Expand", function() open("Expand") end)
+ui:addQuickAction("Travel", "travel", UI.Colors.Teal, function() open("Town") end)
+local rewardsButton = ui:addQuickAction("Rewards", "gift", UI.Colors.Rose, function() open("Quests") end)
+ui:addQuickAction("Store", "store", Color3.fromRGB(122, 92, 224), function() open("Boutique") end)
+ui:addMoreAction("Style", "style", function() open("Themes") end)
+ui:addMoreAction("Tools", "tools", function() open("Tools") end)
+ui:addMoreAction("Expand", "expand", function() open("Expand") end)
 ui.AuctionBar.Activated:Connect(function() open("Auction") end)
 
 local tutorialHints = {
@@ -88,7 +88,7 @@ local function nextObjective()
         return "Your " .. nextTier.Name .. " upgrade is ready"
     end
     local discoveries = 0; for _ in pairs(state.Collection or {}) do discoveries += 1 end
-    return discoveries .. "/400 discoveries • hunt for a new " .. state.Demand .. " find"
+    return discoveries .. "/400 discoveries | hunt for a new " .. state.Demand .. " find"
 end
 local lastOffer, pendingOffer, lastTutorial, adminButton
 local function updateHud()
@@ -108,12 +108,12 @@ local function updateHud()
         or ((daily.Sold or 0) >= 3 and not claimed.Sell)
         or ((weekly.Restored or 0) >= 20 and (weekly.Sold or 0) >= 15 and not weekly.Claimed)
     ui:setActionBadge(rewardsButton, rewardsReady == true)
-    if state.Tutorial < 5 then ui.ObjectiveTitle.Text = "OBJECTIVE • 0/1"
-    elseif not claimed.Find then ui.ObjectiveTitle.Text = "DAILY FIND • " .. math.min(3, daily.Found or 0) .. "/3"
-    elseif not claimed.Restore then ui.ObjectiveTitle.Text = "DAILY RESTORE • " .. math.min(3, daily.Restored or 0) .. "/3"
-    elseif not claimed.Sell then ui.ObjectiveTitle.Text = "DAILY SELL • " .. math.min(3, daily.Sold or 0) .. "/3"
+    if state.Tutorial < 5 then ui.ObjectiveTitle.Text = "OBJECTIVE | 0/1"
+    elseif not claimed.Find then ui.ObjectiveTitle.Text = "DAILY FIND | " .. math.min(3, daily.Found or 0) .. "/3"
+    elseif not claimed.Restore then ui.ObjectiveTitle.Text = "DAILY RESTORE | " .. math.min(3, daily.Restored or 0) .. "/3"
+    elseif not claimed.Sell then ui.ObjectiveTitle.Text = "DAILY SELL | " .. math.min(3, daily.Sold or 0) .. "/3"
     else ui.ObjectiveTitle.Text = "OBJECTIVE" end
-    ui:setSubtitle(if state.Ephemeral then "STUDIO PRACTICE • PROGRESS DOES NOT SAVE" else "YOUR COZY CORNER OF THRIFT STREET")
+    ui:setSubtitle(if state.Ephemeral then "STUDIO PRACTICE | PROGRESS DOES NOT SAVE" else "YOUR COZY CORNER OF THRIFT STREET")
     ui.Effects = state.Settings.Effects
     audio:setEnabled(state.Settings.Music, state.Settings.Effects)
     audio:setZone(page == "Auction" and "auction_music" or page == "Town" and "town" or "shop")
@@ -124,7 +124,7 @@ event.OnClientEvent:Connect(function(kind, payload)
         local wasVisible = ui.Panel.Visible; local oldCash = state and state.Cash or payload.Cash
         state = payload; updateHud()
         if state.IsAdmin and not adminButton then
-            adminButton = ui:addMoreAction("⚙  Admin", function() open("Admin") end)
+            adminButton = ui:addMoreAction("Admin", "admin", function() open("Admin") end)
         end
         if state.Cash > oldCash then ui:cashFeedback(state.Cash - oldCash); audio:play("sale") end
         if state.Tutorial ~= lastTutorial then
@@ -144,7 +144,7 @@ event.OnClientEvent:Connect(function(kind, payload)
         end
         if wasVisible and not session then render() end
     elseif kind == "Notice" then ui:notice(payload)
-    elseif kind == "Announcement" then ui:notice("📣  " .. tostring(payload)); audio:play("reward")
+    elseif kind == "Announcement" then ui:notice("NOTICE: " .. tostring(payload)); audio:play("reward")
     elseif kind == "Reveal" then
         local item = payload and payload.Item
         local definition = item and Catalog.ById[item.DefId]
@@ -162,7 +162,7 @@ event.OnClientEvent:Connect(function(kind, payload)
     elseif kind == "MinigameDone" then
         Minigames.stop(session); session = nil
         if payload.Cancelled then ui:notice("Restoration paused. Your find is safe.")
-        else ui:notice(payload.Quality .. " restoration • now " .. payload.Condition); audio:play("reward") end
+        else ui:notice(payload.Quality .. " restoration | now " .. payload.Condition); audio:play("reward") end
         if pendingOffer and state and state.Offer and state.Offer.Uid == pendingOffer then
             pendingOffer = nil; open("Offer")
         else page = "Bag"; render() end

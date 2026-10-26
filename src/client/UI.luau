@@ -33,6 +33,75 @@ function UI.gradient(object, first, second, rotation)
     local gradient = Instance.new("UIGradient"); gradient.Color = ColorSequence.new(first, second)
     gradient.Rotation = rotation or 0; gradient.Parent = object; return gradient
 end
+function UI.vectorIcon(parent, kind, color, position, size, zIndex)
+    -- HUD icons are drawn from Roblox Frames instead of Unicode glyphs or
+    -- uploaded images. They therefore render identically on every platform.
+    local ink = color or UI.Colors.Ink
+    local canvas = Instance.new("Frame"); canvas.Name = "VectorIcon"; canvas.AnchorPoint = Vector2.new(0.5, 0)
+    canvas.Position = position or UDim2.new(0.5, 0, 0, 3); canvas.Size = UDim2.fromOffset(size or 24, size or 24)
+    canvas.BackgroundTransparency = 1; canvas.ZIndex = zIndex or ((parent.ZIndex or 1) + 1); canvas.Parent = parent
+    local z = canvas.ZIndex
+    local function line(x, y, width, height, rotation)
+        local part = Instance.new("Frame"); part.Name = "IconPart"; part.AnchorPoint = Vector2.new(0.5, 0.5)
+        part.Position = UDim2.fromOffset(x, y); part.Size = UDim2.fromOffset(width, height); part.Rotation = rotation or 0
+        part.BackgroundColor3 = ink; part.BorderSizePixel = 0; part.ZIndex = z; part.Parent = canvas; UI.corner(part, math.min(width, height) / 2)
+        return part
+    end
+    local function outline(x, y, width, height, radius)
+        local part = Instance.new("Frame"); part.Name = "IconOutline"; part.Position = UDim2.fromOffset(x, y)
+        part.Size = UDim2.fromOffset(width, height); part.BackgroundTransparency = 1; part.ZIndex = z; part.Parent = canvas
+        UI.corner(part, radius or 2); local stroke = UI.stroke(part, ink, 2, 0); stroke.Name = "IconStroke"
+        return part
+    end
+    local function dot(x, y, diameter)
+        local part = line(x, y, diameter, diameter); UI.corner(part, diameter / 2); return part
+    end
+
+    if kind == "home" then
+        outline(5, 10, 14, 11, 2); line(8, 8, 11, 2, -38); line(16, 8, 11, 2, 38); line(12, 17, 2, 8)
+    elseif kind == "bag" then
+        outline(4, 8, 16, 13, 3); outline(8, 3, 8, 8, 4)
+    elseif kind == "shop" then
+        outline(5, 9, 14, 12, 1); line(12, 7, 18, 3); line(8, 7, 2, 5); line(12, 7, 2, 5); line(16, 7, 2, 5); line(12, 17, 14, 2)
+    elseif kind == "search" then
+        outline(3, 3, 13, 13, 7); line(18, 18, 8, 2, 45)
+    elseif kind == "quests" then
+        outline(4, 3, 16, 19, 3); line(8, 9, 3, 2, 42); line(10, 8, 5, 2, -45); line(15, 9, 6, 2)
+        line(8, 15, 3, 2, 42); line(10, 14, 5, 2, -45); line(15, 15, 6, 2)
+    elseif kind == "travel" then
+        line(14, 5, 10, 3, -54); line(10, 11, 11, 3, 0); line(11, 17, 10, 3, -54)
+    elseif kind == "gift" then
+        outline(4, 9, 16, 12, 2); line(12, 15, 2, 12); line(12, 9, 18, 3)
+        outline(6, 4, 6, 5, 3); outline(12, 4, 6, 5, 3)
+    elseif kind == "store" then
+        outline(4, 7, 16, 13, 3); line(8, 7, 2, 5); line(12, 7, 2, 5); line(16, 7, 2, 5); line(12, 5, 16, 2)
+    elseif kind == "more" then
+        dot(6, 12, 4); dot(12, 12, 4); dot(18, 12, 4)
+    elseif kind == "style" then
+        outline(3, 4, 18, 16, 8); dot(8, 9, 3); dot(13, 7, 3); dot(17, 11, 3); line(17, 18, 8, 5, -18)
+    elseif kind == "tools" then
+        line(8, 12, 17, 3, 45); line(16, 12, 17, 3, -45); line(5, 5, 6, 3, 0); line(19, 5, 6, 3, 0)
+    elseif kind == "expand" then
+        line(12, 13, 15, 3, -90); line(8, 7, 8, 3, -45); line(16, 7, 8, 3, 45); line(12, 21, 16, 2)
+    elseif kind == "admin" then
+        outline(5, 3, 14, 17, 6); line(12, 11, 10, 2, -90); line(12, 11, 8, 2)
+    elseif kind == "chevron" then
+        line(9, 11, 9, 2, 42); line(15, 11, 9, 2, -42); line(9, 16, 9, 2, 42); line(15, 16, 9, 2, -42)
+    elseif kind == "arrow" then
+        line(11, 12, 15, 3); line(17, 9, 9, 3, 45); line(17, 15, 9, 3, -45)
+    elseif kind == "rank" then
+        local diamond = line(12, 12, 12, 12, 45); UI.corner(diamond, 3); line(12, 12, 5, 5, 45).BackgroundColor3 = UI.Colors.Gold
+    elseif kind == "gavel" then
+        line(10, 8, 11, 5, 35); line(14, 14, 13, 3, -55); line(17, 20, 11, 3)
+    end
+    return canvas
+end
+function UI.tintIcon(parent, color)
+    for _, child in ipairs(parent:GetDescendants()) do
+        if child.Name == "IconPart" then child.BackgroundColor3 = color
+        elseif child.Name == "IconStroke" and child:IsA("UIStroke") then child.Color = color end
+    end
+end
 function UI.padding(object, horizontal, vertical)
     local p = Instance.new("UIPadding")
     p.PaddingLeft = UDim.new(0, horizontal or 12); p.PaddingRight = p.PaddingLeft
@@ -239,7 +308,7 @@ function UI.new()
     local splashTitle = UI.label(splash, "THRIFT FLIP", 42, UI.Colors.White); splashTitle.Font = Enum.Font.GothamBlack
     splashTitle.AnchorPoint = Vector2.new(0.5, 0.5); splashTitle.Position = UDim2.fromScale(0.5, 0.45)
     splashTitle.Size = UDim2.new(0.9, 0, 0, 58); splashTitle.AutomaticSize = Enum.AutomaticSize.None; splashTitle.TextXAlignment = Enum.TextXAlignment.Center; splashTitle.ZIndex = 101
-    local splashTag = UI.label(splash, "FIND  •  RESTORE  •  BUILD YOUR DREAM SHOP", 13, UI.Colors.Gold)
+    local splashTag = UI.label(splash, "FIND  |  RESTORE  |  BUILD YOUR DREAM SHOP", 13, UI.Colors.Gold)
     splashTag.AnchorPoint = Vector2.new(0.5, 0); splashTag.Position = UDim2.fromScale(0.5, 0.51)
     splashTag.Size = UDim2.new(0.9, 0, 0, 30); splashTag.AutomaticSize = Enum.AutomaticSize.None; splashTag.TextXAlignment = Enum.TextXAlignment.Center; splashTag.ZIndex = 101
     task.delay(1.1, function()
@@ -252,8 +321,7 @@ function UI.new()
     brand.BackgroundColor3 = Color3.fromRGB(255, 248, 232); brand.Parent = hud; UI.corner(brand, 23); UI.stroke(brand, UI.Colors.White, 2, 0.15)
     local badge = Instance.new("Frame"); badge.Size = UDim2.fromOffset(32, 32); badge.Position = UDim2.fromOffset(5, 5)
     badge.BackgroundColor3 = Color3.fromRGB(23, 132, 124); badge.Parent = brand; UI.corner(badge, 16)
-    local icon = UI.label(badge, "⌄", 21, UI.Colors.White); icon.Size = UDim2.fromScale(1, 1); icon.TextXAlignment = Enum.TextXAlignment.Center
-    icon.AutomaticSize = Enum.AutomaticSize.None; icon.Font = Enum.Font.GothamBold
+    UI.vectorIcon(badge, "chevron", UI.Colors.White, UDim2.new(0.5, 0, 0, 4), 24, 3)
     self.Brand = UI.label(brand, "Thrift Flip", 16, Color3.fromRGB(8, 91, 84)); self.Brand.Font = Enum.Font.GothamBold
     self.Brand.Position = UDim2.fromOffset(43, 3); self.Brand.Size = UDim2.new(1, -49, 0, 20); self.Brand.AutomaticSize = Enum.AutomaticSize.None
     local tagline = UI.label(brand, "Every find has a story", 10, Color3.fromRGB(67, 86, 83))
@@ -261,8 +329,8 @@ function UI.new()
     local objective = Instance.new("Frame"); objective.Name = "Objective"; objective.Position = UDim2.fromOffset(0, 49)
     objective.Size = UDim2.fromOffset(210, 56); objective.BackgroundColor3 = Color3.fromRGB(20, 132, 124); objective.Parent = hud; UI.corner(objective, 14)
     UI.stroke(objective, Color3.fromRGB(8, 107, 101), 1, 0.25)
-    local arrow = UI.label(objective, "➜", 18, UI.Colors.White); arrow.Position = UDim2.fromOffset(13, 16); arrow.Size = UDim2.fromOffset(23, 27); arrow.AutomaticSize = Enum.AutomaticSize.None
-    local objectiveTitle = UI.label(objective, "OBJECTIVE • 0/1", 9, Color3.fromRGB(187, 235, 226)); objectiveTitle.Font = Enum.Font.GothamBold; self.ObjectiveTitle = objectiveTitle
+    UI.vectorIcon(objective, "arrow", UI.Colors.White, UDim2.fromOffset(23, 16), 24, 3)
+    local objectiveTitle = UI.label(objective, "OBJECTIVE | 0/1", 9, Color3.fromRGB(187, 235, 226)); objectiveTitle.Font = Enum.Font.GothamBold; self.ObjectiveTitle = objectiveTitle
     objectiveTitle.Position = UDim2.fromOffset(36, 6); objectiveTitle.Size = UDim2.new(1, -45, 0, 14); objectiveTitle.AutomaticSize = Enum.AutomaticSize.None
     self.Hint = UI.label(objective, "Find your first treasure", 12, UI.Colors.White); self.Hint.Font = Enum.Font.GothamBold
     self.Hint.Position = UDim2.fromOffset(36, 18); self.Hint.Size = UDim2.new(1, -45, 0, 34); self.Hint.AutomaticSize = Enum.AutomaticSize.None
@@ -276,8 +344,9 @@ function UI.new()
     self.Balance.Position = UDim2.fromOffset(36, 5); self.Balance.Size = UDim2.new(1, -42, 0, 28); self.Balance.AutomaticSize = Enum.AutomaticSize.None
     local levelPill = Instance.new("Frame"); levelPill.Position = UDim2.fromOffset(82, 0); levelPill.Size = UDim2.fromOffset(82, 38)
     levelPill.BackgroundColor3 = Color3.fromRGB(255, 248, 232); levelPill.Parent = stats; UI.corner(levelPill, 19)
-    local star = UI.label(levelPill, "★", 14, UI.Colors.White); star.Size = UDim2.fromOffset(27, 27); star.Position = UDim2.fromOffset(5, 5)
-    star.AutomaticSize = Enum.AutomaticSize.None; star.TextXAlignment = Enum.TextXAlignment.Center; star.BackgroundTransparency = 0; star.BackgroundColor3 = Color3.fromRGB(20, 132, 124); star.Font = Enum.Font.GothamBold; UI.corner(star, 14)
+    local rankBadge = Instance.new("Frame"); rankBadge.Size = UDim2.fromOffset(27, 27); rankBadge.Position = UDim2.fromOffset(5, 5)
+    rankBadge.BackgroundColor3 = Color3.fromRGB(20, 132, 124); rankBadge.BorderSizePixel = 0; rankBadge.Parent = levelPill; UI.corner(rankBadge, 14)
+    UI.vectorIcon(rankBadge, "rank", UI.Colors.White, UDim2.new(0.5, 0, 0, 2), 23, 3)
     self.Level = UI.label(levelPill, "LV 1", 15, Color3.fromRGB(20, 75, 70)); self.Level.Font = Enum.Font.GothamBold
     self.Level.Position = UDim2.fromOffset(36, 5); self.Level.Size = UDim2.new(1, -40, 0, 28); self.Level.AutomaticSize = Enum.AutomaticSize.None
     local levelTrack = Instance.new("Frame"); levelTrack.Name = "LevelProgress"; levelTrack.Position = UDim2.new(0, 36, 1, -5)
@@ -289,12 +358,11 @@ function UI.new()
     auctionBar.BackgroundColor3 = UI.Colors.Ink; auctionBar.BorderSizePixel = 0; auctionBar.Visible = false; auctionBar.ZIndex = 20; auctionBar.Parent = gui
     UI.corner(auctionBar, 15); UI.stroke(auctionBar, UI.Colors.Gold, 2, 0.08)
     local auctionLimit = Instance.new("UISizeConstraint"); auctionLimit.MaxSize = Vector2.new(520, 58); auctionLimit.MinSize = Vector2.new(260, 58); auctionLimit.Parent = auctionBar
-    local gavel = UI.label(auctionBar, "◆", 18, UI.Colors.Gold); gavel.Position = UDim2.fromOffset(13, 7); gavel.Size = UDim2.fromOffset(25, 25)
-    gavel.AutomaticSize = Enum.AutomaticSize.None; gavel.TextXAlignment = Enum.TextXAlignment.Center; gavel.ZIndex = 21
+    UI.vectorIcon(auctionBar, "gavel", UI.Colors.Gold, UDim2.fromOffset(25, 7), 25, 21)
     self.AuctionTitle = UI.label(auctionBar, "LIVE AUCTION", 11, UI.Colors.Cream); self.AuctionTitle.Font = Enum.Font.GothamBold
     self.AuctionTitle.Position = UDim2.fromOffset(42, 5); self.AuctionTitle.Size = UDim2.new(1, -116, 0, 20); self.AuctionTitle.AutomaticSize = Enum.AutomaticSize.None
     self.AuctionTitle.TextTruncate = Enum.TextTruncate.AtEnd; self.AuctionTitle.TextWrapped = false; self.AuctionTitle.ZIndex = 21
-    self.AuctionBid = UI.label(auctionBar, "Opening bid • $0", 12, UI.Colors.White); self.AuctionBid.Font = Enum.Font.GothamBold
+    self.AuctionBid = UI.label(auctionBar, "Opening bid | $0", 12, UI.Colors.White); self.AuctionBid.Font = Enum.Font.GothamBold
     self.AuctionBid.Position = UDim2.fromOffset(42, 23); self.AuctionBid.Size = UDim2.new(1, -116, 0, 21); self.AuctionBid.AutomaticSize = Enum.AutomaticSize.None
     self.AuctionBid.TextTruncate = Enum.TextTruncate.AtEnd; self.AuctionBid.TextWrapped = false; self.AuctionBid.ZIndex = 21
     self.AuctionTime = UI.label(auctionBar, "0:00", 16, UI.Colors.Gold); self.AuctionTime.Font = Enum.Font.GothamBold
@@ -321,9 +389,10 @@ function UI.new()
     moreMenu.BackgroundColor3 = UI.Colors.Cream; moreMenu.BorderSizePixel = 0; moreMenu.Visible = false; moreMenu.ZIndex = 14; moreMenu.Parent = gui
     UI.corner(moreMenu, 15); UI.stroke(moreMenu, Color3.fromRGB(122,143,135), 1, 0.38); UI.padding(moreMenu, 7, 7); UI.list(moreMenu, 2)
     self.MoreMenu = moreMenu; self.MoreActionCount = 0
-    local moreButton = UI.button(actions, "•••\nMore", function() moreMenu.Visible = not moreMenu.Visible end, true)
+    local moreButton = UI.button(actions, "More", function() moreMenu.Visible = not moreMenu.Visible end, true)
     moreButton.LayoutOrder = 100; moreButton.Size = UDim2.new(1, 0, 0, 48); moreButton.TextSize = 10; moreButton.ZIndex = 13
-    moreButton.BackgroundColor3 = UI.Colors.Teal; moreButton.TextColor3 = UI.Colors.White; self.MoreButton = moreButton
+    moreButton.TextYAlignment = Enum.TextYAlignment.Bottom; moreButton.BackgroundColor3 = UI.Colors.Teal; moreButton.TextColor3 = UI.Colors.White
+    UI.vectorIcon(moreButton, "more", UI.Colors.White, UDim2.new(0.5, 0, 0, 2), 23, 14); self.MoreButton = moreButton
     local camera = workspace.CurrentCamera
     local function fitQuickActions()
         local narrow = camera and camera.ViewportSize.X < 900
@@ -357,7 +426,7 @@ function UI.new()
     self.Subtitle.Font = Enum.Font.GothamBold; self.Subtitle.Position = UDim2.fromOffset(18, 31)
     self.Subtitle.Size = UDim2.new(1, -74, 0, 16); self.Subtitle.AutomaticSize = Enum.AutomaticSize.None
     self.Subtitle.TextTruncate = Enum.TextTruncate.AtEnd; self.Subtitle.TextWrapped = false
-    local close = UI.button(header, "×", function() self:hide() end, true)
+    local close = UI.button(header, "X", function() self:hide() end, true)
     close.Size = UDim2.fromOffset(36, 36); close.Position = UDim2.new(1, -46, 0, 10); close.TextSize = 22; close.ZIndex = 9; close.BackgroundColor3 = UI.Colors.Cream
     local scroll = Instance.new("ScrollingFrame"); scroll.Name = "Pages"; scroll.Position = UDim2.fromOffset(13, 70)
     scroll.Size = UDim2.new(1, -26, 1, -82); scroll.BackgroundTransparency = 1; scroll.BorderSizePixel = 0
@@ -376,24 +445,26 @@ function UI.new()
     end)
     return self
 end
-function UI:addQuickAction(text, color, callback)
-    local button = UI.button(self.QuickActions, text, callback, true)
+function UI:addQuickAction(label, iconKind, color, callback)
+    local button = UI.button(self.QuickActions, label, callback, true)
     self.QuickActionCount += 1
     button.LayoutOrder = self.QuickActionCount
-    button.Size = UDim2.new(1, 0, 0, 48); button.TextSize = 10; button.ZIndex = 13
+    button.Size = UDim2.new(1, 0, 0, 48); button.TextSize = 10; button.TextYAlignment = Enum.TextYAlignment.Bottom; button.ZIndex = 13
     for _, child in ipairs(button:GetChildren()) do if child:IsA("UIGradient") then child:Destroy() end end
     button.BackgroundColor3 = Color3.fromRGB(255, 248, 232); button.TextColor3 = Color3.fromRGB(8, 91, 84)
     UI.corner(button, 15)
     self.QuickActions.Size = UDim2.fromOffset(60, (self.QuickActionCount + 1) * 48 + self.QuickActionCount * 6)
-    self.QuickButtons[text] = button
+    UI.vectorIcon(button, iconKind, Color3.fromRGB(8, 91, 84), UDim2.new(0.5, 0, 0, 2), 23, 14)
+    self.QuickButtons[label] = button
     return button
 end
-function UI:addMoreAction(text, callback)
+function UI:addMoreAction(label, iconKind, callback)
     self.MoreActionCount += 1
-    local button = UI.button(self.MoreMenu, text, function() self.MoreMenu.Visible = false; callback() end, true)
+    local button = UI.button(self.MoreMenu, "      " .. label, function() self.MoreMenu.Visible = false; callback() end, true)
     button.LayoutOrder = self.MoreActionCount; button.Size = UDim2.new(1, 0, 0, 34); button.TextSize = 11; button.ZIndex = 15
     button.BackgroundTransparency = 1; button.TextColor3 = UI.Colors.Ink; button.TextXAlignment = Enum.TextXAlignment.Left
     UI.padding(button, 8, 2)
+    UI.vectorIcon(button, iconKind, UI.Colors.Ink, UDim2.fromOffset(16, 4), 24, 16)
     self.MoreMenu.Size = UDim2.fromOffset(104, self.MoreActionCount * 36 + 14)
     return button
 end
@@ -412,8 +483,8 @@ function UI:updateAuction(auction, itemName, serverTime)
         return
     end
     self.AuctionBar.Visible = true
-    self.AuctionTitle.Text = "LIVE AUCTION  •  " .. string.upper(itemName or "MYSTERY LOT")
-    self.AuctionBid.Text = (auction.BidderName and ("Latest: " .. auction.BidderName) or "Opening bid") .. "  •  $" .. tostring(math.floor(auction.Bid or 0))
+    self.AuctionTitle.Text = "LIVE AUCTION  |  " .. string.upper(itemName or "MYSTERY LOT")
+    self.AuctionBid.Text = (auction.BidderName and ("Latest: " .. auction.BidderName) or "Opening bid") .. "  |  $" .. tostring(math.floor(auction.Bid or 0))
     self.AuctionEnds = auction.Ends; self.AuctionClockOffset = (serverTime or os.time()) - os.time()
     if not self.AuctionHeartbeat then
         local last = 0
@@ -428,8 +499,9 @@ function UI:updateAuction(auction, itemName, serverTime)
     end
 end
 function UI:addNav(name, symbol, callback)
-    local button = UI.button(self.Nav, symbol .. "\n" .. name, callback, true)
-    button.TextSize = 12; button.BackgroundColor3 = Color3.fromRGB(255, 248, 232); button.TextColor3 = Color3.fromRGB(8, 91, 84); button.ZIndex = 13
+    local button = UI.button(self.Nav, name, callback, true)
+    button.TextSize = 11; button.TextYAlignment = Enum.TextYAlignment.Bottom; button.BackgroundColor3 = Color3.fromRGB(255, 248, 232); button.TextColor3 = Color3.fromRGB(8, 91, 84); button.ZIndex = 13
+    UI.vectorIcon(button, symbol, button.TextColor3, UDim2.new(0.5, 0, 0, 1), 25, 14)
     self.NavButtons[name] = button; return button
 end
 function UI:selectNav(name)
@@ -437,6 +509,7 @@ function UI:selectNav(name)
         local selected = label == name or (label == "Find" and name == "Source")
         button.BackgroundColor3 = if selected then Color3.fromRGB(20, 132, 124) else Color3.fromRGB(255, 248, 232)
         button.TextColor3 = if selected then UI.Colors.White else Color3.fromRGB(8, 91, 84)
+        UI.tintIcon(button, button.TextColor3)
     end
 end
 function UI:setSubtitle(text) self.Subtitle.Text = string.upper(text) end
@@ -485,7 +558,7 @@ function UI:searchTreasure(source, callback)
     local header = block(panel, "Header", UDim2.new(1, 0, 0, 66), UDim2.fromOffset(0, 0), UI.Colors.Teal, baseZ + 2)
     local heading = UI.label(header, "Source", 25, UI.Colors.Cream); heading.Font = Enum.Font.GothamBold
     heading.Position = UDim2.fromOffset(20, 8); heading.Size = UDim2.new(1, -40, 0, 30); heading.AutomaticSize = Enum.AutomaticSize.None; heading.ZIndex = baseZ + 3
-    local sourceCopy = if source == "Delivery" then "PARCEL POST · DAILY DELIVERY" elseif source == "Estate" then "THRIFT STREET · WHOLESALE" else "DUMPSTER ALLEY · FREE FINDS"
+    local sourceCopy = if source == "Delivery" then "PARCEL POST | DAILY DELIVERY" elseif source == "Estate" then "THRIFT STREET | WHOLESALE" else "DUMPSTER ALLEY | FREE FINDS"
     local eyebrow = UI.label(header, sourceCopy, 11, UI.Colors.Cream); eyebrow.Font = Enum.Font.GothamBold
     eyebrow.TextTransparency = 0.08; eyebrow.Position = UDim2.fromOffset(20, 38); eyebrow.Size = UDim2.new(1, -40, 0, 17); eyebrow.AutomaticSize = Enum.AutomaticSize.None; eyebrow.ZIndex = baseZ + 3
 
@@ -527,7 +600,7 @@ function UI:searchTreasure(source, callback)
 
     local flash = block(stage, "RevealFlash", UDim2.fromScale(1, 1), UDim2.fromScale(0, 0), UI.Colors.White, baseZ + 18)
     flash.BackgroundTransparency = 1
-    local status = UI.label(panel, "Digging through the bags…", 17, UI.Colors.Ink); status.Font = Enum.Font.GothamBold
+    local status = UI.label(panel, "Digging through the bags...", 17, UI.Colors.Ink); status.Font = Enum.Font.GothamBold
     status.Position = UDim2.new(0, 18, 1, -56); status.Size = UDim2.new(1, -36, 0, 26); status.AutomaticSize = Enum.AutomaticSize.None
     status.TextXAlignment = Enum.TextXAlignment.Center; status.ZIndex = baseZ + 4
     local track = block(panel, "SearchProgress", UDim2.new(1, -40, 0, 7), UDim2.new(0, 20, 1, -18), Color3.fromRGB(218, 225, 211), baseZ + 3); UI.corner(track, 5)
@@ -549,7 +622,7 @@ function UI:searchTreasure(source, callback)
         for index = 1, 18 do
             local angle = index / 18 * math.pi * 2 + (index % 3) * 0.12
             local distance = 75 + (index * 23) % 105
-            local spark = UI.label(stage, if index % 3 == 0 then "◆" else "✦", 14 + index % 4 * 3, colors[index % #colors + 1])
+            local spark = UI.label(stage, if index % 3 == 0 then "+" else "*", 14 + index % 4 * 3, colors[index % #colors + 1])
             spark.AnchorPoint = Vector2.new(0.5, 0.5); spark.Position = UDim2.fromScale(0.5, 0.56); spark.Size = UDim2.fromOffset(28, 28)
             spark.AutomaticSize = Enum.AutomaticSize.None; spark.TextXAlignment = Enum.TextXAlignment.Center; spark.ZIndex = baseZ + 17; spark.Rotation = index * 21
             tween(spark, {Position = spark.Position + UDim2.fromOffset(math.cos(angle) * distance, math.sin(angle) * distance - 32), TextTransparency = 1, Rotation = spark.Rotation + 180}, 0.9)
@@ -558,7 +631,7 @@ function UI:searchTreasure(source, callback)
     end
 
     task.spawn(function()
-        local messages = {"Digging through the bags…", "Checking the corners…", "Something shiny…"}
+        local messages = {"Digging through the bags...", "Checking the corners...", "Something shiny..."}
         for step = 1, 21 do
             if not layer.Parent then self.Searching = false; return end
             if step == 8 then status.Text = messages[2] elseif step == 15 then status.Text = messages[3] end
@@ -601,7 +674,7 @@ function UI:rarityReveal(definition, item, callback)
 
     if self.Effects then
         for index = 1, (if rarity >= 5 then 22 elseif rarity >= 4 then 14 else 8) do
-            local symbol = UI.label(layer, if index % 3 == 0 then SharedConfig.RarityIcons[rarity] else "✦", 16 + index % 4 * 5, color)
+            local symbol = UI.label(layer, if index % 3 == 0 then SharedConfig.RarityIcons[rarity] else "+", 16 + index % 4 * 5, color)
             symbol.AnchorPoint = Vector2.new(0.5, 0.5); symbol.Position = UDim2.fromScale(0.08 + ((index * 37) % 84) / 100, 0.18 + ((index * 53) % 68) / 100)
             symbol.Size = UDim2.fromOffset(36, 36); symbol.AutomaticSize = Enum.AutomaticSize.None
             symbol.TextXAlignment = Enum.TextXAlignment.Center; symbol.ZIndex = 51; symbol.Rotation = (index * 29) % 60 - 30
@@ -637,10 +710,10 @@ function UI:rarityReveal(definition, item, callback)
     local name = UI.label(card, definition.Name, 25, UI.Colors.Ink); name.Font = Enum.Font.GothamBlack
     name.Position = UDim2.fromOffset(18, 357); name.Size = UDim2.new(1, -36, 0, 34); name.AutomaticSize = Enum.AutomaticSize.None
     name.TextXAlignment = Enum.TextXAlignment.Center; name.ZIndex = 53
-    local detail = UI.label(card, SharedConfig.Conditions[item.Condition] .. " • " .. (item.Style or definition.Style) .. " • $" .. tostring(math.floor(item.Value or 0)), 15, UI.Colors.Muted)
+    local detail = UI.label(card, SharedConfig.Conditions[item.Condition] .. " | " .. (item.Style or definition.Style) .. " | $" .. tostring(math.floor(item.Value or 0)), 15, UI.Colors.Muted)
     detail.Position = UDim2.fromOffset(18, 394); detail.Size = UDim2.new(1, -36, 0, 28); detail.AutomaticSize = Enum.AutomaticSize.None
     detail.TextXAlignment = Enum.TextXAlignment.Center; detail.ZIndex = 53
-    local button = UI.button(card, if rarity >= 5 then "★ Keep this legendary find" else "Add to my collection", function()
+    local button = UI.button(card, if rarity >= 5 then "LEGENDARY | Keep this find" else "Add to my collection", function()
         if self.RevealLayer ~= layer then return end
         self.RevealLayer = nil
         if self.Effects then

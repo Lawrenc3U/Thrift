@@ -106,7 +106,9 @@ local Config = {
         Delivery = {Cost = 0, Level = 1, Cooldown = 0, Weights = {35, 40, 20, 4, 1}},
     },
     Rarities = {"Common", "Uncommon", "Rare", "Epic", "Legendary"},
-    RarityIcons = {"○", "◇", "△", "✦", "★"},
+    -- ASCII badges remain readable on every Roblox font/platform. Decorative
+    -- rarity effects are drawn with native UI geometry in the client.
+    RarityIcons = {"C", "U", "R", "E", "L"},
     RarityColors = {"#AEB7B5", "#70C58D", "#6CABF3", "#C29AE8", "#EDC66D"},
     RarityEffectNames = {"Found", "Fresh", "Shimmer", "Enchanted", "Golden Legend"},
     RarityMultipliers = {1, 1.8, 3.5, 7, 15},
@@ -12623,7 +12625,7 @@ marker.Name = "LocalGuide"; marker.Size = Vector3.one; marker.Anchored = true
 marker.CanCollide = false; marker.CanTouch = false; marker.CanQuery = false; marker.Transparency = 1; marker.Parent = workspace
 local billboard = Instance.new("BillboardGui")
 billboard.Name = "Guide"; billboard.Size = UDim2.fromOffset(230, 62); billboard.AlwaysOnTop = true; billboard.Parent = marker
-local guideText = UI.label(billboard, "▼ YOUR NEXT STEP", 20, UI.Colors.Gold)
+local guideText = UI.label(billboard, "YOUR NEXT STEP", 20, UI.Colors.Gold)
 guideText.Size = UDim2.fromScale(1, 1); guideText.AutomaticSize = Enum.AutomaticSize.None; guideText.TextXAlignment = Enum.TextXAlignment.Center
 local locations = {Source=Vector3.new(-82,8,-60),Estate=Vector3.new(68,8,-80),Delivery=Vector3.new(68,8,-35),
     Auction=Vector3.new(0,12,137),Market=Vector3.new(0,9,-90),Quests=Vector3.new(-26,8,-30),Workbench=Vector3.new(-40,8,-90)}
@@ -12641,7 +12643,7 @@ local function guide(location)
         end
     end
     if target then
-        marker.Position = target; guideText.Text = "▼ " .. string.upper(location); billboard.Enabled = true
+        marker.Position = target; guideText.Text = "NEXT: " .. string.upper(location); billboard.Enabled = true
         guideExpires = if state and state.Tutorial &lt; 5 then math.huge else os.clock() + 30
     end
 end
@@ -12657,15 +12659,15 @@ local function open(name, data)
     page, context = name, data or {}; render()
 end
 pages = Pages.new(ui, send, open, guide)
-for _, entry in ipairs({{"Town","⌂"},{"Bag","▣"},{"Shop","✦"},{"Find","⌕"},{"Quests","✓"}}) do
+for _, entry in ipairs({{"Town","home"},{"Bag","bag"},{"Shop","shop"},{"Find","search"},{"Quests","quests"}}) do
     ui:addNav(entry[1], entry[2], function() open(if entry[1] == "Find" then "Source" else entry[1]) end)
 end
-ui:addQuickAction("ϟ\nTravel", UI.Colors.Teal, function() open("Town") end)
-local rewardsButton = ui:addQuickAction("▣\nRewards", UI.Colors.Rose, function() open("Quests") end)
-ui:addQuickAction("◇\nStore", Color3.fromRGB(122, 92, 224), function() open("Boutique") end)
-ui:addMoreAction("✎  Style", function() open("Themes") end)
-ui:addMoreAction("⌁  Tools", function() open("Tools") end)
-ui:addMoreAction("↖  Expand", function() open("Expand") end)
+ui:addQuickAction("Travel", "travel", UI.Colors.Teal, function() open("Town") end)
+local rewardsButton = ui:addQuickAction("Rewards", "gift", UI.Colors.Rose, function() open("Quests") end)
+ui:addQuickAction("Store", "store", Color3.fromRGB(122, 92, 224), function() open("Boutique") end)
+ui:addMoreAction("Style", "style", function() open("Themes") end)
+ui:addMoreAction("Tools", "tools", function() open("Tools") end)
+ui:addMoreAction("Expand", "expand", function() open("Expand") end)
 ui.AuctionBar.Activated:Connect(function() open("Auction") end)
 
 local tutorialHints = {
@@ -12689,7 +12691,7 @@ local function nextObjective()
         return "Your " .. nextTier.Name .. " upgrade is ready"
     end
     local discoveries = 0; for _ in pairs(state.Collection or {}) do discoveries += 1 end
-    return discoveries .. "/400 discoveries • hunt for a new " .. state.Demand .. " find"
+    return discoveries .. "/400 discoveries | hunt for a new " .. state.Demand .. " find"
 end
 local lastOffer, pendingOffer, lastTutorial, adminButton
 local function updateHud()
@@ -12709,12 +12711,12 @@ local function updateHud()
         or ((daily.Sold or 0) &gt;= 3 and not claimed.Sell)
         or ((weekly.Restored or 0) &gt;= 20 and (weekly.Sold or 0) &gt;= 15 and not weekly.Claimed)
     ui:setActionBadge(rewardsButton, rewardsReady == true)
-    if state.Tutorial &lt; 5 then ui.ObjectiveTitle.Text = "OBJECTIVE • 0/1"
-    elseif not claimed.Find then ui.ObjectiveTitle.Text = "DAILY FIND • " .. math.min(3, daily.Found or 0) .. "/3"
-    elseif not claimed.Restore then ui.ObjectiveTitle.Text = "DAILY RESTORE • " .. math.min(3, daily.Restored or 0) .. "/3"
-    elseif not claimed.Sell then ui.ObjectiveTitle.Text = "DAILY SELL • " .. math.min(3, daily.Sold or 0) .. "/3"
+    if state.Tutorial &lt; 5 then ui.ObjectiveTitle.Text = "OBJECTIVE | 0/1"
+    elseif not claimed.Find then ui.ObjectiveTitle.Text = "DAILY FIND | " .. math.min(3, daily.Found or 0) .. "/3"
+    elseif not claimed.Restore then ui.ObjectiveTitle.Text = "DAILY RESTORE | " .. math.min(3, daily.Restored or 0) .. "/3"
+    elseif not claimed.Sell then ui.ObjectiveTitle.Text = "DAILY SELL | " .. math.min(3, daily.Sold or 0) .. "/3"
     else ui.ObjectiveTitle.Text = "OBJECTIVE" end
-    ui:setSubtitle(if state.Ephemeral then "STUDIO PRACTICE • PROGRESS DOES NOT SAVE" else "YOUR COZY CORNER OF THRIFT STREET")
+    ui:setSubtitle(if state.Ephemeral then "STUDIO PRACTICE | PROGRESS DOES NOT SAVE" else "YOUR COZY CORNER OF THRIFT STREET")
     ui.Effects = state.Settings.Effects
     audio:setEnabled(state.Settings.Music, state.Settings.Effects)
     audio:setZone(page == "Auction" and "auction_music" or page == "Town" and "town" or "shop")
@@ -12725,7 +12727,7 @@ event.OnClientEvent:Connect(function(kind, payload)
         local wasVisible = ui.Panel.Visible; local oldCash = state and state.Cash or payload.Cash
         state = payload; updateHud()
         if state.IsAdmin and not adminButton then
-            adminButton = ui:addMoreAction("⚙  Admin", function() open("Admin") end)
+            adminButton = ui:addMoreAction("Admin", "admin", function() open("Admin") end)
         end
         if state.Cash &gt; oldCash then ui:cashFeedback(state.Cash - oldCash); audio:play("sale") end
         if state.Tutorial ~= lastTutorial then
@@ -12745,7 +12747,7 @@ event.OnClientEvent:Connect(function(kind, payload)
         end
         if wasVisible and not session then render() end
     elseif kind == "Notice" then ui:notice(payload)
-    elseif kind == "Announcement" then ui:notice("📣  " .. tostring(payload)); audio:play("reward")
+    elseif kind == "Announcement" then ui:notice("NOTICE: " .. tostring(payload)); audio:play("reward")
     elseif kind == "Reveal" then
         local item = payload and payload.Item
         local definition = item and Catalog.ById[item.DefId]
@@ -12763,7 +12765,7 @@ event.OnClientEvent:Connect(function(kind, payload)
     elseif kind == "MinigameDone" then
         Minigames.stop(session); session = nil
         if payload.Cancelled then ui:notice("Restoration paused. Your find is safe.")
-        else ui:notice(payload.Quality .. " restoration • now " .. payload.Condition); audio:play("reward") end
+        else ui:notice(payload.Quality .. " restoration | now " .. payload.Condition); audio:play("reward") end
         if pendingOffer and state and state.Offer and state.Offer.Uid == pendingOffer then
             pendingOffer = nil; open("Offer")
         else page = "Bag"; render() end
@@ -12800,8 +12802,8 @@ local wireColors = {
     Color3.fromRGB(147, 164, 221), Color3.fromRGB(200, 153, 198), Color3.fromRGB(133, 191, 126),
     Color3.fromRGB(114, 183, 210), Color3.fromRGB(231, 169, 112),
 }
-local wireSymbols = {"●", "▲", "■", "◆", "★", "✚", "○", "☀"}
-local pieceSymbols = {"◒", "▰", "◈", "◕"}
+local wireSymbols = {"1", "2", "3", "4", "5", "6", "7", "8"}
+local pieceSymbols = {"A", "B", "C", "D"}
 
 local function corner(object, amount)
     local value = Instance.new("UICorner")
@@ -12991,7 +12993,7 @@ local function selectPalette(session, index)
     table.insert(session.Queue, {Palette = index})
     for i, button in ipairs(session.PaletteButtons) do
         local selected = i == index
-        button.Text = (if selected then "✓ " else "") .. session.Config.Styles[i]
+            button.Text = (if selected then "OK  " else "") .. session.Config.Styles[i]
         session.PaletteStrokes[i].Thickness = if selected then 3 else 1
         session.PaletteStrokes[i].Color = if selected then session.Colors.Ink else Color3.fromRGB(255, 249, 234)
     end
@@ -13049,7 +13051,7 @@ function Minigames.start(ui, UI, challenge, send, config)
     previewArea.BackgroundTransparency = 0.83
     local viewport = preview(previewArea, challenge, config)
     if not viewport then
-        local fallback = text(previewArea, "✦", 150, Color3.fromRGB(177, 150, 104))
+    local fallback = text(previewArea, "ITEM", 42, Color3.fromRGB(177, 150, 104))
         fallback.TextTransparency = 0.45
     end
     if challenge.Kind == "Rewire" then
@@ -13146,7 +13148,7 @@ function Minigames.start(ui, UI, challenge, send, config)
         elseif challenge.Kind == "Repaint" then
             button.BackgroundColor3 = Color3.fromRGB(230, 221, 202)
             button.BackgroundTransparency = 0.38
-            local patch = text(button, "◌", 24, Color3.fromRGB(168, 153, 125))
+        local patch = text(button, "O", 24, Color3.fromRGB(168, 153, 125))
             patch.ZIndex = 6
             session.CellStyles[cell].Label = patch
         else
@@ -13367,16 +13369,16 @@ local function completeCell(session, cell)
         end
     elseif session.Kind == "Repaint" then
         ease(button, 0.2, {BackgroundColor3 = paintColors[session.Challenge.RequiredPalette], BackgroundTransparency = 0.18})
-        if style.Label then style.Label.Text = "✓"; style.Label.TextColor3 = Color3.fromRGB(255, 252, 234) end
+            if style.Label then style.Label.Text = "OK"; style.Label.TextColor3 = Color3.fromRGB(255, 252, 234) end
         style.Stroke.Transparency = 0.6
     elseif session.Kind == "Polish" then
-        button.Text = "✦"
+            button.Text = "+"
         button.TextColor3 = Color3.fromRGB(255, 247, 205)
         ease(button, 0.3, {BackgroundTransparency = 1})
         style.Stroke.Transparency = 1
     elseif session.Kind == "Assemble" then
         ease(button, 0.18, {BackgroundColor3 = session.Colors.Teal, BackgroundTransparency = 0.1})
-        button.Text = "✓ " .. session.Ranks[cell]
+            button.Text = "OK " .. session.Ranks[cell]
         style.Stroke.Color = Color3.fromRGB(217, 234, 205)
     else
         ease(button, 0.18, {BackgroundTransparency = 0.15})
@@ -13555,7 +13557,7 @@ function Pages:itemSummary(parent, item, height)
     else UI.label(parent, "Your mystery " .. definition.Category, 23).Font = Enum.Font.GothamBold end
 end
 function Pages:guideButton(parent, location, label)
-    return UI.button(parent, "⚡  " .. (label or "Teleport there"), function()
+    return UI.button(parent, "TRAVEL  |  " .. (label or "Teleport there"), function()
         self.Send("Teleport", {Destination = location})
         self.Guide(location)
         self.UI:hide()
@@ -13618,9 +13620,9 @@ function Pages:inventory(context, mode)
     end
     if pageCount &gt; 1 then
         local pageRow = UI.row(self.UI.Content)
-        UI.rowButton(pageRow, "‹ Previous", function() self.BagPage = math.max(1, self.BagPage - 1); self.Open(mode or "Bag", context) end, 3, true)
+        UI.rowButton(pageRow, "&lt; Previous", function() self.BagPage = math.max(1, self.BagPage - 1); self.Open(mode or "Bag", context) end, 3, true)
         UI.rowButton(pageRow, self.BagPage .. " / " .. pageCount, function() end, 3, true)
-        UI.rowButton(pageRow, "Next ›", function() self.BagPage = math.min(pageCount, self.BagPage + 1); self.Open(mode or "Bag", context) end, 3, true)
+        UI.rowButton(pageRow, "Next &gt;", function() self.BagPage = math.min(pageCount, self.BagPage + 1); self.Open(mode or "Bag", context) end, 3, true)
     end
 end
 function Pages:itemPage(context)
@@ -13629,7 +13631,7 @@ function Pages:itemPage(context)
     local frame = self:card(); self:itemSummary(frame, item, 245)
     if not item.Inspected then
         UI.label(frame, "There is a story under all that dust. Inspect to reveal its rarity, style, and value.", 17, UI.Colors.Muted)
-        self:button(frame, "✦ Reveal your find", "Inspect", {Uid = item.Uid}); return
+        self:button(frame, "REVEAL  |  Open your find", "Inspect", {Uid = item.Uid}); return
     end
     local value = UI.label(frame, money(item.Value), 30, UI.Colors.Teal); value.Font = Enum.Font.GothamBold
     UI.eyebrow(frame, "Estimated value • includes today's demand and shop style")
@@ -13645,7 +13647,7 @@ function Pages:itemPage(context)
     else
         self:button(frame, "Hold and show off this find", "Hold", {Uid = item.Uid}, true)
         if item.Condition &lt; 5 then self:nav(frame, "Restore at your workbench", "Restore", {Uid = item.Uid}, false)
-        else UI.disabled(frame, "✓ Mint condition — beautifully restored") end
+        else UI.disabled(frame, "MINT  |  Beautifully restored") end
         self:nav(frame, "Display in your shop", "Slots", {Uid = item.Uid})
         if self.State.Market then self:nav(frame, "List in the player market", "ListingEditor", {Uid = item.Uid}) end
     end
@@ -13663,7 +13665,7 @@ function Pages:sourcePage(source)
     local info = self:card()
     UI.eyebrow(info, "Level " .. tuning.Level .. "+ • " .. (if tuning.Cost == 0 then "Always free" else money(tuning.Cost) .. " per lot"))
     if source == "Delivery" and state.LastDelivery == state.Day then
-        UI.disabled(info, "✓ Today's parcel is yours")
+        UI.disabled(info, "DONE  |  Today's parcel is yours")
         self:timer(info, "Next delivery in ", (state.Day + 1) * 86400)
     elseif state.Level &lt; tuning.Level then
         UI.disabled(info, "Unlock at level " .. tuning.Level)
@@ -13692,11 +13694,11 @@ function Pages:restorePage(context)
     UI.label(frame, "Work at your own shop bench. Every attempt improves the item, and careful work gives a bigger condition boost.", 16, UI.Colors.Muted)
     self:guideButton(frame, "Workbench", "Guide me to my workbench")
     local techniques = {
-        {"Scrub", "✦", "Swipe away the grime", "Relaxing, generous and satisfying."},
-        {"Polish", "◇", "Trace a clean shine", "Follow the path with a steady hand."},
-        {"Rewire", "↔", "Bring it back to life", "Match wire colors and symbols."},
-        {"Repaint", "▧", "Make it your own", "Choose paint, fill the surface, change its style."},
-        {"Assemble", "▦", "Put the story together", "Fit the missing pieces into their outlines."},
+        {"Scrub", "S", "Swipe away the grime", "Relaxing, generous and satisfying."},
+        {"Polish", "P", "Trace a clean shine", "Follow the path with a steady hand."},
+        {"Rewire", "W", "Bring it back to life", "Match wire colors and symbols."},
+        {"Repaint", "R", "Make it your own", "Choose paint, fill the surface, change its style."},
+        {"Assemble", "A", "Put the story together", "Fit the missing pieces into their outlines."},
     }
     for _, technique in ipairs(techniques) do
         local choice = self:card(technique[2] .. " " .. technique[1])
@@ -13712,7 +13714,7 @@ function Pages:slotsPage(context)
         if occupied[slot] then
             local button = UI.button(grid, "Display " .. slot .. "\n" .. Catalog.ById[occupied[slot].DefId].Name, function() self.Open("Item", {Uid = occupied[slot].Uid}) end, true)
             button.TextSize = 14
-        else self:button(grid, "＋ Display " .. slot, "Display", {Uid = context.Uid, Slot = slot}) end
+        else self:button(grid, "+ Display " .. slot, "Display", {Uid = context.Uid, Slot = slot}) end
     end
     self:guideButton(self.UI.Content, "Shop", "Guide me to my shop")
 end
@@ -13760,14 +13762,14 @@ function Pages:expandPage()
         UI.label(upgrades, "Unlocks at level " .. nextTier.Level .. " • " .. money(nextTier.Cost), 15, UI.Colors.Muted)
         if state.Level &gt;= nextTier.Level and state.AvailableCash &gt;= nextTier.Cost then self:button(upgrades, "Upgrade your shop", "Upgrade", {Kind = "Shop"})
         else UI.disabled(upgrades, if state.Level &lt; nextTier.Level then "Keep creating to reach level " .. nextTier.Level else "Save up " .. money(nextTier.Cost)) end
-    else UI.disabled(upgrades, "✦ Your shop has reached its grandest tier") end
+    else UI.disabled(upgrades, "MAX  |  Your shop has reached its grandest tier") end
 end
 function Pages:toolsPage()
     local state = self.State
     local tools = self:card("The right tools, a little more magic")
     UI.label(tools, "Tool level " .. state.Tool .. "/" .. #Config.ToolCosts .. " • steadier restoration and better results", 17)
     local cost = Config.ToolCosts[state.Tool + 1]
-    if cost then self:button(tools, "Upgrade tools · " .. money(cost), "Upgrade", {Kind = "Tool"}) else UI.disabled(tools, "✓ Your workshop is fully equipped") end
+    if cost then self:button(tools, "Upgrade tools · " .. money(cost), "Upgrade", {Kind = "Tool"}) else UI.disabled(tools, "DONE  |  Your workshop is fully equipped") end
 end
 function Pages:displaysPage()
     local displayed = {}; for _, item in ipairs(self.State.Inventory) do if item.Slot then displayed[item.Slot] = item end end
@@ -13786,7 +13788,7 @@ function Pages:themesPage()
     for _, theme in ipairs(Config.Themes) do
         local frame = self:card(theme.Name)
         local swatch = Instance.new("Frame"); swatch.Size = UDim2.new(1, 0, 0, 60); swatch.BackgroundColor3 = Color3.new(unpack(theme.Color)); swatch.Parent = frame; UI.corner(swatch, 10)
-        UI.eyebrow(frame, if self.State.Theme == theme.Id then "✓ Your current signature" elseif self.State.Themes[theme.Id] then "In your collection" else "Make it yours • " .. money(theme.Cost))
+        UI.eyebrow(frame, if self.State.Theme == theme.Id then "CURRENT  |  Your signature" elseif self.State.Themes[theme.Id] then "In your collection" else "Make it yours • " .. money(theme.Cost))
         self:button(frame, if self.State.Themes[theme.Id] then "Use this theme" else "Unlock theme · " .. money(theme.Cost), "Upgrade", {Kind = "Theme", Theme = theme.Id}, self.State.Themes[theme.Id])
     end
     self:nav(self.UI.Content, "Visit the cosmetic boutique", "Boutique")
@@ -13810,21 +13812,21 @@ function Pages:questsPage()
     UI.label(gift, "Day " .. login.Streak .. " of 7  •  today's gift " .. money(gifts[math.clamp(login.Streak, 1, 7)]), 18)
     UI.progress(gift, login.Streak / 7, UI.Colors.Rose)
     local today = math.floor(self:now() / 86400)
-    if login.ClaimedDay == today then UI.disabled(gift, "✓ Today's gift collected — come back tomorrow")
+    if login.ClaimedDay == today then UI.disabled(gift, "DONE  |  Today's gift collected - come back tomorrow")
     else self:button(gift, "Collect today's gift", "DailyGift", {}) end
     local definitions = {{"Find", "Find 3 new stories", "Found", 3, 65}, {"Restore", "Restore 3 forgotten finds", "Restored", 3, 100}, {"Sell", "Send 3 finds to new homes", "Sold", 3, 150}}
     for _, definition in ipairs(definitions) do
         local frame = self:card(definition[2]); local progress = math.min(definition[4], state.Daily[definition[3]] or 0)
         UI.label(frame, progress .. " / " .. definition[4] .. " • " .. money(definition[5]) .. " reward", 16, UI.Colors.Muted)
         UI.progress(frame, progress / definition[4])
-        if state.Daily.Claimed[definition[1]] then UI.disabled(frame, "✓ Collected — beautifully done")
+        if state.Daily.Claimed[definition[1]] then UI.disabled(frame, "DONE  |  Collected")
         elseif progress &gt;= definition[4] then self:button(frame, "Collect " .. money(definition[5]), "Quest", {Id = definition[1]})
         else UI.disabled(frame, "Keep going — " .. (definition[4] - progress) .. " to go") end
     end
     local weekly = self:card("The weekly workshop challenge")
     UI.label(weekly, "Restore " .. math.min(20, state.Weekly.Restored) .. "/20 • Sell " .. math.min(15, state.Weekly.Sold) .. "/15", 17)
     UI.progress(weekly, (math.min(20, state.Weekly.Restored) / 20 + math.min(15, state.Weekly.Sold) / 15) / 2, UI.Colors.Gold)
-    if state.Weekly.Claimed then UI.disabled(weekly, "✓ Weekly Wonder title earned")
+    if state.Weekly.Claimed then UI.disabled(weekly, "DONE  |  Weekly Wonder title earned")
     elseif state.Weekly.Restored &gt;= 20 and state.Weekly.Sold &gt;= 15 then self:button(weekly, "Collect $1,200 + Weekly Wonder", "Quest", {Id = "Weekly"})
     else UI.label(weekly, "$1,200 and a title for a week of good work.", 16, UI.Colors.Muted) end
     self:nav(weekly, "What's happening this season?", "Events")
@@ -13838,9 +13840,9 @@ function Pages:collectionPage()
     local categories = Catalog.Categories
     local index = table.find(categories, self.CollectionCategory) or 1
     local row = UI.row(tabs)
-    UI.rowButton(row, "‹", function() self.CollectionCategory = categories[(index - 2) % #categories + 1]; self.Open("Collection") end, 3, true)
+    UI.rowButton(row, "&lt;", function() self.CollectionCategory = categories[(index - 2) % #categories + 1]; self.Open("Collection") end, 3, true)
     UI.rowButton(row, self.CollectionCategory, function() end, 3, true)
-    UI.rowButton(row, "›", function() self.CollectionCategory = categories[index % #categories + 1]; self.Open("Collection") end, 3, true)
+    UI.rowButton(row, "&gt;", function() self.CollectionCategory = categories[index % #categories + 1]; self.Open("Collection") end, 3, true)
     local grid = UI.grid(self.UI.Content, 258, 183)
     for _, definition in ipairs(Catalog.Items) do
         if definition.Category == self.CollectionCategory then
@@ -13849,7 +13851,7 @@ function Pages:collectionPage()
             for rarity = 1, 5 do
                 local discovered = self.State.Collection[definition.Id .. ":" .. rarity]
                 if discovered then highest = rarity; found = true end
-                table.insert(stamps, if discovered then Config.RarityIcons[rarity] else "–")
+            table.insert(stamps, if discovered then Config.RarityIcons[rarity] else "-")
             end
             local previewItem = {DefId = definition.Id, Rarity = highest, Condition = 5, Style = definition.Style, Inspected = found, Value = 0}
             local tile = self:itemTile(grid, previewItem, table.concat(stamps, "   "), function()
@@ -13876,7 +13878,7 @@ function Pages:auctionPage()
     UI.label(frame, "Current bid  " .. money(auction.Bid), 28, UI.Colors.Panel).Font = Enum.Font.GothamBold
     self:timer(frame, "Gavel falls in ", auction.Ends)
     local minimum = auction.Bid + math.max(10, math.floor(auction.Bid * 0.1))
-    if auction.Bidder == player.UserId then UI.eyebrow(frame, "✓ YOU'RE LEADING — " .. money(auction.Bid) .. " RESERVED", UI.Colors.Gold) end
+    if auction.Bidder == player.UserId then UI.eyebrow(frame, "LEADING  |  " .. money(auction.Bid) .. " RESERVED", UI.Colors.Gold) end
     self:button(frame, "Bid " .. money(minimum), "Bid", {Amount = minimum})
     self:button(frame, "Bid " .. money(minimum + math.max(50, math.floor(minimum * 0.2))), "Bid", {Amount = minimum + math.max(50, math.floor(minimum * 0.2))}, true)
     self:guideButton(frame, "Auction", "Show me the auction house")
@@ -13936,7 +13938,7 @@ function Pages:tradePage()
         self:button(frame, "Decline", "TradeCancel", {TradeId = trade.Id}, true); return
     end
     local function offerCard(title, offer)
-        local card = self:card(title .. (if offer.Confirmed then "  ✓ CONFIRMED" else ""))
+        local card = self:card(title .. (if offer.Confirmed then "  |  CONFIRMED" else ""))
         UI.label(card, "Cash offered: " .. money(offer.Cash), 18)
         for _, item in ipairs(offer.Items) do self:itemSummary(card, item, 100) end
         if #offer.Items == 0 then UI.label(card, "No finds offered", 14, UI.Colors.Muted) end
@@ -13955,7 +13957,7 @@ function Pages:tradePage()
         end
     end
     if self:now() &gt;= trade.ConfirmAfter then
-        self:button(frame, if trade.You.Confirmed then "✓ Waiting for partner" else "Confirm revision " .. trade.Revision,
+    self:button(frame, if trade.You.Confirmed then "CONFIRMED  |  Waiting for partner" else "Confirm revision " .. trade.Revision,
             "TradeConfirm", {TradeId = trade.Id, Revision = trade.Revision})
     else self:timer(frame, "Review unlocks in ", trade.ConfirmAfter) end
     self:button(frame, "Cancel trade", "TradeCancel", {TradeId = trade.Id}, true)
@@ -13966,7 +13968,7 @@ function Pages:showcasePage()
     if not showcase then UI.label(self:card(), "The showcase is loading…", 18); self:button(self.UI.Content, "Refresh", "LiveRefresh", {}); return end
     local hero = UI.hero(self.UI.Content, "Weekly designer showcase", showcase.Theme .. " week", "Compete with a small persistent neighborhood across servers. One vote per player; winners can collect cosmetic prizes after the week closes.")
     self:timer(hero, "Voting ends in ", showcase.Ends)
-    if showcase.Entered then UI.disabled(hero, "✓ Your shop is entered") else self:button(hero, "Enter my displayed collection", "Showcase", {Choice = "Enter"}) end
+    if showcase.Entered then UI.disabled(hero, "DONE  |  Your shop is entered") else self:button(hero, "Enter my displayed collection", "Showcase", {Choice = "Enter"}) end
     self:button(hero, "Collect past prizes", "Showcase", {Choice = "Claim"}, true)
     self:button(hero, "Refresh results", "Showcase", {Choice = "Refresh"}, true)
     if #showcase.Entries == 0 then UI.label(self:card(), "No shops entered in your neighborhood yet.", 17) end
@@ -13991,7 +13993,7 @@ function Pages:eventsPage()
             UI.label(frame, stat .. "  " .. progress .. "/" .. goal, 16); UI.progress(frame, progress / goal)
         end
         UI.eyebrow(frame, "REWARD • " .. event.RewardName)
-        if event.Claimed then UI.disabled(frame, "✓ Reward collected") elseif complete then self:button(frame, "Collect event reward", "EventClaim", {Id = event.Id}) end
+        if event.Claimed then UI.disabled(frame, "DONE  |  Reward collected") elseif complete then self:button(frame, "Collect event reward", "EventClaim", {Id = event.Id}) end
     end
 end
 
@@ -14001,7 +14003,7 @@ function Pages:boutiquePage()
     if #shop == 0 then UI.label(self:card(), "No Robux cosmetics are configured for this experience yet. In-game themes and decor remain available in your shop.", 17); return end
     for _, item in ipairs(shop) do
         local frame = self:card(item.Name); UI.label(frame, item.Description, 16, UI.Colors.Muted)
-        if item.Owned then UI.disabled(frame, "✓ Owned") elseif item.Price then self:button(frame, "Get for R$" .. item.Price, "ShopPurchase", {Kind = item.Kind, Id = item.Id}) else UI.disabled(frame, "Currently unavailable") end
+        if item.Owned then UI.disabled(frame, "OWNED") elseif item.Price then self:button(frame, "Get for R$" .. item.Price, "ShopPurchase", {Kind = item.Kind, Id = item.Id}) else UI.disabled(frame, "Currently unavailable") end
     end
 end
 
@@ -14012,7 +14014,7 @@ function Pages:arrangePage(context)
     local draft = self.Drafts[id] or {X = current.X, Z = current.Z, Rotation = current.Rotation}; self.Drafts[id] = draft
     local frame = self:card("Arrange " .. id)
     UI.label(frame, "Position: " .. draft.X .. ", " .. draft.Z .. "  •  rotation " .. draft.Rotation .. "°", 16)
-    local controls = {{"←",-1,0},{"→",1,0},{"↑",0,1},{"↓",0,-1}}
+    local controls = {{"&lt;",-1,0},{"&gt;",1,0},{"^",0,1},{"v",0,-1}}
     for _, control in ipairs(controls) do self:button(frame, control[1] .. " Move", "DecorPlace", {Decor=id,X=draft.X+control[2],Z=draft.Z+control[3],Rotation=draft.Rotation}, true) end
     self:button(frame, "Rotate 90°", "DecorPlace", {Decor=id,X=draft.X,Z=draft.Z,Rotation=(draft.Rotation+90)%360}, true)
     self:button(frame, "Reset position", "DecorPlace", {Decor=id,Reset=true}, true)
@@ -14023,8 +14025,8 @@ function Pages:visitPage(context)
     for _, shop in ipairs(self.State.Shops) do
         if not context.Owner or context.Owner == shop.UserId then
             local frame = self:card(shop.Name .. "'s " .. Config.Tiers[shop.Tier].Name)
-            UI.label(frame, "★ " .. string.format("%.1f", shop.Rating) .. "  •  Shop " .. tostring(shop.Plot), 18)
-            if shop.UserId ~= player.UserId then for stars=1,5 do self:button(frame,string.rep("★",stars),"Rate",{UserId=shop.UserId,Stars=stars},true) end end
+        UI.label(frame, "RATING " .. string.format("%.1f", shop.Rating) .. "  •  Shop " .. tostring(shop.Plot), 18)
+        if shop.UserId ~= player.UserId then for stars=1,5 do self:button(frame,string.rep("*",stars),"Rate",{UserId=shop.UserId,Stars=stars},true) end end
         end
     end
 end
@@ -14125,7 +14127,7 @@ end
 function Pages:townPage()
     local hero = UI.hero(self.UI.Content, "Welcome to Thrift Street", "Every treasure deserves a second chance", "Today's favorite style is " .. self.State.Demand .. ", worth 20% more when it finds the right home.")
     for _, link in ipairs({{"Dumpster Alley","Source"},{"Wholesale Source","Estate"},{"Parcel Post","Delivery"},{"Auction House","Auction"},{"Market","Market"},{"Designer Showcase","Showcase"},{"Cosmetic Store","Boutique"},{"Visit neighbors","Visit"},{"Settings","Settings"}}) do self:nav(hero,link[1],link[2]) end
-    if self.State.IsAdmin then self:nav(hero, "⚙ Admin control room", "Admin", nil, false) end
+    if self.State.IsAdmin then self:nav(hero, "Admin control room", "Admin", nil, false) end
 end
 
 function Pages:render(page, context)
@@ -14191,6 +14193,75 @@ end
 function UI.gradient(object, first, second, rotation)
     local gradient = Instance.new("UIGradient"); gradient.Color = ColorSequence.new(first, second)
     gradient.Rotation = rotation or 0; gradient.Parent = object; return gradient
+end
+function UI.vectorIcon(parent, kind, color, position, size, zIndex)
+    -- HUD icons are drawn from Roblox Frames instead of Unicode glyphs or
+    -- uploaded images. They therefore render identically on every platform.
+    local ink = color or UI.Colors.Ink
+    local canvas = Instance.new("Frame"); canvas.Name = "VectorIcon"; canvas.AnchorPoint = Vector2.new(0.5, 0)
+    canvas.Position = position or UDim2.new(0.5, 0, 0, 3); canvas.Size = UDim2.fromOffset(size or 24, size or 24)
+    canvas.BackgroundTransparency = 1; canvas.ZIndex = zIndex or ((parent.ZIndex or 1) + 1); canvas.Parent = parent
+    local z = canvas.ZIndex
+    local function line(x, y, width, height, rotation)
+        local part = Instance.new("Frame"); part.Name = "IconPart"; part.AnchorPoint = Vector2.new(0.5, 0.5)
+        part.Position = UDim2.fromOffset(x, y); part.Size = UDim2.fromOffset(width, height); part.Rotation = rotation or 0
+        part.BackgroundColor3 = ink; part.BorderSizePixel = 0; part.ZIndex = z; part.Parent = canvas; UI.corner(part, math.min(width, height) / 2)
+        return part
+    end
+    local function outline(x, y, width, height, radius)
+        local part = Instance.new("Frame"); part.Name = "IconOutline"; part.Position = UDim2.fromOffset(x, y)
+        part.Size = UDim2.fromOffset(width, height); part.BackgroundTransparency = 1; part.ZIndex = z; part.Parent = canvas
+        UI.corner(part, radius or 2); local stroke = UI.stroke(part, ink, 2, 0); stroke.Name = "IconStroke"
+        return part
+    end
+    local function dot(x, y, diameter)
+        local part = line(x, y, diameter, diameter); UI.corner(part, diameter / 2); return part
+    end
+
+    if kind == "home" then
+        outline(5, 10, 14, 11, 2); line(8, 8, 11, 2, -38); line(16, 8, 11, 2, 38); line(12, 17, 2, 8)
+    elseif kind == "bag" then
+        outline(4, 8, 16, 13, 3); outline(8, 3, 8, 8, 4)
+    elseif kind == "shop" then
+        outline(5, 9, 14, 12, 1); line(12, 7, 18, 3); line(8, 7, 2, 5); line(12, 7, 2, 5); line(16, 7, 2, 5); line(12, 17, 14, 2)
+    elseif kind == "search" then
+        outline(3, 3, 13, 13, 7); line(18, 18, 8, 2, 45)
+    elseif kind == "quests" then
+        outline(4, 3, 16, 19, 3); line(8, 9, 3, 2, 42); line(10, 8, 5, 2, -45); line(15, 9, 6, 2)
+        line(8, 15, 3, 2, 42); line(10, 14, 5, 2, -45); line(15, 15, 6, 2)
+    elseif kind == "travel" then
+        line(14, 5, 10, 3, -54); line(10, 11, 11, 3, 0); line(11, 17, 10, 3, -54)
+    elseif kind == "gift" then
+        outline(4, 9, 16, 12, 2); line(12, 15, 2, 12); line(12, 9, 18, 3)
+        outline(6, 4, 6, 5, 3); outline(12, 4, 6, 5, 3)
+    elseif kind == "store" then
+        outline(4, 7, 16, 13, 3); line(8, 7, 2, 5); line(12, 7, 2, 5); line(16, 7, 2, 5); line(12, 5, 16, 2)
+    elseif kind == "more" then
+        dot(6, 12, 4); dot(12, 12, 4); dot(18, 12, 4)
+    elseif kind == "style" then
+        outline(3, 4, 18, 16, 8); dot(8, 9, 3); dot(13, 7, 3); dot(17, 11, 3); line(17, 18, 8, 5, -18)
+    elseif kind == "tools" then
+        line(8, 12, 17, 3, 45); line(16, 12, 17, 3, -45); line(5, 5, 6, 3, 0); line(19, 5, 6, 3, 0)
+    elseif kind == "expand" then
+        line(12, 13, 15, 3, -90); line(8, 7, 8, 3, -45); line(16, 7, 8, 3, 45); line(12, 21, 16, 2)
+    elseif kind == "admin" then
+        outline(5, 3, 14, 17, 6); line(12, 11, 10, 2, -90); line(12, 11, 8, 2)
+    elseif kind == "chevron" then
+        line(9, 11, 9, 2, 42); line(15, 11, 9, 2, -42); line(9, 16, 9, 2, 42); line(15, 16, 9, 2, -42)
+    elseif kind == "arrow" then
+        line(11, 12, 15, 3); line(17, 9, 9, 3, 45); line(17, 15, 9, 3, -45)
+    elseif kind == "rank" then
+        local diamond = line(12, 12, 12, 12, 45); UI.corner(diamond, 3); line(12, 12, 5, 5, 45).BackgroundColor3 = UI.Colors.Gold
+    elseif kind == "gavel" then
+        line(10, 8, 11, 5, 35); line(14, 14, 13, 3, -55); line(17, 20, 11, 3)
+    end
+    return canvas
+end
+function UI.tintIcon(parent, color)
+    for _, child in ipairs(parent:GetDescendants()) do
+        if child.Name == "IconPart" then child.BackgroundColor3 = color
+        elseif child.Name == "IconStroke" and child:IsA("UIStroke") then child.Color = color end
+    end
 end
 function UI.padding(object, horizontal, vertical)
     local p = Instance.new("UIPadding")
@@ -14398,7 +14469,7 @@ function UI.new()
     local splashTitle = UI.label(splash, "THRIFT FLIP", 42, UI.Colors.White); splashTitle.Font = Enum.Font.GothamBlack
     splashTitle.AnchorPoint = Vector2.new(0.5, 0.5); splashTitle.Position = UDim2.fromScale(0.5, 0.45)
     splashTitle.Size = UDim2.new(0.9, 0, 0, 58); splashTitle.AutomaticSize = Enum.AutomaticSize.None; splashTitle.TextXAlignment = Enum.TextXAlignment.Center; splashTitle.ZIndex = 101
-    local splashTag = UI.label(splash, "FIND  •  RESTORE  •  BUILD YOUR DREAM SHOP", 13, UI.Colors.Gold)
+    local splashTag = UI.label(splash, "FIND  |  RESTORE  |  BUILD YOUR DREAM SHOP", 13, UI.Colors.Gold)
     splashTag.AnchorPoint = Vector2.new(0.5, 0); splashTag.Position = UDim2.fromScale(0.5, 0.51)
     splashTag.Size = UDim2.new(0.9, 0, 0, 30); splashTag.AutomaticSize = Enum.AutomaticSize.None; splashTag.TextXAlignment = Enum.TextXAlignment.Center; splashTag.ZIndex = 101
     task.delay(1.1, function()
@@ -14411,8 +14482,7 @@ function UI.new()
     brand.BackgroundColor3 = Color3.fromRGB(255, 248, 232); brand.Parent = hud; UI.corner(brand, 23); UI.stroke(brand, UI.Colors.White, 2, 0.15)
     local badge = Instance.new("Frame"); badge.Size = UDim2.fromOffset(32, 32); badge.Position = UDim2.fromOffset(5, 5)
     badge.BackgroundColor3 = Color3.fromRGB(23, 132, 124); badge.Parent = brand; UI.corner(badge, 16)
-    local icon = UI.label(badge, "⌄", 21, UI.Colors.White); icon.Size = UDim2.fromScale(1, 1); icon.TextXAlignment = Enum.TextXAlignment.Center
-    icon.AutomaticSize = Enum.AutomaticSize.None; icon.Font = Enum.Font.GothamBold
+    UI.vectorIcon(badge, "chevron", UI.Colors.White, UDim2.new(0.5, 0, 0, 4), 24, 3)
     self.Brand = UI.label(brand, "Thrift Flip", 16, Color3.fromRGB(8, 91, 84)); self.Brand.Font = Enum.Font.GothamBold
     self.Brand.Position = UDim2.fromOffset(43, 3); self.Brand.Size = UDim2.new(1, -49, 0, 20); self.Brand.AutomaticSize = Enum.AutomaticSize.None
     local tagline = UI.label(brand, "Every find has a story", 10, Color3.fromRGB(67, 86, 83))
@@ -14420,8 +14490,8 @@ function UI.new()
     local objective = Instance.new("Frame"); objective.Name = "Objective"; objective.Position = UDim2.fromOffset(0, 49)
     objective.Size = UDim2.fromOffset(210, 56); objective.BackgroundColor3 = Color3.fromRGB(20, 132, 124); objective.Parent = hud; UI.corner(objective, 14)
     UI.stroke(objective, Color3.fromRGB(8, 107, 101), 1, 0.25)
-    local arrow = UI.label(objective, "➜", 18, UI.Colors.White); arrow.Position = UDim2.fromOffset(13, 16); arrow.Size = UDim2.fromOffset(23, 27); arrow.AutomaticSize = Enum.AutomaticSize.None
-    local objectiveTitle = UI.label(objective, "OBJECTIVE • 0/1", 9, Color3.fromRGB(187, 235, 226)); objectiveTitle.Font = Enum.Font.GothamBold; self.ObjectiveTitle = objectiveTitle
+    UI.vectorIcon(objective, "arrow", UI.Colors.White, UDim2.fromOffset(23, 16), 24, 3)
+    local objectiveTitle = UI.label(objective, "OBJECTIVE | 0/1", 9, Color3.fromRGB(187, 235, 226)); objectiveTitle.Font = Enum.Font.GothamBold; self.ObjectiveTitle = objectiveTitle
     objectiveTitle.Position = UDim2.fromOffset(36, 6); objectiveTitle.Size = UDim2.new(1, -45, 0, 14); objectiveTitle.AutomaticSize = Enum.AutomaticSize.None
     self.Hint = UI.label(objective, "Find your first treasure", 12, UI.Colors.White); self.Hint.Font = Enum.Font.GothamBold
     self.Hint.Position = UDim2.fromOffset(36, 18); self.Hint.Size = UDim2.new(1, -45, 0, 34); self.Hint.AutomaticSize = Enum.AutomaticSize.None
@@ -14435,8 +14505,9 @@ function UI.new()
     self.Balance.Position = UDim2.fromOffset(36, 5); self.Balance.Size = UDim2.new(1, -42, 0, 28); self.Balance.AutomaticSize = Enum.AutomaticSize.None
     local levelPill = Instance.new("Frame"); levelPill.Position = UDim2.fromOffset(82, 0); levelPill.Size = UDim2.fromOffset(82, 38)
     levelPill.BackgroundColor3 = Color3.fromRGB(255, 248, 232); levelPill.Parent = stats; UI.corner(levelPill, 19)
-    local star = UI.label(levelPill, "★", 14, UI.Colors.White); star.Size = UDim2.fromOffset(27, 27); star.Position = UDim2.fromOffset(5, 5)
-    star.AutomaticSize = Enum.AutomaticSize.None; star.TextXAlignment = Enum.TextXAlignment.Center; star.BackgroundTransparency = 0; star.BackgroundColor3 = Color3.fromRGB(20, 132, 124); star.Font = Enum.Font.GothamBold; UI.corner(star, 14)
+    local rankBadge = Instance.new("Frame"); rankBadge.Size = UDim2.fromOffset(27, 27); rankBadge.Position = UDim2.fromOffset(5, 5)
+    rankBadge.BackgroundColor3 = Color3.fromRGB(20, 132, 124); rankBadge.BorderSizePixel = 0; rankBadge.Parent = levelPill; UI.corner(rankBadge, 14)
+    UI.vectorIcon(rankBadge, "rank", UI.Colors.White, UDim2.new(0.5, 0, 0, 2), 23, 3)
     self.Level = UI.label(levelPill, "LV 1", 15, Color3.fromRGB(20, 75, 70)); self.Level.Font = Enum.Font.GothamBold
     self.Level.Position = UDim2.fromOffset(36, 5); self.Level.Size = UDim2.new(1, -40, 0, 28); self.Level.AutomaticSize = Enum.AutomaticSize.None
     local levelTrack = Instance.new("Frame"); levelTrack.Name = "LevelProgress"; levelTrack.Position = UDim2.new(0, 36, 1, -5)
@@ -14448,12 +14519,11 @@ function UI.new()
     auctionBar.BackgroundColor3 = UI.Colors.Ink; auctionBar.BorderSizePixel = 0; auctionBar.Visible = false; auctionBar.ZIndex = 20; auctionBar.Parent = gui
     UI.corner(auctionBar, 15); UI.stroke(auctionBar, UI.Colors.Gold, 2, 0.08)
     local auctionLimit = Instance.new("UISizeConstraint"); auctionLimit.MaxSize = Vector2.new(520, 58); auctionLimit.MinSize = Vector2.new(260, 58); auctionLimit.Parent = auctionBar
-    local gavel = UI.label(auctionBar, "◆", 18, UI.Colors.Gold); gavel.Position = UDim2.fromOffset(13, 7); gavel.Size = UDim2.fromOffset(25, 25)
-    gavel.AutomaticSize = Enum.AutomaticSize.None; gavel.TextXAlignment = Enum.TextXAlignment.Center; gavel.ZIndex = 21
+    UI.vectorIcon(auctionBar, "gavel", UI.Colors.Gold, UDim2.fromOffset(25, 7), 25, 21)
     self.AuctionTitle = UI.label(auctionBar, "LIVE AUCTION", 11, UI.Colors.Cream); self.AuctionTitle.Font = Enum.Font.GothamBold
     self.AuctionTitle.Position = UDim2.fromOffset(42, 5); self.AuctionTitle.Size = UDim2.new(1, -116, 0, 20); self.AuctionTitle.AutomaticSize = Enum.AutomaticSize.None
     self.AuctionTitle.TextTruncate = Enum.TextTruncate.AtEnd; self.AuctionTitle.TextWrapped = false; self.AuctionTitle.ZIndex = 21
-    self.AuctionBid = UI.label(auctionBar, "Opening bid • $0", 12, UI.Colors.White); self.AuctionBid.Font = Enum.Font.GothamBold
+    self.AuctionBid = UI.label(auctionBar, "Opening bid | $0", 12, UI.Colors.White); self.AuctionBid.Font = Enum.Font.GothamBold
     self.AuctionBid.Position = UDim2.fromOffset(42, 23); self.AuctionBid.Size = UDim2.new(1, -116, 0, 21); self.AuctionBid.AutomaticSize = Enum.AutomaticSize.None
     self.AuctionBid.TextTruncate = Enum.TextTruncate.AtEnd; self.AuctionBid.TextWrapped = false; self.AuctionBid.ZIndex = 21
     self.AuctionTime = UI.label(auctionBar, "0:00", 16, UI.Colors.Gold); self.AuctionTime.Font = Enum.Font.GothamBold
@@ -14480,9 +14550,10 @@ function UI.new()
     moreMenu.BackgroundColor3 = UI.Colors.Cream; moreMenu.BorderSizePixel = 0; moreMenu.Visible = false; moreMenu.ZIndex = 14; moreMenu.Parent = gui
     UI.corner(moreMenu, 15); UI.stroke(moreMenu, Color3.fromRGB(122,143,135), 1, 0.38); UI.padding(moreMenu, 7, 7); UI.list(moreMenu, 2)
     self.MoreMenu = moreMenu; self.MoreActionCount = 0
-    local moreButton = UI.button(actions, "•••\nMore", function() moreMenu.Visible = not moreMenu.Visible end, true)
+    local moreButton = UI.button(actions, "More", function() moreMenu.Visible = not moreMenu.Visible end, true)
     moreButton.LayoutOrder = 100; moreButton.Size = UDim2.new(1, 0, 0, 48); moreButton.TextSize = 10; moreButton.ZIndex = 13
-    moreButton.BackgroundColor3 = UI.Colors.Teal; moreButton.TextColor3 = UI.Colors.White; self.MoreButton = moreButton
+    moreButton.TextYAlignment = Enum.TextYAlignment.Bottom; moreButton.BackgroundColor3 = UI.Colors.Teal; moreButton.TextColor3 = UI.Colors.White
+    UI.vectorIcon(moreButton, "more", UI.Colors.White, UDim2.new(0.5, 0, 0, 2), 23, 14); self.MoreButton = moreButton
     local camera = workspace.CurrentCamera
     local function fitQuickActions()
         local narrow = camera and camera.ViewportSize.X &lt; 900
@@ -14516,7 +14587,7 @@ function UI.new()
     self.Subtitle.Font = Enum.Font.GothamBold; self.Subtitle.Position = UDim2.fromOffset(18, 31)
     self.Subtitle.Size = UDim2.new(1, -74, 0, 16); self.Subtitle.AutomaticSize = Enum.AutomaticSize.None
     self.Subtitle.TextTruncate = Enum.TextTruncate.AtEnd; self.Subtitle.TextWrapped = false
-    local close = UI.button(header, "×", function() self:hide() end, true)
+    local close = UI.button(header, "X", function() self:hide() end, true)
     close.Size = UDim2.fromOffset(36, 36); close.Position = UDim2.new(1, -46, 0, 10); close.TextSize = 22; close.ZIndex = 9; close.BackgroundColor3 = UI.Colors.Cream
     local scroll = Instance.new("ScrollingFrame"); scroll.Name = "Pages"; scroll.Position = UDim2.fromOffset(13, 70)
     scroll.Size = UDim2.new(1, -26, 1, -82); scroll.BackgroundTransparency = 1; scroll.BorderSizePixel = 0
@@ -14535,24 +14606,26 @@ function UI.new()
     end)
     return self
 end
-function UI:addQuickAction(text, color, callback)
-    local button = UI.button(self.QuickActions, text, callback, true)
+function UI:addQuickAction(label, iconKind, color, callback)
+    local button = UI.button(self.QuickActions, label, callback, true)
     self.QuickActionCount += 1
     button.LayoutOrder = self.QuickActionCount
-    button.Size = UDim2.new(1, 0, 0, 48); button.TextSize = 10; button.ZIndex = 13
+    button.Size = UDim2.new(1, 0, 0, 48); button.TextSize = 10; button.TextYAlignment = Enum.TextYAlignment.Bottom; button.ZIndex = 13
     for _, child in ipairs(button:GetChildren()) do if child:IsA("UIGradient") then child:Destroy() end end
     button.BackgroundColor3 = Color3.fromRGB(255, 248, 232); button.TextColor3 = Color3.fromRGB(8, 91, 84)
     UI.corner(button, 15)
     self.QuickActions.Size = UDim2.fromOffset(60, (self.QuickActionCount + 1) * 48 + self.QuickActionCount * 6)
-    self.QuickButtons[text] = button
+    UI.vectorIcon(button, iconKind, Color3.fromRGB(8, 91, 84), UDim2.new(0.5, 0, 0, 2), 23, 14)
+    self.QuickButtons[label] = button
     return button
 end
-function UI:addMoreAction(text, callback)
+function UI:addMoreAction(label, iconKind, callback)
     self.MoreActionCount += 1
-    local button = UI.button(self.MoreMenu, text, function() self.MoreMenu.Visible = false; callback() end, true)
+    local button = UI.button(self.MoreMenu, "      " .. label, function() self.MoreMenu.Visible = false; callback() end, true)
     button.LayoutOrder = self.MoreActionCount; button.Size = UDim2.new(1, 0, 0, 34); button.TextSize = 11; button.ZIndex = 15
     button.BackgroundTransparency = 1; button.TextColor3 = UI.Colors.Ink; button.TextXAlignment = Enum.TextXAlignment.Left
     UI.padding(button, 8, 2)
+    UI.vectorIcon(button, iconKind, UI.Colors.Ink, UDim2.fromOffset(16, 4), 24, 16)
     self.MoreMenu.Size = UDim2.fromOffset(104, self.MoreActionCount * 36 + 14)
     return button
 end
@@ -14571,8 +14644,8 @@ function UI:updateAuction(auction, itemName, serverTime)
         return
     end
     self.AuctionBar.Visible = true
-    self.AuctionTitle.Text = "LIVE AUCTION  •  " .. string.upper(itemName or "MYSTERY LOT")
-    self.AuctionBid.Text = (auction.BidderName and ("Latest: " .. auction.BidderName) or "Opening bid") .. "  •  $" .. tostring(math.floor(auction.Bid or 0))
+    self.AuctionTitle.Text = "LIVE AUCTION  |  " .. string.upper(itemName or "MYSTERY LOT")
+    self.AuctionBid.Text = (auction.BidderName and ("Latest: " .. auction.BidderName) or "Opening bid") .. "  |  $" .. tostring(math.floor(auction.Bid or 0))
     self.AuctionEnds = auction.Ends; self.AuctionClockOffset = (serverTime or os.time()) - os.time()
     if not self.AuctionHeartbeat then
         local last = 0
@@ -14587,8 +14660,9 @@ function UI:updateAuction(auction, itemName, serverTime)
     end
 end
 function UI:addNav(name, symbol, callback)
-    local button = UI.button(self.Nav, symbol .. "\n" .. name, callback, true)
-    button.TextSize = 12; button.BackgroundColor3 = Color3.fromRGB(255, 248, 232); button.TextColor3 = Color3.fromRGB(8, 91, 84); button.ZIndex = 13
+    local button = UI.button(self.Nav, name, callback, true)
+    button.TextSize = 11; button.TextYAlignment = Enum.TextYAlignment.Bottom; button.BackgroundColor3 = Color3.fromRGB(255, 248, 232); button.TextColor3 = Color3.fromRGB(8, 91, 84); button.ZIndex = 13
+    UI.vectorIcon(button, symbol, button.TextColor3, UDim2.new(0.5, 0, 0, 1), 25, 14)
     self.NavButtons[name] = button; return button
 end
 function UI:selectNav(name)
@@ -14596,6 +14670,7 @@ function UI:selectNav(name)
         local selected = label == name or (label == "Find" and name == "Source")
         button.BackgroundColor3 = if selected then Color3.fromRGB(20, 132, 124) else Color3.fromRGB(255, 248, 232)
         button.TextColor3 = if selected then UI.Colors.White else Color3.fromRGB(8, 91, 84)
+        UI.tintIcon(button, button.TextColor3)
     end
 end
 function UI:setSubtitle(text) self.Subtitle.Text = string.upper(text) end
@@ -14644,7 +14719,7 @@ function UI:searchTreasure(source, callback)
     local header = block(panel, "Header", UDim2.new(1, 0, 0, 66), UDim2.fromOffset(0, 0), UI.Colors.Teal, baseZ + 2)
     local heading = UI.label(header, "Source", 25, UI.Colors.Cream); heading.Font = Enum.Font.GothamBold
     heading.Position = UDim2.fromOffset(20, 8); heading.Size = UDim2.new(1, -40, 0, 30); heading.AutomaticSize = Enum.AutomaticSize.None; heading.ZIndex = baseZ + 3
-    local sourceCopy = if source == "Delivery" then "PARCEL POST · DAILY DELIVERY" elseif source == "Estate" then "THRIFT STREET · WHOLESALE" else "DUMPSTER ALLEY · FREE FINDS"
+    local sourceCopy = if source == "Delivery" then "PARCEL POST | DAILY DELIVERY" elseif source == "Estate" then "THRIFT STREET | WHOLESALE" else "DUMPSTER ALLEY | FREE FINDS"
     local eyebrow = UI.label(header, sourceCopy, 11, UI.Colors.Cream); eyebrow.Font = Enum.Font.GothamBold
     eyebrow.TextTransparency = 0.08; eyebrow.Position = UDim2.fromOffset(20, 38); eyebrow.Size = UDim2.new(1, -40, 0, 17); eyebrow.AutomaticSize = Enum.AutomaticSize.None; eyebrow.ZIndex = baseZ + 3
 
@@ -14686,7 +14761,7 @@ function UI:searchTreasure(source, callback)
 
     local flash = block(stage, "RevealFlash", UDim2.fromScale(1, 1), UDim2.fromScale(0, 0), UI.Colors.White, baseZ + 18)
     flash.BackgroundTransparency = 1
-    local status = UI.label(panel, "Digging through the bags…", 17, UI.Colors.Ink); status.Font = Enum.Font.GothamBold
+    local status = UI.label(panel, "Digging through the bags...", 17, UI.Colors.Ink); status.Font = Enum.Font.GothamBold
     status.Position = UDim2.new(0, 18, 1, -56); status.Size = UDim2.new(1, -36, 0, 26); status.AutomaticSize = Enum.AutomaticSize.None
     status.TextXAlignment = Enum.TextXAlignment.Center; status.ZIndex = baseZ + 4
     local track = block(panel, "SearchProgress", UDim2.new(1, -40, 0, 7), UDim2.new(0, 20, 1, -18), Color3.fromRGB(218, 225, 211), baseZ + 3); UI.corner(track, 5)
@@ -14708,7 +14783,7 @@ function UI:searchTreasure(source, callback)
         for index = 1, 18 do
             local angle = index / 18 * math.pi * 2 + (index % 3) * 0.12
             local distance = 75 + (index * 23) % 105
-            local spark = UI.label(stage, if index % 3 == 0 then "◆" else "✦", 14 + index % 4 * 3, colors[index % #colors + 1])
+            local spark = UI.label(stage, if index % 3 == 0 then "+" else "*", 14 + index % 4 * 3, colors[index % #colors + 1])
             spark.AnchorPoint = Vector2.new(0.5, 0.5); spark.Position = UDim2.fromScale(0.5, 0.56); spark.Size = UDim2.fromOffset(28, 28)
             spark.AutomaticSize = Enum.AutomaticSize.None; spark.TextXAlignment = Enum.TextXAlignment.Center; spark.ZIndex = baseZ + 17; spark.Rotation = index * 21
             tween(spark, {Position = spark.Position + UDim2.fromOffset(math.cos(angle) * distance, math.sin(angle) * distance - 32), TextTransparency = 1, Rotation = spark.Rotation + 180}, 0.9)
@@ -14717,7 +14792,7 @@ function UI:searchTreasure(source, callback)
     end
 
     task.spawn(function()
-        local messages = {"Digging through the bags…", "Checking the corners…", "Something shiny…"}
+        local messages = {"Digging through the bags...", "Checking the corners...", "Something shiny..."}
         for step = 1, 21 do
             if not layer.Parent then self.Searching = false; return end
             if step == 8 then status.Text = messages[2] elseif step == 15 then status.Text = messages[3] end
@@ -14760,7 +14835,7 @@ function UI:rarityReveal(definition, item, callback)
 
     if self.Effects then
         for index = 1, (if rarity &gt;= 5 then 22 elseif rarity &gt;= 4 then 14 else 8) do
-            local symbol = UI.label(layer, if index % 3 == 0 then SharedConfig.RarityIcons[rarity] else "✦", 16 + index % 4 * 5, color)
+            local symbol = UI.label(layer, if index % 3 == 0 then SharedConfig.RarityIcons[rarity] else "+", 16 + index % 4 * 5, color)
             symbol.AnchorPoint = Vector2.new(0.5, 0.5); symbol.Position = UDim2.fromScale(0.08 + ((index * 37) % 84) / 100, 0.18 + ((index * 53) % 68) / 100)
             symbol.Size = UDim2.fromOffset(36, 36); symbol.AutomaticSize = Enum.AutomaticSize.None
             symbol.TextXAlignment = Enum.TextXAlignment.Center; symbol.ZIndex = 51; symbol.Rotation = (index * 29) % 60 - 30
@@ -14796,10 +14871,10 @@ function UI:rarityReveal(definition, item, callback)
     local name = UI.label(card, definition.Name, 25, UI.Colors.Ink); name.Font = Enum.Font.GothamBlack
     name.Position = UDim2.fromOffset(18, 357); name.Size = UDim2.new(1, -36, 0, 34); name.AutomaticSize = Enum.AutomaticSize.None
     name.TextXAlignment = Enum.TextXAlignment.Center; name.ZIndex = 53
-    local detail = UI.label(card, SharedConfig.Conditions[item.Condition] .. " • " .. (item.Style or definition.Style) .. " • $" .. tostring(math.floor(item.Value or 0)), 15, UI.Colors.Muted)
+    local detail = UI.label(card, SharedConfig.Conditions[item.Condition] .. " | " .. (item.Style or definition.Style) .. " | $" .. tostring(math.floor(item.Value or 0)), 15, UI.Colors.Muted)
     detail.Position = UDim2.fromOffset(18, 394); detail.Size = UDim2.new(1, -36, 0, 28); detail.AutomaticSize = Enum.AutomaticSize.None
     detail.TextXAlignment = Enum.TextXAlignment.Center; detail.ZIndex = 53
-    local button = UI.button(card, if rarity &gt;= 5 then "★ Keep this legendary find" else "Add to my collection", function()
+    local button = UI.button(card, if rarity &gt;= 5 then "LEGENDARY | Keep this find" else "Add to my collection", function()
         if self.RevealLayer ~= layer then return end
         self.RevealLayer = nil
         if self.Effects then

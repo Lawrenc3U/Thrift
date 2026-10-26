@@ -19,7 +19,9 @@ local Config = {
         Delivery = {Cost = 0, Level = 1, Cooldown = 0, Weights = {35, 40, 20, 4, 1}},
     },
     Rarities = {"Common", "Uncommon", "Rare", "Epic", "Legendary"},
-    RarityIcons = {"○", "◇", "△", "✦", "★"},
+    -- ASCII badges remain readable on every Roblox font/platform. Decorative
+    -- rarity effects are drawn with native UI geometry in the client.
+    RarityIcons = {"C", "U", "R", "E", "L"},
     RarityColors = {"#AEB7B5", "#70C58D", "#6CABF3", "#C29AE8", "#EDC66D"},
     RarityEffectNames = {"Found", "Fresh", "Shimmer", "Enchanted", "Golden Legend"},
     RarityMultipliers = {1, 1.8, 3.5, 7, 15},
