@@ -2,7 +2,7 @@
 
 A Roblox restore-and-resell game built in Luau. Find forgotten treasures, reveal their rarity, restore them, decorate your shop, and sell to customers in a cozy shared town.
 
-Launch key art is available at `assets/marketing/thrift-flip-key-art.png`; upload it through Creator Dashboard as the experience thumbnail after reviewing Roblox's current image requirements.
+The creator upload pack is in `assets/marketing`: a 512×512 experience icon and three 1920×1080 thumbnails. Thirteen original WAV files are in `assets/audio`. Follow `docs/PUBLISH.md` to upload them and configure their creator-owned IDs.
 
 **Status: a feature-complete development build that still needs final Roblox Studio and device QA before public release.** The cloud environment compiles the code and runs headless server tests; it cannot run Roblox Studio. See [release status](docs/RELEASE.md) for the publishing checklist.
 
@@ -37,6 +37,7 @@ python3 tools/test_exchange.py
 python3 tools/generate_audio.py
 python3 tools/export_models.py
 python3 tools/build.py
+python3 tools/release_check.py
 ```
 
 `tools/test.py` defaults to that cloud path. On another machine, set `LUAU` and optionally `LUAU_COMPILE` to your executable paths. It compiles every source file, then executes production economy, profile, persistence, and game-service code against service doubles. It does **not** emulate the Roblox engine or claim UI/physics/network readiness.

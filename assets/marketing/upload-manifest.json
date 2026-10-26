@@ -1,0 +1,169 @@
+{
+  "generated": "All files are original Thrift Flip project assets prepared for creator-owned Roblox upload.",
+  "images": [
+    {
+      "file": "experience-icon.png",
+      "purpose": "experience icon",
+      "width": 512,
+      "height": 512,
+      "bytes": 524820,
+      "sha256": "e356ca2d00aa8fb0a7eef9c07ec19fe7d986f67f22d0aab1ba058fa894e2d0ba"
+    },
+    {
+      "file": "thumbnail-find-rare-treasures.png",
+      "purpose": "experience thumbnail",
+      "width": 1920,
+      "height": 1080,
+      "bytes": 3111838,
+      "sha256": "c9914cfef171d92c4dad482275a39f89d30f5fd4fc01ea0ae9c193c77bc685db"
+    },
+    {
+      "file": "thumbnail-restore-display-sell.png",
+      "purpose": "experience thumbnail",
+      "width": 1920,
+      "height": 1080,
+      "bytes": 3361110,
+      "sha256": "ab3c180ab2cbdcf63643e47ab965428f5e7f716ab8aa5a1affb58fa6e58d1e8e"
+    },
+    {
+      "file": "thumbnail-key-art.png",
+      "purpose": "experience thumbnail",
+      "width": 1920,
+      "height": 1080,
+      "bytes": 3260282,
+      "sha256": "5eeec9c41fd8ba9c8dce280e0258b6e0c990b62157fd7161279a8036e5f1159f"
+    }
+  ],
+  "audio": [
+    {
+      "key": "auction",
+      "file": "auction.wav",
+      "duration": 0.9,
+      "sampleRate": 22050,
+      "channels": 1,
+      "peak": 0.242,
+      "bytes": 39732,
+      "sha256": "d39b1177f4d379342c77b261f88fa60c34990a74a183408c01de3d538afa1bc3"
+    },
+    {
+      "key": "auction_music",
+      "file": "auction_music.wav",
+      "duration": 17.143,
+      "sampleRate": 22050,
+      "channels": 1,
+      "peak": 0.282,
+      "bytes": 756044,
+      "sha256": "e129e63a6f8ec0a91fd91f918ec9780c39c8443cf89c0285e86aa2aaaf19536f"
+    },
+    {
+      "key": "click",
+      "file": "click.wav",
+      "duration": 0.41,
+      "sampleRate": 22050,
+      "channels": 1,
+      "peak": 0.159,
+      "bytes": 18124,
+      "sha256": "8866c5700935c1d577eaf4ad5908ac83a512a00dbce51a033c8bafbeea68654d"
+    },
+    {
+      "key": "error",
+      "file": "error.wav",
+      "duration": 0.55,
+      "sampleRate": 22050,
+      "channels": 1,
+      "peak": 0.177,
+      "bytes": 24298,
+      "sha256": "02a59ab5a41a77c1f396d8cb51c259857dd86a625edb8149a217abff89cc5265"
+    },
+    {
+      "key": "place",
+      "file": "place.wav",
+      "duration": 0.58,
+      "sampleRate": 22050,
+      "channels": 1,
+      "peak": 0.187,
+      "bytes": 25622,
+      "sha256": "1121e737c0c4e2bf968f218840c763bcd85b86326aad605261d9eda8d67a21ca"
+    },
+    {
+      "key": "polish",
+      "file": "polish.wav",
+      "duration": 0.68,
+      "sampleRate": 22050,
+      "channels": 1,
+      "peak": 0.221,
+      "bytes": 30030,
+      "sha256": "18eccc8b685c2e6f1c1baebad2a40390d999a802d577aae6e0bc1b6d9d0e5107"
+    },
+    {
+      "key": "restore",
+      "file": "restore.wav",
+      "duration": 0.85,
+      "sampleRate": 22050,
+      "channels": 1,
+      "peak": 0.214,
+      "bytes": 37528,
+      "sha256": "79df4cbc4c52881289fa4e0b5ae922cbb79a9cd478c9e3ee348f597ae06a2aaf"
+    },
+    {
+      "key": "reveal",
+      "file": "reveal.wav",
+      "duration": 1.02,
+      "sampleRate": 22050,
+      "channels": 1,
+      "peak": 0.266,
+      "bytes": 45026,
+      "sha256": "3415ba3037abc1adfcea8619aff155128a257703a8ca21159b2e0cbf7ab42ced"
+    },
+    {
+      "key": "reward",
+      "file": "reward.wav",
+      "duration": 1.4,
+      "sampleRate": 22050,
+      "channels": 1,
+      "peak": 0.299,
+      "bytes": 61784,
+      "sha256": "5e72254428bcdeb0e35846ad49053b23e4ed38eae6084e1c6eb807f57605699d"
+    },
+    {
+      "key": "sale",
+      "file": "sale.wav",
+      "duration": 1.05,
+      "sampleRate": 22050,
+      "channels": 1,
+      "peak": 0.245,
+      "bytes": 46348,
+      "sha256": "d55ad967205b1bf074af82aaa2169bd3788435e9e6ee39647f6691607bed5829"
+    },
+    {
+      "key": "scrub",
+      "file": "scrub.wav",
+      "duration": 0.48,
+      "sampleRate": 22050,
+      "channels": 1,
+      "peak": 0.178,
+      "bytes": 21212,
+      "sha256": "988c27d89b7df313339bc1b473671d6d5fbbe0389940712fb61cd6bc0ab60385"
+    },
+    {
+      "key": "shop",
+      "file": "shop.wav",
+      "duration": 22.857,
+      "sampleRate": 22050,
+      "channels": 1,
+      "peak": 0.3,
+      "bytes": 1008044,
+      "sha256": "604a5a74eba5d826dc6ae327fe112a23d4051838228bbe29e773629713f3178f"
+    },
+    {
+      "key": "town",
+      "file": "town.wav",
+      "duration": 20.0,
+      "sampleRate": 22050,
+      "channels": 1,
+      "peak": 0.297,
+      "bytes": 882044,
+      "sha256": "c69a0449e0862e441e44f100f48b48c337bf463c0d13d8b31e57fb7908503fc3"
+    }
+  ]
+}
