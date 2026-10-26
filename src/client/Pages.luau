@@ -332,8 +332,11 @@ function Pages:themesPage()
     for _, theme in ipairs(Config.Themes) do
         local frame = self:card(theme.Name)
         local swatch = Instance.new("Frame"); swatch.Size = UDim2.new(1, 0, 0, 60); swatch.BackgroundColor3 = Color3.new(unpack(theme.Color)); swatch.Parent = frame; UI.corner(swatch, 10)
-        UI.eyebrow(frame, if self.State.Theme == theme.Id then "CURRENT  |  Your signature" elseif self.State.Themes[theme.Id] then "In your collection" else "Make it yours • " .. money(theme.Cost))
-        self:button(frame, if self.State.Themes[theme.Id] then "Use this theme" else "Unlock theme · " .. money(theme.Cost), "Upgrade", {Kind = "Theme", Theme = theme.Id}, self.State.Themes[theme.Id])
+        local owned = self.State.Themes[theme.Id] == true
+        UI.eyebrow(frame, if self.State.Theme == theme.Id then "CURRENT  |  Your signature" elseif owned then "In your collection" elseif theme.PaidOnly then "STORE EXCLUSIVE  |  Permanent" else "Make it yours • " .. money(theme.Cost))
+        if theme.PaidOnly and not owned then
+            self:nav(frame, "View this bundle in Store", "Boutique", nil, false)
+        else self:button(frame, if owned then "Use this theme" else "Unlock theme · " .. money(theme.Cost), "Upgrade", {Kind = "Theme", Theme = theme.Id}, owned) end
     end
     self:nav(self.UI.Content, "Visit the cosmetic boutique", "Boutique")
 end
@@ -543,12 +546,36 @@ end
 
 function Pages:boutiquePage()
     local shop = self.State.Live and self.State.Live.Shop or {}
-    UI.hero(self.UI.Content, "Cosmetic boutique", "Style with no shortcuts", "Only permanent visual cosmetics appear here. Core progression always stays available through play.")
-    if #shop == 0 then UI.label(self:card(), "No Robux cosmetics are configured for this experience yet. In-game themes and decor remain available in your shop.", 17); return end
+    UI.hero(self.UI.Content, "Thrift Flip Store", "Make your shop unforgettable", "Permanent style bundles for players who want to support the game. Every find, tool, level and auction remains available through play.")
+    local promise = self:card("Fair by design")
+    UI.label(promise, "NO RANDOM REWARDS  |  NO CASH BOOSTS  |  KEEP FOREVER", 13, UI.Colors.Teal).Font = Enum.Font.GothamBold
+    UI.label(promise, "Preview the complete reward before buying. Roblox shows the final price and asks for confirmation.", 14, UI.Colors.Muted)
+    if #shop == 0 then UI.label(self:card(), "The store catalog is loading. Try reopening Store in a moment.", 17); return end
     for _, item in ipairs(shop) do
-        local frame = self:card(item.Name); UI.label(frame, item.Description, 16, UI.Colors.Muted)
-        if item.Owned then UI.disabled(frame, "OWNED") elseif item.Price then self:button(frame, "Get for R$" .. item.Price, "ShopPurchase", {Kind = item.Kind, Id = item.Id}) else UI.disabled(frame, "Currently unavailable") end
+        local accent = if item.Accent then Color3.fromHex(item.Accent) else UI.Colors.Teal
+        local frame = self:card()
+        local swatch = Instance.new("Frame"); swatch.Name = "BundlePreview"; swatch.Size = UDim2.new(1, 0, 0, 58)
+        swatch.BackgroundColor3 = accent; swatch.BorderSizePixel = 0; swatch.Parent = frame; UI.corner(swatch, 12)
+        local badge = UI.label(swatch, item.Badge or (if item.Kind == "Pass" then "PERMANENT PASS" else "SPECIAL"), 11, UI.Colors.White)
+        badge.Font = Enum.Font.GothamBold; badge.Position = UDim2.fromOffset(12, 6); badge.Size = UDim2.new(1, -24, 0, 16); badge.AutomaticSize = Enum.AutomaticSize.None
+        local preview = UI.label(swatch, string.upper(item.Name), 19, UI.Colors.White); preview.Font = Enum.Font.GothamBold
+        preview.Position = UDim2.fromOffset(12, 23); preview.Size = UDim2.new(1, -24, 0, 27); preview.AutomaticSize = Enum.AutomaticSize.None
+        UI.label(frame, item.Description, 15, UI.Colors.Muted)
+        for _, benefit in ipairs(item.Benefits or {}) do UI.label(frame, "+  " .. benefit, 14, UI.Colors.Ink) end
+        if item.Owned then
+            UI.disabled(frame, "OWNED  |  Ready in your Style and Tools menus")
+        elseif not item.Configured then
+            UI.disabled(frame, "STORE PREVIEW  |  Creator ID needed" .. (if item.SuggestedPrice then "  |  Planned R$" .. item.SuggestedPrice else ""))
+        elseif not item.Available then
+            UI.disabled(frame, "Currently off sale")
+        else
+            local buyText = if item.Price then "Get permanently for R$" .. item.Price else "View Roblox price"
+            local buy = self:button(frame, buyText, "ShopPurchase", {Kind = item.Kind, Id = item.Id})
+            buy.BackgroundColor3 = accent; buy.TextColor3 = UI.Colors.White
+        end
     end
+    local footer = self:card("Purchase support")
+    UI.label(footer, "Purchases are handled by Roblox. Rejoin after buying if an entitlement takes a moment to appear. Game passes are restored automatically on every login.", 14, UI.Colors.Muted)
 end
 
 function Pages:arrangePage(context)

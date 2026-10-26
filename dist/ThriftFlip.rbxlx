@@ -84,6 +84,64 @@ return Catalog
       </Item>
       <Item class="ModuleScript" referent="RBX15">
         <Properties>
+          <string name="Name">Commerce</string>
+          <ProtectedString name="Source">-- Pure cosmetic entitlement helpers shared by live purchase processing and tests.
+local Commerce = {}
+
+local function ensure(profile)
+    profile.Themes = profile.Themes or {}
+    profile.Decorations = profile.Decorations or {}
+    profile.Titles = profile.Titles or {}
+end
+
+local function grant(target, single, many)
+    if type(single) == "string" and single ~= "" then target[single] = true end
+    if type(many) == "table" then
+        for _, key in ipairs(many) do if type(key) == "string" and key ~= "" then target[key] = true end end
+    end
+end
+
+local function owns(target, single, many)
+    local hasReward = false
+    if type(single) == "string" and single ~= "" then
+        hasReward = true
+        if not target[single] then return false, hasReward end
+    end
+    if type(many) == "table" then
+        for _, key in ipairs(many) do
+            if type(key) == "string" and key ~= "" then
+                hasReward = true
+                if not target[key] then return false, hasReward end
+            end
+        end
+    end
+    return true, hasReward
+end
+
+function Commerce.applyReward(profile, reward)
+    ensure(profile); reward = reward or {}
+    grant(profile.Themes, reward.Theme, reward.Themes)
+    grant(profile.Decorations, reward.Decoration, reward.Decorations)
+    grant(profile.Titles, reward.Title, reward.Titles)
+end
+
+function Commerce.ownsReward(profile, reward)
+    ensure(profile); reward = reward or {}
+    local complete, hasTheme = owns(profile.Themes, reward.Theme, reward.Themes)
+    if not complete then return false end
+    local decorated, hasDecoration = owns(profile.Decorations, reward.Decoration, reward.Decorations)
+    if not decorated then return false end
+    local titled, hasTitle = owns(profile.Titles, reward.Title, reward.Titles)
+    if not titled then return false end
+    return hasTheme or hasDecoration or hasTitle
+end
+
+return Commerce
+</ProtectedString>
+        </Properties>
+      </Item>
+      <Item class="ModuleScript" referent="RBX16">
+        <Properties>
           <string name="Name">Config</string>
           <ProtectedString name="Source">-- Central tuning. No paid power or randomized Robux purchases.
 local Config = {
@@ -143,13 +201,16 @@ local Config = {
         {Id = "Futuristic", Name = "Neon Tomorrow", Cost = 600, Color = {0.43, 0.56, 0.76}},
         {Id = "Antique", Name = "Antique Attic", Cost = 900, Color = {0.69, 0.56, 0.36}},
         {Id = "Cute", Name = "Rose Cottage", Cost = 450, Color = {0.85, 0.61, 0.70}},
+        {Id = "RoseGold", Name = "Rose Gold Boutique", PaidOnly = true, Color = {0.92, 0.57, 0.62}},
+        {Id = "NeonNight", Name = "Neon Night Market", PaidOnly = true, Color = {0.20, 0.32, 0.55}},
+        {Id = "Curator", Name = "Curator's Gallery", PaidOnly = true, Color = {0.52, 0.36, 0.24}},
     },
 }
 return Config
 </ProtectedString>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="RBX16">
+      <Item class="ModuleScript" referent="RBX17">
         <Properties>
           <string name="Name">DecorPlacement</string>
           <ProtectedString name="Source">-- Pure placement geometry used by the server and optional client previews.
@@ -197,7 +258,7 @@ return Placement
 </ProtectedString>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="RBX17">
+      <Item class="ModuleScript" referent="RBX18">
         <Properties>
           <string name="Name">Economy</string>
           <ProtectedString name="Source">local Economy = {}
@@ -233,7 +294,7 @@ return Economy
 </ProtectedString>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="RBX18">
+      <Item class="ModuleScript" referent="RBX19">
         <Properties>
           <string name="Name">ExchangeRules</string>
           <ProtectedString name="Source">-- Pure transfer invariants, shared with the headless fault-injection suite.
@@ -297,7 +358,7 @@ return ExchangeRules
 </ProtectedString>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="RBX19">
+      <Item class="ModuleScript" referent="RBX20">
         <Properties>
           <string name="Name">ItemModels</string>
           <ProtectedString name="Source">-- Original Thrift Flip model library. No catalog meshes or externally owned assets.
@@ -1173,7 +1234,7 @@ return ItemModels
 </ProtectedString>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="RBX20">
+      <Item class="ModuleScript" referent="RBX21">
         <Properties>
           <string name="Name">LiveConfig</string>
           <ProtectedString name="Source">-- UTC dates are explicit so events can be reviewed and scheduled before release.
@@ -1223,20 +1284,48 @@ local LiveConfig = {
             Accent = "#A3BD7C",
         },
     },
-    -- Configure real creator-owned IDs after creating products in Creator Dashboard.
-    -- Entries without positive integer IDs are never displayed or prompted.
-    -- Example schema (not an enabled product):
-    -- Passes = {{Id = YOUR_ID, Name = "Rose Cottage", Description = "A permanent cosmetic theme", Reward = {Theme = "Cute"}}}
-    -- Products grant permanent cosmetics only; replays cannot create cash/items.
-    Passes = {},
-    Products = {},
+    -- Replace each zero with the creator-owned ID from Creator Dashboard. Zero-ID
+    -- offers remain visible as disabled previews in Studio, but are never prompted.
+    -- SuggestedPrice is planning copy only; the live button uses Roblox's price.
+    Passes = {
+        {
+            Key = "rose_gold_boutique", Id = 0, Order = 1, Badge = "POPULAR", SuggestedPrice = 49,
+            Name = "Rose Gold Boutique", Accent = "#E9949D", PreviewTheme = "RoseGold",
+            Description = "A warm blush storefront made for cozy collectors.",
+            Benefits = {"Exclusive Rose Gold shop theme", "Rose linen curtains + houseplants", "Rose Gold Stylist title"},
+            Reward = {Themes = {"RoseGold"}, Decorations = {"Curtains", "Plant"}, Titles = {"RoseGoldStylist"}},
+        },
+        {
+            Key = "neon_night_market", Id = 0, Order = 2, Badge = "BOLD STYLE", SuggestedPrice = 79,
+            Name = "Neon Night Market", Accent = "#657FDB", PreviewTheme = "NeonNight",
+            Description = "Turn your shop into a vivid after-dark treasure stop.",
+            Benefits = {"Exclusive Neon Night shop theme", "Good Finds neon decoration", "Neon Curator title"},
+            Reward = {Themes = {"NeonNight"}, Decorations = {"Neon"}, Titles = {"NeonCurator"}},
+        },
+        {
+            Key = "curator_club", Id = 0, Order = 3, Badge = "BEST VALUE", SuggestedPrice = 129,
+            Name = "Curator Club", Accent = "#C08A52", PreviewTheme = "Curator",
+            Description = "A museum-inspired storefront bundle for serious collectors.",
+            Benefits = {"Exclusive Curator's Gallery theme", "Golden sculpture + framed poster", "Curator Club title"},
+            Reward = {Themes = {"Curator"}, Decorations = {"Trophy", "Poster"}, Titles = {"CuratorClub"}},
+        },
+    },
+    Products = {
+        {
+            Key = "street_supporter", Id = 0, Order = 4, Badge = "SUPPORTER", SuggestedPrice = 19,
+            Name = "Thrift Street Supporter", Accent = "#E8B95A",
+            Description = "A small one-time thank-you bundle that supports future updates.",
+            Benefits = {"Street Supporter title", "Second Chances poster", "Permanent account unlock"},
+            Reward = {Decorations = {"Poster"}, Titles = {"StreetSupporter"}},
+        },
+    },
     ReceiptHistoryLimit = 1024,
 }
 return LiveConfig
 </ProtectedString>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="RBX21">
+      <Item class="ModuleScript" referent="RBX22">
         <Properties>
           <string name="Name">Profile</string>
           <ProtectedString name="Source">local Profile = {}
@@ -1289,7 +1378,7 @@ return Profile
       <Properties>
         <string name="Name">CatalogAssets</string>
       </Properties>
-      <Item class="Model" referent="RBX34">
+      <Item class="Model" referent="RBX35">
         <Properties>
           <bool name="Archivable">true</bool>
           <CoordinateFrame name="ModelInPrimary">
@@ -1309,7 +1398,7 @@ return Profile
           <string name="Name">LargeTree</string>
           <Ref name="PrimaryPart">null</Ref>
         </Properties>
-        <Item class="Part" referent="RBX35">
+        <Item class="Part" referent="RBX36">
           <Properties>
             <bool name="Anchored">false</bool>
             <bool name="Archivable">true</bool>
@@ -1379,7 +1468,7 @@ return Profile
             </Vector3>
           </Properties>
         </Item>
-        <Item class="Part" referent="RBX36">
+        <Item class="Part" referent="RBX37">
           <Properties>
             <bool name="Anchored">false</bool>
             <bool name="Archivable">true</bool>
@@ -1449,7 +1538,7 @@ return Profile
             </Vector3>
           </Properties>
         </Item>
-        <Item class="Part" referent="RBX37">
+        <Item class="Part" referent="RBX38">
           <Properties>
             <bool name="Anchored">false</bool>
             <bool name="Archivable">true</bool>
@@ -1519,7 +1608,7 @@ return Profile
             </Vector3>
           </Properties>
         </Item>
-        <Item class="Part" referent="RBX38">
+        <Item class="Part" referent="RBX39">
           <Properties>
             <bool name="Anchored">false</bool>
             <bool name="Archivable">true</bool>
@@ -1589,7 +1678,7 @@ return Profile
             </Vector3>
           </Properties>
         </Item>
-        <Item class="Part" referent="RBX39">
+        <Item class="Part" referent="RBX40">
           <Properties>
             <bool name="Anchored">false</bool>
             <bool name="Archivable">true</bool>
@@ -1659,7 +1748,7 @@ return Profile
             </Vector3>
           </Properties>
         </Item>
-        <Item class="Part" referent="RBX40">
+        <Item class="Part" referent="RBX41">
           <Properties>
             <bool name="Anchored">false</bool>
             <bool name="Archivable">true</bool>
@@ -1729,7 +1818,7 @@ return Profile
             </Vector3>
           </Properties>
         </Item>
-        <Item class="Part" referent="RBX41">
+        <Item class="Part" referent="RBX42">
           <Properties>
             <bool name="Anchored">false</bool>
             <bool name="Archivable">true</bool>
@@ -1798,7 +1887,7 @@ return Profile
               <Z>4</Z>
             </Vector3>
           </Properties>
-          <Item class="ManualWeld" referent="RBX42">
+          <Item class="ManualWeld" referent="RBX43">
             <Properties>
               <bool name="Archivable">true</bool>
               <CoordinateFrame name="C0">
@@ -1830,14 +1919,14 @@ return Profile
                 <R22>-1</R22>
               </CoordinateFrame>
               <string name="Name">Part-to-Part Strong Joint</string>
-              <Ref name="Part0">RBX41</Ref>
-              <Ref name="Part1">RBX35</Ref>
+              <Ref name="Part0">RBX42</Ref>
+              <Ref name="Part1">RBX36</Ref>
               <int name="Surface0">5</int>
               <int name="Surface1">2</int>
             </Properties>
           </Item>
         </Item>
-        <Item class="Part" referent="RBX43">
+        <Item class="Part" referent="RBX44">
           <Properties>
             <bool name="Anchored">false</bool>
             <bool name="Archivable">true</bool>
@@ -1907,7 +1996,7 @@ return Profile
             </Vector3>
           </Properties>
         </Item>
-        <Item class="Part" referent="RBX44">
+        <Item class="Part" referent="RBX45">
           <Properties>
             <bool name="Anchored">false</bool>
             <bool name="Archivable">true</bool>
@@ -1977,7 +2066,7 @@ return Profile
             </Vector3>
           </Properties>
         </Item>
-        <Item class="Part" referent="RBX45">
+        <Item class="Part" referent="RBX46">
           <Properties>
             <bool name="Anchored">false</bool>
             <bool name="Archivable">true</bool>
@@ -2047,7 +2136,7 @@ return Profile
             </Vector3>
           </Properties>
         </Item>
-        <Item class="Part" referent="RBX46">
+        <Item class="Part" referent="RBX47">
           <Properties>
             <bool name="Anchored">false</bool>
             <bool name="Archivable">true</bool>
@@ -2117,7 +2206,7 @@ return Profile
             </Vector3>
           </Properties>
         </Item>
-        <Item class="Part" referent="RBX47">
+        <Item class="Part" referent="RBX48">
           <Properties>
             <bool name="Anchored">false</bool>
             <bool name="Archivable">true</bool>
@@ -2187,7 +2276,7 @@ return Profile
             </Vector3>
           </Properties>
         </Item>
-        <Item class="Part" referent="RBX48">
+        <Item class="Part" referent="RBX49">
           <Properties>
             <bool name="Anchored">false</bool>
             <bool name="Archivable">true</bool>
@@ -2257,7 +2346,7 @@ return Profile
             </Vector3>
           </Properties>
         </Item>
-        <Item class="Part" referent="RBX49">
+        <Item class="Part" referent="RBX50">
           <Properties>
             <bool name="Anchored">false</bool>
             <bool name="Archivable">true</bool>
@@ -2327,7 +2416,7 @@ return Profile
             </Vector3>
           </Properties>
         </Item>
-        <Item class="Part" referent="RBX50">
+        <Item class="Part" referent="RBX51">
           <Properties>
             <bool name="Anchored">false</bool>
             <bool name="Archivable">true</bool>
@@ -2396,7 +2485,7 @@ return Profile
               <Z>4</Z>
             </Vector3>
           </Properties>
-          <Item class="ManualWeld" referent="RBX51">
+          <Item class="ManualWeld" referent="RBX52">
             <Properties>
               <bool name="Archivable">true</bool>
               <CoordinateFrame name="C0">
@@ -2428,14 +2517,14 @@ return Profile
                 <R22>-1</R22>
               </CoordinateFrame>
               <string name="Name">Part-to-Part Strong Joint</string>
-              <Ref name="Part0">RBX50</Ref>
-              <Ref name="Part1">RBX47</Ref>
+              <Ref name="Part0">RBX51</Ref>
+              <Ref name="Part1">RBX48</Ref>
               <int name="Surface0">5</int>
               <int name="Surface1">2</int>
             </Properties>
           </Item>
         </Item>
-        <Item class="Part" referent="RBX52">
+        <Item class="Part" referent="RBX53">
           <Properties>
             <bool name="Anchored">false</bool>
             <bool name="Archivable">true</bool>
@@ -2506,7 +2595,7 @@ return Profile
           </Properties>
         </Item>
       </Item>
-      <Item class="Model" referent="RBX53">
+      <Item class="Model" referent="RBX54">
         <Properties>
           <bool name="Archivable">true</bool>
           <CoordinateFrame name="ModelInPrimary">
@@ -2526,7 +2615,7 @@ return Profile
           <string name="Name">Mailbox</string>
           <Ref name="PrimaryPart">null</Ref>
         </Properties>
-        <Item class="WedgePart" referent="RBX54">
+        <Item class="WedgePart" referent="RBX55">
           <Properties>
             <bool name="Anchored">false</bool>
             <bool name="Archivable">true</bool>
@@ -2594,7 +2683,7 @@ return Profile
               <Z>0.400000036</Z>
             </Vector3>
           </Properties>
-          <Item class="ManualWeld" referent="RBX55">
+          <Item class="ManualWeld" referent="RBX56">
             <Properties>
               <bool name="Archivable">true</bool>
               <CoordinateFrame name="C0">
@@ -2626,14 +2715,14 @@ return Profile
                 <R22>6.26396783e-008</R22>
               </CoordinateFrame>
               <string name="Name">Wedge-to-Part Strong Joint</string>
-              <Ref name="Part0">RBX54</Ref>
-              <Ref name="Part1">RBX62</Ref>
+              <Ref name="Part0">RBX55</Ref>
+              <Ref name="Part1">RBX63</Ref>
               <int name="Surface0">4</int>
               <int name="Surface1">1</int>
             </Properties>
           </Item>
         </Item>
-        <Item class="Part" referent="RBX56">
+        <Item class="Part" referent="RBX57">
           <Properties>
             <bool name="Anchored">false</bool>
             <bool name="Archivable">true</bool>
@@ -2702,7 +2791,7 @@ return Profile
               <Z>4</Z>
             </Vector3>
           </Properties>
-          <Item class="ManualWeld" referent="RBX57">
+          <Item class="ManualWeld" referent="RBX58">
             <Properties>
               <bool name="Archivable">true</bool>
               <CoordinateFrame name="C0">
@@ -2734,14 +2823,14 @@ return Profile
                 <R22>-0.000279140397</R22>
               </CoordinateFrame>
               <string name="Name">Part-to-Part Strong Joint</string>
-              <Ref name="Part0">RBX56</Ref>
-              <Ref name="Part1">RBX62</Ref>
+              <Ref name="Part0">RBX57</Ref>
+              <Ref name="Part1">RBX63</Ref>
               <int name="Surface0">3</int>
               <int name="Surface1">0</int>
             </Properties>
           </Item>
         </Item>
-        <Item class="Part" referent="RBX58">
+        <Item class="Part" referent="RBX59">
           <Properties>
             <bool name="Anchored">false</bool>
             <bool name="Archivable">true</bool>
@@ -2810,7 +2899,7 @@ return Profile
               <Z>4</Z>
             </Vector3>
           </Properties>
-          <Item class="ManualWeld" referent="RBX59">
+          <Item class="ManualWeld" referent="RBX60">
             <Properties>
               <bool name="Archivable">true</bool>
               <CoordinateFrame name="C0">
@@ -2842,13 +2931,13 @@ return Profile
                 <R22>6.21655126e-005</R22>
               </CoordinateFrame>
               <string name="Name">Part-to-Wedge Strong Joint</string>
-              <Ref name="Part0">RBX58</Ref>
-              <Ref name="Part1">RBX63</Ref>
+              <Ref name="Part0">RBX59</Ref>
+              <Ref name="Part1">RBX64</Ref>
               <int name="Surface0">3</int>
               <int name="Surface1">4</int>
             </Properties>
           </Item>
-          <Item class="ManualWeld" referent="RBX60">
+          <Item class="ManualWeld" referent="RBX61">
             <Properties>
               <bool name="Archivable">true</bool>
               <CoordinateFrame name="C0">
@@ -2880,13 +2969,13 @@ return Profile
                 <R22>-1.00004017</R22>
               </CoordinateFrame>
               <string name="Name">Part-to-Wedge Strong Joint</string>
-              <Ref name="Part0">RBX58</Ref>
-              <Ref name="Part1">RBX54</Ref>
+              <Ref name="Part0">RBX59</Ref>
+              <Ref name="Part1">RBX55</Ref>
               <int name="Surface0">0</int>
               <int name="Surface1">0</int>
             </Properties>
           </Item>
-          <Item class="ManualWeld" referent="RBX61">
+          <Item class="ManualWeld" referent="RBX62">
             <Properties>
               <bool name="Archivable">true</bool>
               <CoordinateFrame name="C0">
@@ -2918,14 +3007,14 @@ return Profile
                 <R22>-3.23296945e-012</R22>
               </CoordinateFrame>
               <string name="Name">Part-to-Part Strong Joint</string>
-              <Ref name="Part0">RBX58</Ref>
-              <Ref name="Part1">RBX62</Ref>
+              <Ref name="Part0">RBX59</Ref>
+              <Ref name="Part1">RBX63</Ref>
               <int name="Surface0">4</int>
               <int name="Surface1">1</int>
             </Properties>
           </Item>
         </Item>
-        <Item class="Part" referent="RBX62">
+        <Item class="Part" referent="RBX63">
           <Properties>
             <bool name="Anchored">false</bool>
             <bool name="Archivable">true</bool>
@@ -2995,7 +3084,7 @@ return Profile
             </Vector3>
           </Properties>
         </Item>
-        <Item class="WedgePart" referent="RBX63">
+        <Item class="WedgePart" referent="RBX64">
           <Properties>
             <bool name="Anchored">false</bool>
             <bool name="Archivable">true</bool>
@@ -3063,7 +3152,7 @@ return Profile
               <Z>0.600000024</Z>
             </Vector3>
           </Properties>
-          <Item class="ManualWeld" referent="RBX64">
+          <Item class="ManualWeld" referent="RBX65">
             <Properties>
               <bool name="Archivable">true</bool>
               <CoordinateFrame name="C0">
@@ -3095,14 +3184,14 @@ return Profile
                 <R22>4.10909848e-008</R22>
               </CoordinateFrame>
               <string name="Name">Wedge-to-Part Strong Joint</string>
-              <Ref name="Part0">RBX63</Ref>
-              <Ref name="Part1">RBX62</Ref>
+              <Ref name="Part0">RBX64</Ref>
+              <Ref name="Part1">RBX63</Ref>
               <int name="Surface0">0</int>
               <int name="Surface1">1</int>
             </Properties>
           </Item>
         </Item>
-        <Item class="Part" referent="RBX65">
+        <Item class="Part" referent="RBX66">
           <Properties>
             <bool name="Anchored">false</bool>
             <bool name="Archivable">true</bool>
@@ -3171,7 +3260,7 @@ return Profile
               <Z>0.999999344</Z>
             </Vector3>
           </Properties>
-          <Item class="ManualWeld" referent="RBX66">
+          <Item class="ManualWeld" referent="RBX67">
             <Properties>
               <bool name="Archivable">true</bool>
               <CoordinateFrame name="C0">
@@ -3203,14 +3292,14 @@ return Profile
                 <R22>-0.999999881</R22>
               </CoordinateFrame>
               <string name="Name">Part-to-Part Strong Joint</string>
-              <Ref name="Part0">RBX65</Ref>
-              <Ref name="Part1">RBX67</Ref>
+              <Ref name="Part0">RBX66</Ref>
+              <Ref name="Part1">RBX68</Ref>
               <int name="Surface0">5</int>
               <int name="Surface1">2</int>
             </Properties>
           </Item>
         </Item>
-        <Item class="Part" referent="RBX67">
+        <Item class="Part" referent="RBX68">
           <Properties>
             <bool name="Anchored">false</bool>
             <bool name="Archivable">true</bool>
@@ -3279,7 +3368,7 @@ return Profile
               <Z>0.599999368</Z>
             </Vector3>
           </Properties>
-          <Item class="ManualWeld" referent="RBX68">
+          <Item class="ManualWeld" referent="RBX69">
             <Properties>
               <bool name="Archivable">true</bool>
               <CoordinateFrame name="C0">
@@ -3311,14 +3400,14 @@ return Profile
                 <R22>-2.9052722e-011</R22>
               </CoordinateFrame>
               <string name="Name">Part-to-Part Strong Joint</string>
-              <Ref name="Part0">RBX67</Ref>
-              <Ref name="Part1">RBX62</Ref>
+              <Ref name="Part0">RBX68</Ref>
+              <Ref name="Part1">RBX63</Ref>
               <int name="Surface0">0</int>
               <int name="Surface1">3</int>
             </Properties>
           </Item>
         </Item>
-        <Item class="Part" referent="RBX69">
+        <Item class="Part" referent="RBX70">
           <Properties>
             <bool name="Anchored">false</bool>
             <bool name="Archivable">true</bool>
@@ -3387,7 +3476,7 @@ return Profile
               <Z>1</Z>
             </Vector3>
           </Properties>
-          <Item class="ManualWeld" referent="RBX70">
+          <Item class="ManualWeld" referent="RBX71">
             <Properties>
               <bool name="Archivable">true</bool>
               <CoordinateFrame name="C0">
@@ -3419,14 +3508,14 @@ return Profile
                 <R22>1.99662509e-012</R22>
               </CoordinateFrame>
               <string name="Name">Part-to-Part Strong Joint</string>
-              <Ref name="Part0">RBX69</Ref>
-              <Ref name="Part1">RBX62</Ref>
+              <Ref name="Part0">RBX70</Ref>
+              <Ref name="Part1">RBX63</Ref>
               <int name="Surface0">1</int>
               <int name="Surface1">4</int>
             </Properties>
           </Item>
         </Item>
-        <Item class="Part" referent="RBX71">
+        <Item class="Part" referent="RBX72">
           <Properties>
             <bool name="Anchored">false</bool>
             <bool name="Archivable">true</bool>
@@ -3495,7 +3584,7 @@ return Profile
               <Z>4</Z>
             </Vector3>
           </Properties>
-          <Item class="ManualWeld" referent="RBX72">
+          <Item class="ManualWeld" referent="RBX73">
             <Properties>
               <bool name="Archivable">true</bool>
               <CoordinateFrame name="C0">
@@ -3527,13 +3616,13 @@ return Profile
                 <R22>0.000279141648</R22>
               </CoordinateFrame>
               <string name="Name">Part-to-Part Strong Joint</string>
-              <Ref name="Part0">RBX71</Ref>
-              <Ref name="Part1">RBX65</Ref>
+              <Ref name="Part0">RBX72</Ref>
+              <Ref name="Part1">RBX66</Ref>
               <int name="Surface0">0</int>
               <int name="Surface1">3</int>
             </Properties>
           </Item>
-          <Item class="ManualWeld" referent="RBX73">
+          <Item class="ManualWeld" referent="RBX74">
             <Properties>
               <bool name="Archivable">true</bool>
               <CoordinateFrame name="C0">
@@ -3565,15 +3654,15 @@ return Profile
                 <R22>0.000279139058</R22>
               </CoordinateFrame>
               <string name="Name">Part-to-Part Strong Joint</string>
-              <Ref name="Part0">RBX71</Ref>
-              <Ref name="Part1">RBX67</Ref>
+              <Ref name="Part0">RBX72</Ref>
+              <Ref name="Part1">RBX68</Ref>
               <int name="Surface0">0</int>
               <int name="Surface1">3</int>
             </Properties>
           </Item>
         </Item>
       </Item>
-      <Item class="Model" referent="RBX74">
+      <Item class="Model" referent="RBX75">
         <Properties>
           <CoordinateFrame name="ModelInPrimary">
             <X>0</X>
@@ -3593,7 +3682,7 @@ return Profile
           <Ref name="PrimaryPart">null</Ref>
           <bool name="archivable">true</bool>
         </Properties>
-        <Item class="Part" referent="RBX75">
+        <Item class="Part" referent="RBX76">
           <Properties>
             <bool name="Anchored">true</bool>
             <float name="BackParamA">-0.5</float>
@@ -3664,7 +3753,7 @@ return Profile
             </Vector3>
           </Properties>
         </Item>
-        <Item class="Part" referent="RBX76">
+        <Item class="Part" referent="RBX77">
           <Properties>
             <bool name="Anchored">true</bool>
             <float name="BackParamA">-0.5</float>
@@ -3735,7 +3824,7 @@ return Profile
             </Vector3>
           </Properties>
         </Item>
-        <Item class="Part" referent="RBX77">
+        <Item class="Part" referent="RBX78">
           <Properties>
             <bool name="Anchored">true</bool>
             <float name="BackParamA">-0.5</float>
@@ -3805,7 +3894,7 @@ return Profile
               <Z>3</Z>
             </Vector3>
           </Properties>
-          <Item class="SpecialMesh" referent="RBX78">
+          <Item class="SpecialMesh" referent="RBX79">
             <Properties>
               <token name="LODX">2</token>
               <token name="LODY">2</token>
@@ -3836,7 +3925,7 @@ return Profile
             </Properties>
           </Item>
         </Item>
-        <Item class="Seat" referent="RBX79">
+        <Item class="Seat" referent="RBX80">
           <Properties>
             <bool name="Anchored">true</bool>
             <float name="BackParamA">-0.5</float>
@@ -3906,7 +3995,7 @@ return Profile
               <Z>1</Z>
             </Vector3>
           </Properties>
-          <Item class="SpecialMesh" referent="RBX80">
+          <Item class="SpecialMesh" referent="RBX81">
             <Properties>
               <token name="LODX">2</token>
               <token name="LODY">2</token>
@@ -3937,7 +4026,7 @@ return Profile
             </Properties>
           </Item>
         </Item>
-        <Item class="Seat" referent="RBX81">
+        <Item class="Seat" referent="RBX82">
           <Properties>
             <bool name="Anchored">true</bool>
             <float name="BackParamA">-0.5</float>
@@ -4007,7 +4096,7 @@ return Profile
               <Z>1</Z>
             </Vector3>
           </Properties>
-          <Item class="SpecialMesh" referent="RBX82">
+          <Item class="SpecialMesh" referent="RBX83">
             <Properties>
               <token name="LODX">2</token>
               <token name="LODY">2</token>
@@ -4038,7 +4127,7 @@ return Profile
             </Properties>
           </Item>
         </Item>
-        <Item class="Part" referent="RBX83">
+        <Item class="Part" referent="RBX84">
           <Properties>
             <bool name="Anchored">true</bool>
             <float name="BackParamA">-0.5</float>
@@ -4108,7 +4197,7 @@ return Profile
               <Z>9</Z>
             </Vector3>
           </Properties>
-          <Item class="SpecialMesh" referent="RBX84">
+          <Item class="SpecialMesh" referent="RBX85">
             <Properties>
               <token name="LODX">2</token>
               <token name="LODY">2</token>
@@ -4139,7 +4228,7 @@ return Profile
             </Properties>
           </Item>
         </Item>
-        <Item class="Part" referent="RBX85">
+        <Item class="Part" referent="RBX86">
           <Properties>
             <bool name="Anchored">true</bool>
             <float name="BackParamA">-0.5</float>
@@ -4209,7 +4298,7 @@ return Profile
               <Z>9</Z>
             </Vector3>
           </Properties>
-          <Item class="SpecialMesh" referent="RBX86">
+          <Item class="SpecialMesh" referent="RBX87">
             <Properties>
               <token name="LODX">2</token>
               <token name="LODY">2</token>
@@ -4240,7 +4329,7 @@ return Profile
             </Properties>
           </Item>
         </Item>
-        <Item class="Part" referent="RBX87">
+        <Item class="Part" referent="RBX88">
           <Properties>
             <bool name="Anchored">true</bool>
             <float name="BackParamA">-0.5</float>
@@ -4310,7 +4399,7 @@ return Profile
               <Z>9</Z>
             </Vector3>
           </Properties>
-          <Item class="SpecialMesh" referent="RBX88">
+          <Item class="SpecialMesh" referent="RBX89">
             <Properties>
               <token name="LODX">2</token>
               <token name="LODY">2</token>
@@ -4341,7 +4430,7 @@ return Profile
             </Properties>
           </Item>
         </Item>
-        <Item class="Part" referent="RBX89">
+        <Item class="Part" referent="RBX90">
           <Properties>
             <bool name="Anchored">true</bool>
             <float name="BackParamA">-0.5</float>
@@ -4411,7 +4500,7 @@ return Profile
               <Z>9</Z>
             </Vector3>
           </Properties>
-          <Item class="SpecialMesh" referent="RBX90">
+          <Item class="SpecialMesh" referent="RBX91">
             <Properties>
               <token name="LODX">2</token>
               <token name="LODY">2</token>
@@ -4442,7 +4531,7 @@ return Profile
             </Properties>
           </Item>
         </Item>
-        <Item class="Part" referent="RBX91">
+        <Item class="Part" referent="RBX92">
           <Properties>
             <bool name="Anchored">true</bool>
             <float name="BackParamA">-0.5</float>
@@ -4512,7 +4601,7 @@ return Profile
               <Z>9</Z>
             </Vector3>
           </Properties>
-          <Item class="SpecialMesh" referent="RBX92">
+          <Item class="SpecialMesh" referent="RBX93">
             <Properties>
               <token name="LODX">2</token>
               <token name="LODY">2</token>
@@ -4543,7 +4632,7 @@ return Profile
             </Properties>
           </Item>
         </Item>
-        <Item class="Seat" referent="RBX93">
+        <Item class="Seat" referent="RBX94">
           <Properties>
             <bool name="Anchored">true</bool>
             <float name="BackParamA">-0.5</float>
@@ -4613,7 +4702,7 @@ return Profile
               <Z>1</Z>
             </Vector3>
           </Properties>
-          <Item class="SpecialMesh" referent="RBX94">
+          <Item class="SpecialMesh" referent="RBX95">
             <Properties>
               <token name="LODX">2</token>
               <token name="LODY">2</token>
@@ -4644,7 +4733,7 @@ return Profile
             </Properties>
           </Item>
         </Item>
-        <Item class="Part" referent="RBX95">
+        <Item class="Part" referent="RBX96">
           <Properties>
             <bool name="Anchored">true</bool>
             <float name="BackParamA">-0.5</float>
@@ -4715,7 +4804,7 @@ return Profile
             </Vector3>
           </Properties>
         </Item>
-        <Item class="Part" referent="RBX96">
+        <Item class="Part" referent="RBX97">
           <Properties>
             <bool name="Anchored">true</bool>
             <float name="BackParamA">-0.5</float>
@@ -4786,7 +4875,7 @@ return Profile
             </Vector3>
           </Properties>
         </Item>
-        <Item class="Part" referent="RBX97">
+        <Item class="Part" referent="RBX98">
           <Properties>
             <bool name="Anchored">true</bool>
             <float name="BackParamA">-0.5</float>
@@ -4856,7 +4945,7 @@ return Profile
               <Z>3</Z>
             </Vector3>
           </Properties>
-          <Item class="SpecialMesh" referent="RBX98">
+          <Item class="SpecialMesh" referent="RBX99">
             <Properties>
               <token name="LODX">2</token>
               <token name="LODY">2</token>
@@ -4888,7 +4977,7 @@ return Profile
           </Item>
         </Item>
       </Item>
-      <Item class="Model" referent="RBX99">
+      <Item class="Model" referent="RBX100">
         <Properties>
           <CoordinateFrame name="ModelInPrimary">
             <X>0</X>
@@ -4907,7 +4996,7 @@ return Profile
           <string name="Name">PicnicTable</string>
           <Ref name="PrimaryPart">null</Ref>
         </Properties>
-        <Item class="Model" referent="RBX100">
+        <Item class="Model" referent="RBX101">
           <Properties>
             <CoordinateFrame name="ModelInPrimary">
               <X>0</X>
@@ -4926,7 +5015,7 @@ return Profile
             <string name="Name">Model</string>
             <Ref name="PrimaryPart">null</Ref>
           </Properties>
-          <Item class="Part" referent="RBX101">
+          <Item class="Part" referent="RBX102">
             <Properties>
               <bool name="Anchored">true</bool>
               <float name="BackParamA">-0.5</float>
@@ -4999,7 +5088,7 @@ return Profile
                 <Z>1</Z>
               </Vector3>
             </Properties>
-            <Item class="SpecialMesh" referent="RBX102">
+            <Item class="SpecialMesh" referent="RBX103">
               <Properties>
                 <token name="LODX">2</token>
                 <token name="LODY">2</token>
@@ -5029,7 +5118,7 @@ return Profile
               </Properties>
             </Item>
           </Item>
-          <Item class="Part" referent="RBX103">
+          <Item class="Part" referent="RBX104">
             <Properties>
               <bool name="Anchored">true</bool>
               <float name="BackParamA">-0.5</float>
@@ -5102,7 +5191,7 @@ return Profile
                 <Z>1</Z>
               </Vector3>
             </Properties>
-            <Item class="SpecialMesh" referent="RBX104">
+            <Item class="SpecialMesh" referent="RBX105">
               <Properties>
                 <token name="LODX">2</token>
                 <token name="LODY">2</token>
@@ -5132,7 +5221,7 @@ return Profile
               </Properties>
             </Item>
           </Item>
-          <Item class="Part" referent="RBX105">
+          <Item class="Part" referent="RBX106">
             <Properties>
               <bool name="Anchored">true</bool>
               <float name="BackParamA">-0.5</float>
@@ -5205,7 +5294,7 @@ return Profile
                 <Z>1</Z>
               </Vector3>
             </Properties>
-            <Item class="SpecialMesh" referent="RBX106">
+            <Item class="SpecialMesh" referent="RBX107">
               <Properties>
                 <token name="LODX">2</token>
                 <token name="LODY">2</token>
@@ -5235,7 +5324,7 @@ return Profile
               </Properties>
             </Item>
           </Item>
-          <Item class="Part" referent="RBX107">
+          <Item class="Part" referent="RBX108">
             <Properties>
               <bool name="Anchored">true</bool>
               <float name="BackParamA">-0.5</float>
@@ -5308,7 +5397,7 @@ return Profile
                 <Z>1</Z>
               </Vector3>
             </Properties>
-            <Item class="SpecialMesh" referent="RBX108">
+            <Item class="SpecialMesh" referent="RBX109">
               <Properties>
                 <token name="LODX">2</token>
                 <token name="LODY">2</token>
@@ -5338,7 +5427,7 @@ return Profile
               </Properties>
             </Item>
           </Item>
-          <Item class="Part" referent="RBX109">
+          <Item class="Part" referent="RBX110">
             <Properties>
               <bool name="Anchored">true</bool>
               <float name="BackParamA">-0.5</float>
@@ -5411,7 +5500,7 @@ return Profile
                 <Z>1</Z>
               </Vector3>
             </Properties>
-            <Item class="SpecialMesh" referent="RBX110">
+            <Item class="SpecialMesh" referent="RBX111">
               <Properties>
                 <token name="LODX">2</token>
                 <token name="LODY">2</token>
@@ -5441,7 +5530,7 @@ return Profile
               </Properties>
             </Item>
           </Item>
-          <Item class="Part" referent="RBX111">
+          <Item class="Part" referent="RBX112">
             <Properties>
               <bool name="Anchored">true</bool>
               <float name="BackParamA">-0.5</float>
@@ -5514,7 +5603,7 @@ return Profile
                 <Z>1</Z>
               </Vector3>
             </Properties>
-            <Item class="SpecialMesh" referent="RBX112">
+            <Item class="SpecialMesh" referent="RBX113">
               <Properties>
                 <token name="LODX">2</token>
                 <token name="LODY">2</token>
@@ -5545,7 +5634,7 @@ return Profile
             </Item>
           </Item>
         </Item>
-        <Item class="Part" referent="RBX113">
+        <Item class="Part" referent="RBX114">
           <Properties>
             <bool name="Anchored">true</bool>
             <float name="BackParamA">-0.5</float>
@@ -5619,7 +5708,7 @@ return Profile
             </Vector3>
           </Properties>
         </Item>
-        <Item class="Part" referent="RBX114">
+        <Item class="Part" referent="RBX115">
           <Properties>
             <bool name="Anchored">true</bool>
             <float name="BackParamA">-0.5</float>
@@ -5692,7 +5781,7 @@ return Profile
               <Z>1</Z>
             </Vector3>
           </Properties>
-          <Item class="SpecialMesh" referent="RBX115">
+          <Item class="SpecialMesh" referent="RBX116">
             <Properties>
               <token name="LODX">2</token>
               <token name="LODY">2</token>
@@ -5722,7 +5811,7 @@ return Profile
             </Properties>
           </Item>
         </Item>
-        <Item class="Part" referent="RBX116">
+        <Item class="Part" referent="RBX117">
           <Properties>
             <bool name="Anchored">true</bool>
             <float name="BackParamA">-0.5</float>
@@ -5795,7 +5884,7 @@ return Profile
               <Z>1</Z>
             </Vector3>
           </Properties>
-          <Item class="SpecialMesh" referent="RBX117">
+          <Item class="SpecialMesh" referent="RBX118">
             <Properties>
               <token name="LODX">2</token>
               <token name="LODY">2</token>
@@ -5825,7 +5914,7 @@ return Profile
             </Properties>
           </Item>
         </Item>
-        <Item class="Part" referent="RBX118">
+        <Item class="Part" referent="RBX119">
           <Properties>
             <bool name="Anchored">true</bool>
             <float name="BackParamA">-0.5</float>
@@ -5898,7 +5987,7 @@ return Profile
               <Z>1</Z>
             </Vector3>
           </Properties>
-          <Item class="SpecialMesh" referent="RBX119">
+          <Item class="SpecialMesh" referent="RBX120">
             <Properties>
               <token name="LODX">2</token>
               <token name="LODY">2</token>
@@ -5928,7 +6017,7 @@ return Profile
             </Properties>
           </Item>
         </Item>
-        <Item class="Part" referent="RBX120">
+        <Item class="Part" referent="RBX121">
           <Properties>
             <bool name="Anchored">true</bool>
             <float name="BackParamA">-0.5</float>
@@ -6001,7 +6090,7 @@ return Profile
               <Z>2</Z>
             </Vector3>
           </Properties>
-          <Item class="SpecialMesh" referent="RBX121">
+          <Item class="SpecialMesh" referent="RBX122">
             <Properties>
               <token name="LODX">2</token>
               <token name="LODY">2</token>
@@ -6031,7 +6120,7 @@ return Profile
             </Properties>
           </Item>
         </Item>
-        <Item class="Part" referent="RBX122">
+        <Item class="Part" referent="RBX123">
           <Properties>
             <bool name="Anchored">true</bool>
             <float name="BackParamA">-0.5</float>
@@ -6104,7 +6193,7 @@ return Profile
               <Z>2</Z>
             </Vector3>
           </Properties>
-          <Item class="SpecialMesh" referent="RBX123">
+          <Item class="SpecialMesh" referent="RBX124">
             <Properties>
               <token name="LODX">2</token>
               <token name="LODY">2</token>
@@ -6134,7 +6223,7 @@ return Profile
             </Properties>
           </Item>
         </Item>
-        <Item class="Part" referent="RBX124">
+        <Item class="Part" referent="RBX125">
           <Properties>
             <bool name="Anchored">true</bool>
             <float name="BackParamA">-0.5</float>
@@ -6207,7 +6296,7 @@ return Profile
               <Z>2</Z>
             </Vector3>
           </Properties>
-          <Item class="SpecialMesh" referent="RBX125">
+          <Item class="SpecialMesh" referent="RBX126">
             <Properties>
               <token name="LODX">2</token>
               <token name="LODY">2</token>
@@ -6237,7 +6326,7 @@ return Profile
             </Properties>
           </Item>
         </Item>
-        <Item class="Part" referent="RBX126">
+        <Item class="Part" referent="RBX127">
           <Properties>
             <bool name="Anchored">true</bool>
             <float name="BackParamA">-0.5</float>
@@ -6310,7 +6399,7 @@ return Profile
               <Z>2</Z>
             </Vector3>
           </Properties>
-          <Item class="SpecialMesh" referent="RBX127">
+          <Item class="SpecialMesh" referent="RBX128">
             <Properties>
               <token name="LODX">2</token>
               <token name="LODY">2</token>
@@ -6340,7 +6429,7 @@ return Profile
             </Properties>
           </Item>
         </Item>
-        <Item class="Part" referent="RBX128">
+        <Item class="Part" referent="RBX129">
           <Properties>
             <bool name="Anchored">true</bool>
             <float name="BackParamA">-0.5</float>
@@ -6413,7 +6502,7 @@ return Profile
               <Z>1</Z>
             </Vector3>
           </Properties>
-          <Item class="SpecialMesh" referent="RBX129">
+          <Item class="SpecialMesh" referent="RBX130">
             <Properties>
               <token name="LODX">2</token>
               <token name="LODY">2</token>
@@ -6443,7 +6532,7 @@ return Profile
             </Properties>
           </Item>
         </Item>
-        <Item class="Model" referent="RBX130">
+        <Item class="Model" referent="RBX131">
           <Properties>
             <CoordinateFrame name="ModelInPrimary">
               <X>0</X>
@@ -6462,7 +6551,7 @@ return Profile
             <string name="Name">Model</string>
             <Ref name="PrimaryPart">null</Ref>
           </Properties>
-          <Item class="Part" referent="RBX131">
+          <Item class="Part" referent="RBX132">
             <Properties>
               <bool name="Anchored">true</bool>
               <float name="BackParamA">-0.5</float>
@@ -6535,7 +6624,7 @@ return Profile
                 <Z>1</Z>
               </Vector3>
             </Properties>
-            <Item class="SpecialMesh" referent="RBX132">
+            <Item class="SpecialMesh" referent="RBX133">
               <Properties>
                 <token name="LODX">2</token>
                 <token name="LODY">2</token>
@@ -6565,7 +6654,7 @@ return Profile
               </Properties>
             </Item>
           </Item>
-          <Item class="Part" referent="RBX133">
+          <Item class="Part" referent="RBX134">
             <Properties>
               <bool name="Anchored">true</bool>
               <float name="BackParamA">-0.5</float>
@@ -6638,7 +6727,7 @@ return Profile
                 <Z>1</Z>
               </Vector3>
             </Properties>
-            <Item class="SpecialMesh" referent="RBX134">
+            <Item class="SpecialMesh" referent="RBX135">
               <Properties>
                 <token name="LODX">2</token>
                 <token name="LODY">2</token>
@@ -6668,7 +6757,7 @@ return Profile
               </Properties>
             </Item>
           </Item>
-          <Item class="Part" referent="RBX135">
+          <Item class="Part" referent="RBX136">
             <Properties>
               <bool name="Anchored">true</bool>
               <float name="BackParamA">-0.5</float>
@@ -6741,7 +6830,7 @@ return Profile
                 <Z>1</Z>
               </Vector3>
             </Properties>
-            <Item class="SpecialMesh" referent="RBX136">
+            <Item class="SpecialMesh" referent="RBX137">
               <Properties>
                 <token name="LODX">2</token>
                 <token name="LODY">2</token>
@@ -6771,7 +6860,7 @@ return Profile
               </Properties>
             </Item>
           </Item>
-          <Item class="Part" referent="RBX137">
+          <Item class="Part" referent="RBX138">
             <Properties>
               <bool name="Anchored">true</bool>
               <float name="BackParamA">-0.5</float>
@@ -6844,7 +6933,7 @@ return Profile
                 <Z>1</Z>
               </Vector3>
             </Properties>
-            <Item class="SpecialMesh" referent="RBX138">
+            <Item class="SpecialMesh" referent="RBX139">
               <Properties>
                 <token name="LODX">2</token>
                 <token name="LODY">2</token>
@@ -6874,7 +6963,7 @@ return Profile
               </Properties>
             </Item>
           </Item>
-          <Item class="Part" referent="RBX139">
+          <Item class="Part" referent="RBX140">
             <Properties>
               <bool name="Anchored">true</bool>
               <float name="BackParamA">-0.5</float>
@@ -6947,7 +7036,7 @@ return Profile
                 <Z>1</Z>
               </Vector3>
             </Properties>
-            <Item class="SpecialMesh" referent="RBX140">
+            <Item class="SpecialMesh" referent="RBX141">
               <Properties>
                 <token name="LODX">2</token>
                 <token name="LODY">2</token>
@@ -6977,7 +7066,7 @@ return Profile
               </Properties>
             </Item>
           </Item>
-          <Item class="Part" referent="RBX141">
+          <Item class="Part" referent="RBX142">
             <Properties>
               <bool name="Anchored">true</bool>
               <float name="BackParamA">-0.5</float>
@@ -7050,7 +7139,7 @@ return Profile
                 <Z>1</Z>
               </Vector3>
             </Properties>
-            <Item class="SpecialMesh" referent="RBX142">
+            <Item class="SpecialMesh" referent="RBX143">
               <Properties>
                 <token name="LODX">2</token>
                 <token name="LODY">2</token>
@@ -7081,7 +7170,7 @@ return Profile
             </Item>
           </Item>
         </Item>
-        <Item class="Part" referent="RBX143">
+        <Item class="Part" referent="RBX144">
           <Properties>
             <bool name="Anchored">true</bool>
             <float name="BackParamA">-0.5</float>
@@ -7154,7 +7243,7 @@ return Profile
               <Z>1</Z>
             </Vector3>
           </Properties>
-          <Item class="SpecialMesh" referent="RBX144">
+          <Item class="SpecialMesh" referent="RBX145">
             <Properties>
               <token name="LODX">2</token>
               <token name="LODY">2</token>
@@ -7184,7 +7273,7 @@ return Profile
             </Properties>
           </Item>
         </Item>
-        <Item class="Model" referent="RBX145">
+        <Item class="Model" referent="RBX146">
           <Properties>
             <CoordinateFrame name="ModelInPrimary">
               <X>0</X>
@@ -7203,7 +7292,7 @@ return Profile
             <string name="Name">Model</string>
             <Ref name="PrimaryPart">null</Ref>
           </Properties>
-          <Item class="Part" referent="RBX146">
+          <Item class="Part" referent="RBX147">
             <Properties>
               <bool name="Anchored">true</bool>
               <float name="BackParamA">-0.5</float>
@@ -7276,7 +7365,7 @@ return Profile
                 <Z>1</Z>
               </Vector3>
             </Properties>
-            <Item class="SpecialMesh" referent="RBX147">
+            <Item class="SpecialMesh" referent="RBX148">
               <Properties>
                 <token name="LODX">2</token>
                 <token name="LODY">2</token>
@@ -7306,7 +7395,7 @@ return Profile
               </Properties>
             </Item>
           </Item>
-          <Item class="Part" referent="RBX148">
+          <Item class="Part" referent="RBX149">
             <Properties>
               <bool name="Anchored">true</bool>
               <float name="BackParamA">-0.5</float>
@@ -7379,7 +7468,7 @@ return Profile
                 <Z>1</Z>
               </Vector3>
             </Properties>
-            <Item class="SpecialMesh" referent="RBX149">
+            <Item class="SpecialMesh" referent="RBX150">
               <Properties>
                 <token name="LODX">2</token>
                 <token name="LODY">2</token>
@@ -7409,7 +7498,7 @@ return Profile
               </Properties>
             </Item>
           </Item>
-          <Item class="Part" referent="RBX150">
+          <Item class="Part" referent="RBX151">
             <Properties>
               <bool name="Anchored">true</bool>
               <float name="BackParamA">-0.5</float>
@@ -7482,7 +7571,7 @@ return Profile
                 <Z>1</Z>
               </Vector3>
             </Properties>
-            <Item class="SpecialMesh" referent="RBX151">
+            <Item class="SpecialMesh" referent="RBX152">
               <Properties>
                 <token name="LODX">2</token>
                 <token name="LODY">2</token>
@@ -7512,7 +7601,7 @@ return Profile
               </Properties>
             </Item>
           </Item>
-          <Item class="Part" referent="RBX152">
+          <Item class="Part" referent="RBX153">
             <Properties>
               <bool name="Anchored">true</bool>
               <float name="BackParamA">-0.5</float>
@@ -7585,7 +7674,7 @@ return Profile
                 <Z>1</Z>
               </Vector3>
             </Properties>
-            <Item class="SpecialMesh" referent="RBX153">
+            <Item class="SpecialMesh" referent="RBX154">
               <Properties>
                 <token name="LODX">2</token>
                 <token name="LODY">2</token>
@@ -7615,7 +7704,7 @@ return Profile
               </Properties>
             </Item>
           </Item>
-          <Item class="Part" referent="RBX154">
+          <Item class="Part" referent="RBX155">
             <Properties>
               <bool name="Anchored">true</bool>
               <float name="BackParamA">-0.5</float>
@@ -7688,7 +7777,7 @@ return Profile
                 <Z>1</Z>
               </Vector3>
             </Properties>
-            <Item class="SpecialMesh" referent="RBX155">
+            <Item class="SpecialMesh" referent="RBX156">
               <Properties>
                 <token name="LODX">2</token>
                 <token name="LODY">2</token>
@@ -7718,7 +7807,7 @@ return Profile
               </Properties>
             </Item>
           </Item>
-          <Item class="Part" referent="RBX156">
+          <Item class="Part" referent="RBX157">
             <Properties>
               <bool name="Anchored">true</bool>
               <float name="BackParamA">-0.5</float>
@@ -7791,7 +7880,7 @@ return Profile
                 <Z>1</Z>
               </Vector3>
             </Properties>
-            <Item class="SpecialMesh" referent="RBX157">
+            <Item class="SpecialMesh" referent="RBX158">
               <Properties>
                 <token name="LODX">2</token>
                 <token name="LODY">2</token>
@@ -7822,7 +7911,7 @@ return Profile
             </Item>
           </Item>
         </Item>
-        <Item class="Part" referent="RBX158">
+        <Item class="Part" referent="RBX159">
           <Properties>
             <bool name="Anchored">true</bool>
             <float name="BackParamA">-0.5</float>
@@ -7896,7 +7985,7 @@ return Profile
             </Vector3>
           </Properties>
         </Item>
-        <Item class="Part" referent="RBX159">
+        <Item class="Part" referent="RBX160">
           <Properties>
             <bool name="Anchored">true</bool>
             <float name="BackParamA">-0.5</float>
@@ -7969,7 +8058,7 @@ return Profile
               <Z>1</Z>
             </Vector3>
           </Properties>
-          <Item class="SpecialMesh" referent="RBX160">
+          <Item class="SpecialMesh" referent="RBX161">
             <Properties>
               <token name="LODX">2</token>
               <token name="LODY">2</token>
@@ -7999,7 +8088,7 @@ return Profile
             </Properties>
           </Item>
         </Item>
-        <Item class="Model" referent="RBX161">
+        <Item class="Model" referent="RBX162">
           <Properties>
             <CoordinateFrame name="ModelInPrimary">
               <X>0</X>
@@ -8018,7 +8107,7 @@ return Profile
             <string name="Name">Model</string>
             <Ref name="PrimaryPart">null</Ref>
           </Properties>
-          <Item class="Part" referent="RBX162">
+          <Item class="Part" referent="RBX163">
             <Properties>
               <bool name="Anchored">true</bool>
               <float name="BackParamA">-0.5</float>
@@ -8091,7 +8180,7 @@ return Profile
                 <Z>1</Z>
               </Vector3>
             </Properties>
-            <Item class="SpecialMesh" referent="RBX163">
+            <Item class="SpecialMesh" referent="RBX164">
               <Properties>
                 <token name="LODX">2</token>
                 <token name="LODY">2</token>
@@ -8121,7 +8210,7 @@ return Profile
               </Properties>
             </Item>
           </Item>
-          <Item class="Part" referent="RBX164">
+          <Item class="Part" referent="RBX165">
             <Properties>
               <bool name="Anchored">true</bool>
               <float name="BackParamA">-0.5</float>
@@ -8194,7 +8283,7 @@ return Profile
                 <Z>1</Z>
               </Vector3>
             </Properties>
-            <Item class="SpecialMesh" referent="RBX165">
+            <Item class="SpecialMesh" referent="RBX166">
               <Properties>
                 <token name="LODX">2</token>
                 <token name="LODY">2</token>
@@ -8224,7 +8313,7 @@ return Profile
               </Properties>
             </Item>
           </Item>
-          <Item class="Part" referent="RBX166">
+          <Item class="Part" referent="RBX167">
             <Properties>
               <bool name="Anchored">true</bool>
               <float name="BackParamA">-0.5</float>
@@ -8297,7 +8386,7 @@ return Profile
                 <Z>1</Z>
               </Vector3>
             </Properties>
-            <Item class="SpecialMesh" referent="RBX167">
+            <Item class="SpecialMesh" referent="RBX168">
               <Properties>
                 <token name="LODX">2</token>
                 <token name="LODY">2</token>
@@ -8327,7 +8416,7 @@ return Profile
               </Properties>
             </Item>
           </Item>
-          <Item class="Part" referent="RBX168">
+          <Item class="Part" referent="RBX169">
             <Properties>
               <bool name="Anchored">true</bool>
               <float name="BackParamA">-0.5</float>
@@ -8400,7 +8489,7 @@ return Profile
                 <Z>1</Z>
               </Vector3>
             </Properties>
-            <Item class="SpecialMesh" referent="RBX169">
+            <Item class="SpecialMesh" referent="RBX170">
               <Properties>
                 <token name="LODX">2</token>
                 <token name="LODY">2</token>
@@ -8430,7 +8519,7 @@ return Profile
               </Properties>
             </Item>
           </Item>
-          <Item class="Part" referent="RBX170">
+          <Item class="Part" referent="RBX171">
             <Properties>
               <bool name="Anchored">true</bool>
               <float name="BackParamA">-0.5</float>
@@ -8503,7 +8592,7 @@ return Profile
                 <Z>1</Z>
               </Vector3>
             </Properties>
-            <Item class="SpecialMesh" referent="RBX171">
+            <Item class="SpecialMesh" referent="RBX172">
               <Properties>
                 <token name="LODX">2</token>
                 <token name="LODY">2</token>
@@ -8533,7 +8622,7 @@ return Profile
               </Properties>
             </Item>
           </Item>
-          <Item class="Part" referent="RBX172">
+          <Item class="Part" referent="RBX173">
             <Properties>
               <bool name="Anchored">true</bool>
               <float name="BackParamA">-0.5</float>
@@ -8606,7 +8695,7 @@ return Profile
                 <Z>1</Z>
               </Vector3>
             </Properties>
-            <Item class="SpecialMesh" referent="RBX173">
+            <Item class="SpecialMesh" referent="RBX174">
               <Properties>
                 <token name="LODX">2</token>
                 <token name="LODY">2</token>
@@ -8648,7 +8737,7 @@ return Profile
       <Properties>
         <string name="Name">Server</string>
       </Properties>
-      <Item class="ModuleScript" referent="RBX22">
+      <Item class="ModuleScript" referent="RBX23">
         <Properties>
           <string name="Name">DataService</string>
           <ProtectedString name="Source">local DataStoreService = game:GetService("DataStoreService")
@@ -8767,7 +8856,7 @@ return DataService
 </ProtectedString>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="RBX23">
+      <Item class="ModuleScript" referent="RBX24">
         <Properties>
           <string name="Name">ExchangeService</string>
           <ProtectedString name="Source">-- Same-server player listings and confirmed trades. A durable two-phase journal
@@ -9185,7 +9274,7 @@ return ExchangeService
 </ProtectedString>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="RBX24">
+      <Item class="ModuleScript" referent="RBX25">
         <Properties>
           <string name="Name">GameService</string>
           <ProtectedString name="Source">local Players = game:GetService("Players")
@@ -9625,6 +9714,7 @@ function GameService:upgrade(player, payload)
         for _, candidate in ipairs(Config.Themes) do if candidate.Id == payload.Theme then theme = candidate end end
         if not theme then return end
         if not profile.Themes[theme.Id] then
+            if theme.PaidOnly then return self:notify(player, "This exclusive theme is available in the cosmetic store.") end
             if self:spendable(player, profile) &lt; theme.Cost then return self:notify(player, "Not enough cash.") end
             profile.Cash -= theme.Cost; profile.Themes[theme.Id] = true
         end
@@ -9944,7 +10034,7 @@ return GameService
 </ProtectedString>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="RBX25">
+      <Item class="ModuleScript" referent="RBX26">
         <Properties>
           <string name="Name">LiveService</string>
           <ProtectedString name="Source">-- Live operations are isolated from core economy mutations. All awards are
@@ -9953,6 +10043,7 @@ local Shared = game:GetService("ReplicatedStorage"):WaitForChild("Shared")
 local LiveConfig = require(Shared.LiveConfig)
 local Config = require(Shared.Config)
 local Catalog = require(Shared.Catalog)
+local Commerce = require(Shared.Commerce)
 local LiveService = {}
 LiveService.__index = LiveService
 local WEEK = 7 * 86400
@@ -10010,16 +10101,10 @@ function LiveService.rank(record)
     return winners
 end
 function LiveService.applyReward(profile, reward)
-    ensure(profile)
-    if reward.Theme then profile.Themes[reward.Theme] = true end
-    if reward.Decoration then profile.Decorations[reward.Decoration] = true end
-    if reward.Title then profile.Titles[reward.Title] = true end
+    ensure(profile); Commerce.applyReward(profile, reward)
 end
 function LiveService.ownsReward(profile, reward)
-    if reward.Theme and not profile.Themes[reward.Theme] then return false end
-    if reward.Decoration and not profile.Decorations[reward.Decoration] then return false end
-    if reward.Title and not profile.Titles[reward.Title] then return false end
-    return reward.Theme ~= nil or reward.Decoration ~= nil or reward.Title ~= nil
+    ensure(profile); return Commerce.ownsReward(profile, reward)
 end
 local function memoryStore()
     local records = {}
@@ -10277,7 +10362,9 @@ function LiveService:purchase(player, payload)
         if payload.Kind == "Pass" then self.Marketplace:PromptGamePassPurchase(player, payload.Id)
         else self.Marketplace:PromptProductPurchase(player, payload.Id) end
     end)
-    if not ok then self:notice(player, "The Roblox purchase prompt is unavailable. Please try later.") end
+    if ok then
+        if self.Game.analytics then self.Game:analytics(player, "StorePurchasePrompt") end
+    else self:notice(player, "The Roblox purchase prompt is unavailable. Please try later.") end
 end
 function LiveService:reconcilePasses(player)
     if self.Data.Ephemeral then return end
@@ -10297,7 +10384,14 @@ function LiveService:reconcilePasses(player)
     end
 end
 function LiveService:passPurchased(player, passId, purchased)
-    if purchased and self.Passes[passId] then self:reconcilePasses(player) end
+    if purchased and self.Passes[passId] then
+        self:reconcilePasses(player)
+        local profile = self:rawProfile(player.UserId)
+        if profile and LiveService.ownsReward(profile, self.Passes[passId].Reward) then
+            if self.Game.analytics then self.Game:analytics(player, "StorePurchaseCompleted") end
+            self:notice(player, "Your permanent style bundle is ready. Thank you for supporting Thrift Flip!")
+        end
+    end
 end
 function LiveService:processReceipt(receipt)
     local retryDecision = Enum.ProductPurchaseDecision.NotProcessedYet
@@ -10324,7 +10418,10 @@ function LiveService:processReceipt(receipt)
         end
     end)
     if not saved then return retryDecision end
-    if self:rawProfile(player.UserId) == profile then self.Game:refresh(player); self:notice(player, "Your cosmetic is ready. Thank you for supporting Thrift Flip!") end
+    if self:rawProfile(player.UserId) == profile then
+        self.Game:refresh(player); self:notice(player, "Your cosmetic is ready. Thank you for supporting Thrift Flip!")
+        if self.Game.analytics then self.Game:analytics(player, "StorePurchaseCompleted") end
+    end
     return grantedDecision
 end
 function LiveService:loadProductInfo()
@@ -10360,17 +10457,31 @@ function LiveService:snapshot(player)
             Ends = event.Ends, Goal = copy(event.Goal), Progress = copy(progress), RewardName = event.RewardName,
             Claimed = progress.Claimed == true, Accent = event.Accent})
     end
-    local shop = {}
-    for kind, definitions in pairs({Pass = self.Passes, Product = self.Products}) do
-        for id, definition in pairs(definitions) do
-            local info = self.ProductInfo[kind .. ":" .. id]
-            if not info or info.ForSale ~= false then
-                table.insert(shop, {Kind = kind, Id = id, Name = definition.Name, Description = definition.Description,
-                    Owned = LiveService.ownsReward(profile, definition.Reward), Price = info and info.Price})
-            end
-        end
+    local shop, included = {}, {}
+    local function addOffer(kind, definition)
+        local id = definition.Id or 0; local configured = validId(id)
+        local info = if configured then self.ProductInfo[kind .. ":" .. id] else nil
+        local key = definition.Key or (kind .. ":" .. tostring(id)); included[key] = true
+        table.insert(shop, {
+            Key = key, Kind = kind, Id = id, Order = definition.Order or 999,
+            Name = definition.Name, Description = definition.Description, Badge = definition.Badge,
+            Benefits = copy(definition.Benefits or {}), Accent = definition.Accent, PreviewTheme = definition.PreviewTheme,
+            Owned = LiveService.ownsReward(profile, definition.Reward), Configured = configured,
+            Available = not info or info.ForSale ~= false, Price = info and info.Price,
+            SuggestedPrice = definition.SuggestedPrice,
+        })
     end
-    table.sort(shop, function(a, b) if a.Kind ~= b.Kind then return a.Kind &lt; b.Kind end; return a.Id &lt; b.Id end)
+    for _, definition in ipairs(LiveConfig.Passes) do addOffer("Pass", definition) end
+    for _, definition in ipairs(LiveConfig.Products) do addOffer("Product", definition) end
+    -- Preserve legacy configured passes while the experience migrates to LiveConfig.
+    for id, definition in pairs(self.Passes) do
+        local key = definition.Key or ("Pass:" .. tostring(id)); if not included[key] then addOffer("Pass", definition) end
+    end
+    table.sort(shop, function(a, b)
+        if a.Order ~= b.Order then return a.Order &lt; b.Order end
+        if a.Kind ~= b.Kind then return a.Kind &lt; b.Kind end
+        return a.Name &lt; b.Name
+    end)
     return {
         Showcase = {Week = week, Neighborhood = neighborhood, Theme = LiveService.theme(week), Ends = LiveService.weekEnd(week),
             Entries = entries, VotedFor = record.Votes[tostring(player.UserId)], Entered = record.Entries[tostring(player.UserId)] ~= nil,
@@ -10440,7 +10551,7 @@ return LiveService
 </ProtectedString>
         </Properties>
       </Item>
-      <Item class="Script" referent="RBX26">
+      <Item class="Script" referent="RBX27">
         <Properties>
           <string name="Name">Main</string>
           <ProtectedString name="Source">local Players = game:GetService("Players")
@@ -10593,7 +10704,7 @@ end)
 </ProtectedString>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="RBX27">
+      <Item class="ModuleScript" referent="RBX28">
         <Properties>
           <string name="Name">World</string>
           <ProtectedString name="Source">local CollectionService = game:GetService("CollectionService")
@@ -11694,6 +11805,9 @@ function World:districtLandmarks()
         Kit.part(designer, "MannequinDress", Vector3.new(3, 3.8, 1.8), dcf * CFrame.new(x * 11, 4.3, -10), if x &lt; 0 then P.Coral else P.Gold, Enum.Material.Fabric)
         Kit.ball(designer, "MannequinHead", Vector3.new(1.4, 1.4, 1.4), dcf * CFrame.new(x * 11, 7.7, -10), P.Cream)
     end
+    local styleRegister = Kit.part(designer, "StyleRegister", Vector3.new(8, 3, 3), dcf * CFrame.new(0, 2, -7), P.Teal, Enum.Material.Wood)
+    Kit.sign(designer, "STYLE BUNDLES\nPREVIEW BEFORE YOU BUY", dcf * CFrame.new(0, 5.1, -8.6), Vector3.new(11, 2.8, 0.2), P.Cream, P.Ink)
+    prompt(styleRegister, "Browse cosmetic store", "Boutique")
     local showcaseDoor = designer:FindFirstChild("GoldDoor"); prompt(showcaseDoor, "Open designer showcase", "Showcase")
     -- Antique Corner complements the supplied five models in the map's sixth lot.
     local antique, acf = building("AntiqueCorner", Vector3.new(52, 0, -27), 1, 36, 14, 28, P.Wood, P.Oak, P.Ink)
@@ -12321,7 +12435,7 @@ return World
 </ProtectedString>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="RBX28">
+      <Item class="ModuleScript" referent="RBX29">
         <Properties>
           <string name="Name">WorldKit</string>
           <ProtectedString name="Source">-- Original modular environment assets. All geometry is local, anchored and script-free.
@@ -12535,7 +12649,7 @@ return Kit
         <Properties>
           <string name="Name">Client</string>
         </Properties>
-        <Item class="ModuleScript" referent="RBX29">
+        <Item class="ModuleScript" referent="RBX30">
           <Properties>
             <string name="Name">Audio</string>
             <ProtectedString name="Source">local SoundService = game:GetService("SoundService")
@@ -12598,7 +12712,7 @@ return Audio
 </ProtectedString>
           </Properties>
         </Item>
-        <Item class="LocalScript" referent="RBX30">
+        <Item class="LocalScript" referent="RBX31">
           <Properties>
             <string name="Name">Main</string>
             <ProtectedString name="Source">local Players = game:GetService("Players")
@@ -12776,7 +12890,7 @@ RunService.Heartbeat:Connect(function() if billboard.Enabled and os.clock() &gt;
 </ProtectedString>
           </Properties>
         </Item>
-        <Item class="ModuleScript" referent="RBX31">
+        <Item class="ModuleScript" referent="RBX32">
           <Properties>
             <string name="Name">Minigames</string>
             <ProtectedString name="Source">local UserInputService = game:GetService("UserInputService")
@@ -13451,7 +13565,7 @@ return Minigames
 </ProtectedString>
           </Properties>
         </Item>
-        <Item class="ModuleScript" referent="RBX32">
+        <Item class="ModuleScript" referent="RBX33">
           <Properties>
             <string name="Name">Pages</string>
             <ProtectedString name="Source">-- The journal pages share one visual vocabulary and preserve drafts between updates.
@@ -13788,8 +13902,11 @@ function Pages:themesPage()
     for _, theme in ipairs(Config.Themes) do
         local frame = self:card(theme.Name)
         local swatch = Instance.new("Frame"); swatch.Size = UDim2.new(1, 0, 0, 60); swatch.BackgroundColor3 = Color3.new(unpack(theme.Color)); swatch.Parent = frame; UI.corner(swatch, 10)
-        UI.eyebrow(frame, if self.State.Theme == theme.Id then "CURRENT  |  Your signature" elseif self.State.Themes[theme.Id] then "In your collection" else "Make it yours • " .. money(theme.Cost))
-        self:button(frame, if self.State.Themes[theme.Id] then "Use this theme" else "Unlock theme · " .. money(theme.Cost), "Upgrade", {Kind = "Theme", Theme = theme.Id}, self.State.Themes[theme.Id])
+        local owned = self.State.Themes[theme.Id] == true
+        UI.eyebrow(frame, if self.State.Theme == theme.Id then "CURRENT  |  Your signature" elseif owned then "In your collection" elseif theme.PaidOnly then "STORE EXCLUSIVE  |  Permanent" else "Make it yours • " .. money(theme.Cost))
+        if theme.PaidOnly and not owned then
+            self:nav(frame, "View this bundle in Store", "Boutique", nil, false)
+        else self:button(frame, if owned then "Use this theme" else "Unlock theme · " .. money(theme.Cost), "Upgrade", {Kind = "Theme", Theme = theme.Id}, owned) end
     end
     self:nav(self.UI.Content, "Visit the cosmetic boutique", "Boutique")
 end
@@ -13999,12 +14116,36 @@ end
 
 function Pages:boutiquePage()
     local shop = self.State.Live and self.State.Live.Shop or {}
-    UI.hero(self.UI.Content, "Cosmetic boutique", "Style with no shortcuts", "Only permanent visual cosmetics appear here. Core progression always stays available through play.")
-    if #shop == 0 then UI.label(self:card(), "No Robux cosmetics are configured for this experience yet. In-game themes and decor remain available in your shop.", 17); return end
+    UI.hero(self.UI.Content, "Thrift Flip Store", "Make your shop unforgettable", "Permanent style bundles for players who want to support the game. Every find, tool, level and auction remains available through play.")
+    local promise = self:card("Fair by design")
+    UI.label(promise, "NO RANDOM REWARDS  |  NO CASH BOOSTS  |  KEEP FOREVER", 13, UI.Colors.Teal).Font = Enum.Font.GothamBold
+    UI.label(promise, "Preview the complete reward before buying. Roblox shows the final price and asks for confirmation.", 14, UI.Colors.Muted)
+    if #shop == 0 then UI.label(self:card(), "The store catalog is loading. Try reopening Store in a moment.", 17); return end
     for _, item in ipairs(shop) do
-        local frame = self:card(item.Name); UI.label(frame, item.Description, 16, UI.Colors.Muted)
-        if item.Owned then UI.disabled(frame, "OWNED") elseif item.Price then self:button(frame, "Get for R$" .. item.Price, "ShopPurchase", {Kind = item.Kind, Id = item.Id}) else UI.disabled(frame, "Currently unavailable") end
+        local accent = if item.Accent then Color3.fromHex(item.Accent) else UI.Colors.Teal
+        local frame = self:card()
+        local swatch = Instance.new("Frame"); swatch.Name = "BundlePreview"; swatch.Size = UDim2.new(1, 0, 0, 58)
+        swatch.BackgroundColor3 = accent; swatch.BorderSizePixel = 0; swatch.Parent = frame; UI.corner(swatch, 12)
+        local badge = UI.label(swatch, item.Badge or (if item.Kind == "Pass" then "PERMANENT PASS" else "SPECIAL"), 11, UI.Colors.White)
+        badge.Font = Enum.Font.GothamBold; badge.Position = UDim2.fromOffset(12, 6); badge.Size = UDim2.new(1, -24, 0, 16); badge.AutomaticSize = Enum.AutomaticSize.None
+        local preview = UI.label(swatch, string.upper(item.Name), 19, UI.Colors.White); preview.Font = Enum.Font.GothamBold
+        preview.Position = UDim2.fromOffset(12, 23); preview.Size = UDim2.new(1, -24, 0, 27); preview.AutomaticSize = Enum.AutomaticSize.None
+        UI.label(frame, item.Description, 15, UI.Colors.Muted)
+        for _, benefit in ipairs(item.Benefits or {}) do UI.label(frame, "+  " .. benefit, 14, UI.Colors.Ink) end
+        if item.Owned then
+            UI.disabled(frame, "OWNED  |  Ready in your Style and Tools menus")
+        elseif not item.Configured then
+            UI.disabled(frame, "STORE PREVIEW  |  Creator ID needed" .. (if item.SuggestedPrice then "  |  Planned R$" .. item.SuggestedPrice else ""))
+        elseif not item.Available then
+            UI.disabled(frame, "Currently off sale")
+        else
+            local buyText = if item.Price then "Get permanently for R$" .. item.Price else "View Roblox price"
+            local buy = self:button(frame, buyText, "ShopPurchase", {Kind = item.Kind, Id = item.Id})
+            buy.BackgroundColor3 = accent; buy.TextColor3 = UI.Colors.White
+        end
     end
+    local footer = self:card("Purchase support")
+    UI.label(footer, "Purchases are handled by Roblox. Rejoin after buying if an entitlement takes a moment to appear. Game passes are restored automatically on every login.", 14, UI.Colors.Muted)
 end
 
 function Pages:arrangePage(context)
@@ -14156,7 +14297,7 @@ return Pages
 </ProtectedString>
           </Properties>
         </Item>
-        <Item class="ModuleScript" referent="RBX33">
+        <Item class="ModuleScript" referent="RBX34">
           <Properties>
             <string name="Name">UI</string>
             <ProtectedString name="Source">-- Shared visual language for the Thrift Flip client. All art here is vector UI or

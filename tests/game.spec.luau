@@ -205,6 +205,18 @@ test("sidebar shop upgrades work from anywhere in town", function()
     s:upgrade(p, {Kind = "Tool"})
     equal(profile.Tool, 1); assert(profile.Cash < 1000)
 end)
+test("cosmetic bundles grant every entitlement and paid themes reject cash unlocks", function()
+    local profile = Profile.new()
+    local reward = {Themes = {"RoseGold"}, Decorations = {"Curtains", "Plant"}, Titles = {"RoseGoldStylist"}}
+    assert(not Commerce.ownsReward(profile, reward))
+    Commerce.applyReward(profile, reward)
+    assert(Commerce.ownsReward(profile, reward))
+    assert(profile.Themes.RoseGold and profile.Decorations.Curtains and profile.Decorations.Plant and profile.Titles.RoseGoldStylist)
+
+    local s, p, liveProfile = fixture(); local cash = liveProfile.Cash
+    s:upgrade(p, {Kind = "Theme", Theme = "RoseGold"})
+    assert(not liveProfile.Themes.RoseGold); equal(liveProfile.Cash, cash)
+end)
 test("auction settles cash and item in the same winning profile", function()
     local s, p, profile, world = fixture(); local item = addItem(profile); table.clear(profile.Inventory)
     s.Auction = {Bid = 50, Bidder = p.UserId, Started = os.time() - 60, Ends = os.time() - 1, Item = item}

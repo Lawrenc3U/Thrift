@@ -56,6 +56,9 @@ local Config = {
         {Id = "Futuristic", Name = "Neon Tomorrow", Cost = 600, Color = {0.43, 0.56, 0.76}},
         {Id = "Antique", Name = "Antique Attic", Cost = 900, Color = {0.69, 0.56, 0.36}},
         {Id = "Cute", Name = "Rose Cottage", Cost = 450, Color = {0.85, 0.61, 0.70}},
+        {Id = "RoseGold", Name = "Rose Gold Boutique", PaidOnly = true, Color = {0.92, 0.57, 0.62}},
+        {Id = "NeonNight", Name = "Neon Night Market", PaidOnly = true, Color = {0.20, 0.32, 0.55}},
+        {Id = "Curator", Name = "Curator's Gallery", PaidOnly = true, Color = {0.52, 0.36, 0.24}},
     },
 }
 return Config

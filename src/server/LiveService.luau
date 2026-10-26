@@ -4,6 +4,7 @@ local Shared = game:GetService("ReplicatedStorage"):WaitForChild("Shared")
 local LiveConfig = require(Shared.LiveConfig)
 local Config = require(Shared.Config)
 local Catalog = require(Shared.Catalog)
+local Commerce = require(Shared.Commerce)
 local LiveService = {}
 LiveService.__index = LiveService
 local WEEK = 7 * 86400
@@ -61,16 +62,10 @@ function LiveService.rank(record)
     return winners
 end
 function LiveService.applyReward(profile, reward)
-    ensure(profile)
-    if reward.Theme then profile.Themes[reward.Theme] = true end
-    if reward.Decoration then profile.Decorations[reward.Decoration] = true end
-    if reward.Title then profile.Titles[reward.Title] = true end
+    ensure(profile); Commerce.applyReward(profile, reward)
 end
 function LiveService.ownsReward(profile, reward)
-    if reward.Theme and not profile.Themes[reward.Theme] then return false end
-    if reward.Decoration and not profile.Decorations[reward.Decoration] then return false end
-    if reward.Title and not profile.Titles[reward.Title] then return false end
-    return reward.Theme ~= nil or reward.Decoration ~= nil or reward.Title ~= nil
+    ensure(profile); return Commerce.ownsReward(profile, reward)
 end
 local function memoryStore()
     local records = {}
@@ -328,7 +323,9 @@ function LiveService:purchase(player, payload)
         if payload.Kind == "Pass" then self.Marketplace:PromptGamePassPurchase(player, payload.Id)
         else self.Marketplace:PromptProductPurchase(player, payload.Id) end
     end)
-    if not ok then self:notice(player, "The Roblox purchase prompt is unavailable. Please try later.") end
+    if ok then
+        if self.Game.analytics then self.Game:analytics(player, "StorePurchasePrompt") end
+    else self:notice(player, "The Roblox purchase prompt is unavailable. Please try later.") end
 end
 function LiveService:reconcilePasses(player)
     if self.Data.Ephemeral then return end
@@ -348,7 +345,14 @@ function LiveService:reconcilePasses(player)
     end
 end
 function LiveService:passPurchased(player, passId, purchased)
-    if purchased and self.Passes[passId] then self:reconcilePasses(player) end
+    if purchased and self.Passes[passId] then
+        self:reconcilePasses(player)
+        local profile = self:rawProfile(player.UserId)
+        if profile and LiveService.ownsReward(profile, self.Passes[passId].Reward) then
+            if self.Game.analytics then self.Game:analytics(player, "StorePurchaseCompleted") end
+            self:notice(player, "Your permanent style bundle is ready. Thank you for supporting Thrift Flip!")
+        end
+    end
 end
 function LiveService:processReceipt(receipt)
     local retryDecision = Enum.ProductPurchaseDecision.NotProcessedYet
@@ -375,7 +379,10 @@ function LiveService:processReceipt(receipt)
         end
     end)
     if not saved then return retryDecision end
-    if self:rawProfile(player.UserId) == profile then self.Game:refresh(player); self:notice(player, "Your cosmetic is ready. Thank you for supporting Thrift Flip!") end
+    if self:rawProfile(player.UserId) == profile then
+        self.Game:refresh(player); self:notice(player, "Your cosmetic is ready. Thank you for supporting Thrift Flip!")
+        if self.Game.analytics then self.Game:analytics(player, "StorePurchaseCompleted") end
+    end
     return grantedDecision
 end
 function LiveService:loadProductInfo()
@@ -411,17 +418,31 @@ function LiveService:snapshot(player)
             Ends = event.Ends, Goal = copy(event.Goal), Progress = copy(progress), RewardName = event.RewardName,
             Claimed = progress.Claimed == true, Accent = event.Accent})
     end
-    local shop = {}
-    for kind, definitions in pairs({Pass = self.Passes, Product = self.Products}) do
-        for id, definition in pairs(definitions) do
-            local info = self.ProductInfo[kind .. ":" .. id]
-            if not info or info.ForSale ~= false then
-                table.insert(shop, {Kind = kind, Id = id, Name = definition.Name, Description = definition.Description,
-                    Owned = LiveService.ownsReward(profile, definition.Reward), Price = info and info.Price})
-            end
-        end
+    local shop, included = {}, {}
+    local function addOffer(kind, definition)
+        local id = definition.Id or 0; local configured = validId(id)
+        local info = if configured then self.ProductInfo[kind .. ":" .. id] else nil
+        local key = definition.Key or (kind .. ":" .. tostring(id)); included[key] = true
+        table.insert(shop, {
+            Key = key, Kind = kind, Id = id, Order = definition.Order or 999,
+            Name = definition.Name, Description = definition.Description, Badge = definition.Badge,
+            Benefits = copy(definition.Benefits or {}), Accent = definition.Accent, PreviewTheme = definition.PreviewTheme,
+            Owned = LiveService.ownsReward(profile, definition.Reward), Configured = configured,
+            Available = not info or info.ForSale ~= false, Price = info and info.Price,
+            SuggestedPrice = definition.SuggestedPrice,
+        })
     end
-    table.sort(shop, function(a, b) if a.Kind ~= b.Kind then return a.Kind < b.Kind end; return a.Id < b.Id end)
+    for _, definition in ipairs(LiveConfig.Passes) do addOffer("Pass", definition) end
+    for _, definition in ipairs(LiveConfig.Products) do addOffer("Product", definition) end
+    -- Preserve legacy configured passes while the experience migrates to LiveConfig.
+    for id, definition in pairs(self.Passes) do
+        local key = definition.Key or ("Pass:" .. tostring(id)); if not included[key] then addOffer("Pass", definition) end
+    end
+    table.sort(shop, function(a, b)
+        if a.Order ~= b.Order then return a.Order < b.Order end
+        if a.Kind ~= b.Kind then return a.Kind < b.Kind end
+        return a.Name < b.Name
+    end)
     return {
         Showcase = {Week = week, Neighborhood = neighborhood, Theme = LiveService.theme(week), Ends = LiveService.weekEnd(week),
             Entries = entries, VotedFor = record.Votes[tostring(player.UserId)], Entered = record.Entries[tostring(player.UserId)] ~= nil,

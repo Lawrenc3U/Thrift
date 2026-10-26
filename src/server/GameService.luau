@@ -435,6 +435,7 @@ function GameService:upgrade(player, payload)
         for _, candidate in ipairs(Config.Themes) do if candidate.Id == payload.Theme then theme = candidate end end
         if not theme then return end
         if not profile.Themes[theme.Id] then
+            if theme.PaidOnly then return self:notify(player, "This exclusive theme is available in the cosmetic store.") end
             if self:spendable(player, profile) < theme.Cost then return self:notify(player, "Not enough cash.") end
             profile.Cash -= theme.Cost; profile.Themes[theme.Id] = true
         end

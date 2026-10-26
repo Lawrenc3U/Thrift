@@ -65,6 +65,13 @@ def unconfigured_assets() -> list[str]:
     return sorted(name for name, value in values.items() if value == 0)
 
 
+def unconfigured_store() -> list[str]:
+    source = (ROOT / "src" / "shared" / "LiveConfig.luau").read_text()
+    offers = re.findall(r'\bKey\s*=\s*"([^"]+)"\s*,\s*Id\s*=\s*(\d+)', source)
+    assert offers, "LiveConfig store catalog is missing"
+    return [key for key, value in offers if int(value) == 0]
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--require-uploaded-assets", action="store_true", help="fail while creator-owned Roblox asset IDs remain zero")
@@ -79,15 +86,18 @@ def main() -> int:
     place = ROOT / "dist" / "ThriftFlip.rbxlx"
     root = ET.parse(place).getroot()
     scripts = root.findall('.//ProtectedString[@name="Source"]')
-    assert len(scripts) == 21, f"expected 21 embedded scripts, found {len(scripts)}"
+    expected_scripts = len(list((ROOT / "src").rglob("*.luau")))
+    assert len(scripts) == expected_scripts, f"expected {expected_scripts} embedded scripts, found {len(scripts)}"
     print(f"PASS place XML: {len(scripts)} embedded scripts, {place.stat().st_size / 1024:.0f} KiB")
 
     missing = unconfigured_assets()
+    store = unconfigured_store()
     if missing:
         print("UPLOAD REQUIRED creator-owned IDs:", ", ".join(missing))
-        if args.require_uploaded_assets:
-            return 2
-    else:
+    if store:
+        print("STORE SETUP REQUIRED creator-owned product IDs:", ", ".join(store))
+    if args.require_uploaded_assets and (missing or store): return 2
+    if not missing and not store:
         print("PASS creator-owned asset IDs are configured")
     print("OFFLINE RELEASE CHECK PASSED")
     print("Roblox Studio, multiplayer, DataStore, device, and performance checks still require Roblox tools.")

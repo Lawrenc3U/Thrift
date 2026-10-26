@@ -19,6 +19,8 @@ python3 tools/release_check.py --require-uploaded-assets
 python3 tools/build.py
 ```
 
+Create the three game passes and one developer product listed in `docs/MONETIZATION.md`, then replace their `Id = 0` values in `src/shared/LiveConfig.luau`. Until then, Store shows reviewable previews and never opens a purchase prompt.
+
 Open `dist/ThriftFlip.rbxlx` in the current Roblox Studio and publish it to a private test experience. Set the server size to eight players.
 
 ## Required Roblox checks

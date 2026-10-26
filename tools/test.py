@@ -16,7 +16,7 @@ def main():
             raise SystemExit(result.returncode)
     print(f'Compiled {len(files)} Luau source files', flush=True)
     bundle = (ROOT / 'tests' / 'mocks.luau').read_text() + '\n'
-    for folder, name in [('shared', 'Config'), ('shared', 'Catalog'), ('shared', 'Economy'), ('shared', 'Profile'), ('shared', 'DecorPlacement'), ('server', 'DataService'), ('server', 'GameService')]:
+    for folder, name in [('shared', 'Config'), ('shared', 'Catalog'), ('shared', 'Economy'), ('shared', 'Profile'), ('shared', 'Commerce'), ('shared', 'DecorPlacement'), ('server', 'DataService'), ('server', 'GameService')]:
         source = (ROOT / 'src' / folder / f'{name}.luau').read_text()
         source = '\n'.join(line for line in source.splitlines() if not (
             line.startswith('local Shared = ') or line.startswith('local Config = require(')

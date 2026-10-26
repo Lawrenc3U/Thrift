@@ -1096,6 +1096,9 @@ function World:districtLandmarks()
         Kit.part(designer, "MannequinDress", Vector3.new(3, 3.8, 1.8), dcf * CFrame.new(x * 11, 4.3, -10), if x < 0 then P.Coral else P.Gold, Enum.Material.Fabric)
         Kit.ball(designer, "MannequinHead", Vector3.new(1.4, 1.4, 1.4), dcf * CFrame.new(x * 11, 7.7, -10), P.Cream)
     end
+    local styleRegister = Kit.part(designer, "StyleRegister", Vector3.new(8, 3, 3), dcf * CFrame.new(0, 2, -7), P.Teal, Enum.Material.Wood)
+    Kit.sign(designer, "STYLE BUNDLES\nPREVIEW BEFORE YOU BUY", dcf * CFrame.new(0, 5.1, -8.6), Vector3.new(11, 2.8, 0.2), P.Cream, P.Ink)
+    prompt(styleRegister, "Browse cosmetic store", "Boutique")
     local showcaseDoor = designer:FindFirstChild("GoldDoor"); prompt(showcaseDoor, "Open designer showcase", "Showcase")
     -- Antique Corner complements the supplied five models in the map's sixth lot.
     local antique, acf = building("AntiqueCorner", Vector3.new(52, 0, -27), 1, 36, 14, 28, P.Wood, P.Oak, P.Ink)

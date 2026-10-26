@@ -45,13 +45,41 @@ local LiveConfig = {
             Accent = "#A3BD7C",
         },
     },
-    -- Configure real creator-owned IDs after creating products in Creator Dashboard.
-    -- Entries without positive integer IDs are never displayed or prompted.
-    -- Example schema (not an enabled product):
-    -- Passes = {{Id = YOUR_ID, Name = "Rose Cottage", Description = "A permanent cosmetic theme", Reward = {Theme = "Cute"}}}
-    -- Products grant permanent cosmetics only; replays cannot create cash/items.
-    Passes = {},
-    Products = {},
+    -- Replace each zero with the creator-owned ID from Creator Dashboard. Zero-ID
+    -- offers remain visible as disabled previews in Studio, but are never prompted.
+    -- SuggestedPrice is planning copy only; the live button uses Roblox's price.
+    Passes = {
+        {
+            Key = "rose_gold_boutique", Id = 0, Order = 1, Badge = "POPULAR", SuggestedPrice = 49,
+            Name = "Rose Gold Boutique", Accent = "#E9949D", PreviewTheme = "RoseGold",
+            Description = "A warm blush storefront made for cozy collectors.",
+            Benefits = {"Exclusive Rose Gold shop theme", "Rose linen curtains + houseplants", "Rose Gold Stylist title"},
+            Reward = {Themes = {"RoseGold"}, Decorations = {"Curtains", "Plant"}, Titles = {"RoseGoldStylist"}},
+        },
+        {
+            Key = "neon_night_market", Id = 0, Order = 2, Badge = "BOLD STYLE", SuggestedPrice = 79,
+            Name = "Neon Night Market", Accent = "#657FDB", PreviewTheme = "NeonNight",
+            Description = "Turn your shop into a vivid after-dark treasure stop.",
+            Benefits = {"Exclusive Neon Night shop theme", "Good Finds neon decoration", "Neon Curator title"},
+            Reward = {Themes = {"NeonNight"}, Decorations = {"Neon"}, Titles = {"NeonCurator"}},
+        },
+        {
+            Key = "curator_club", Id = 0, Order = 3, Badge = "BEST VALUE", SuggestedPrice = 129,
+            Name = "Curator Club", Accent = "#C08A52", PreviewTheme = "Curator",
+            Description = "A museum-inspired storefront bundle for serious collectors.",
+            Benefits = {"Exclusive Curator's Gallery theme", "Golden sculpture + framed poster", "Curator Club title"},
+            Reward = {Themes = {"Curator"}, Decorations = {"Trophy", "Poster"}, Titles = {"CuratorClub"}},
+        },
+    },
+    Products = {
+        {
+            Key = "street_supporter", Id = 0, Order = 4, Badge = "SUPPORTER", SuggestedPrice = 19,
+            Name = "Thrift Street Supporter", Accent = "#E8B95A",
+            Description = "A small one-time thank-you bundle that supports future updates.",
+            Benefits = {"Street Supporter title", "Second Chances poster", "Permanent account unlock"},
+            Reward = {Decorations = {"Poster"}, Titles = {"StreetSupporter"}},
+        },
+    },
     ReceiptHistoryLimit = 1024,
 }
 return LiveConfig
