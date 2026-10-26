@@ -231,7 +231,7 @@ function World:exactSquare()
         local angle = index * math.pi / 2 + math.pi / 2
         local position = Vector3.new(math.cos(angle) * 21, 0, -55 + math.sin(angle) * 21)
         local facing = CFrame.lookAt(position, Vector3.new(0, 0, -55))
-        if not catalogAsset(square, "ParkBench", facing * CFrame.Angles(0, math.pi, 0), 0.72) then Kit.bench(square, facing) end
+        Kit.bench(square, facing)
     end
     for index = 0, 7 do
         local angle = index * math.pi / 4 + math.pi / 8
@@ -557,7 +557,7 @@ function World:exactEnvironment()
     for row, z in ipairs({17,51,85,119}) do
         for sideIndex, side in ipairs({-1,1}) do
             local benchCF = CFrame.lookAt(Vector3.new(side * 18, 0, z), Vector3.new(0, 0, z))
-            if not catalogAsset(environment, "ParkBench", benchCF * CFrame.Angles(0, math.pi, 0), 0.58) then Kit.bench(environment, benchCF) end
+            Kit.bench(environment, benchCF)
             Kit.cylinder(environment, "StreetBin", 0.9, 2.4, CFrame.new(side * 18, 1.2, z + 5), Color3.fromRGB(52,100,80), Enum.Material.Metal)
             Kit.part(environment, "StreetBanner", Vector3.new(2.2, 5, 0.3), CFrame.new(side * 19.2, 7.2, z), if (row + sideIndex) % 2 == 0 then E.Coral else E.Teal, Enum.Material.Fabric, nil, false)
             Kit.cylinder(environment, "BannerFinial", 0.8, 0.2, CFrame.new(side * 19.2, 7.6, z - 0.25) * CFrame.Angles(math.pi / 2, 0, 0), E.Gold, Enum.Material.Metal, false)
@@ -633,7 +633,7 @@ function World:exactEnvironment()
     for index = 0, 3 do
         local angle = index*math.pi/2+math.pi/4
         local benchCF = CFrame.lookAt(Vector3.new(px+math.cos(angle)*32,0,pz+math.sin(angle)*32), Vector3.new(px,0,pz))
-        if not catalogAsset(park, "ParkBench", benchCF * CFrame.Angles(0, math.pi, 0), 0.65) then Kit.bench(park, benchCF) end
+        Kit.bench(park, benchCF)
         exactPost(park, px+math.cos(angle+math.pi/4)*33, pz+math.sin(angle+math.pi/4)*33)
     end
     local willowX, willowZ = px+20, pz-30

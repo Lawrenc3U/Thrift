@@ -80,16 +80,33 @@ function Kit.tree(parent, cf, scale, variant)
 end
 function Kit.bench(parent, cf)
     local model = Kit.model(parent, "ParkBench")
-    for x = -1, 1, 2 do
-        Kit.part(model, "IronLeg", Vector3.new(0.3, 2, 1.9), cf * CFrame.new(x * 2.2, 1, 0), P.Ink, Enum.Material.Metal)
-        Kit.part(model, "ArmRest", Vector3.new(0.35, 0.25, 2.1), cf * CFrame.new(x * 2.5, 2.5, 0), P.Ink, Enum.Material.Metal)
+    -- Local -Z is always the sitting direction. Keeping this convention here
+    -- lets callers aim the bench with CFrame.lookAt without asset-axis guesses.
+    local seat = Instance.new("Seat")
+    seat.Name = "BenchSeat"; seat.Size = Vector3.new(5.6, 0.32, 2.15)
+    seat.CFrame = cf * CFrame.new(0, 1.82, -0.03); seat.Color = P.Oak
+    seat.Material = Enum.Material.Wood; seat.Anchored = true; seat.CanCollide = true
+    seat.TopSurface = Enum.SurfaceType.Smooth; seat.BottomSurface = Enum.SurfaceType.Smooth; seat.Parent = model
+    for index = 0, 4 do
+        Kit.part(model, "SeatSlat", Vector3.new(5.75, 0.18, 0.36),
+            cf * CFrame.new(0, 2.02, -0.86 + index * 0.43), P.Oak, Enum.Material.Wood, nil, false)
     end
-    for i = 1, 4 do
-        Kit.part(model, "SeatSlat", Vector3.new(5.4, 0.2, 0.4), cf * CFrame.new(0, 1.8, -1 + i * 0.45), P.Oak, Enum.Material.Wood)
+    for side = -1, 1, 2 do
+        local x = side * 2.35
+        Kit.part(model, "CastLeg", Vector3.new(0.34, 1.7, 1.8),
+            cf * CFrame.new(x, 0.88, 0.06) * CFrame.Angles(0, 0, -side * 0.07), P.Ink, Enum.Material.Metal, nil, false)
+        Kit.part(model, "Foot", Vector3.new(0.72, 0.22, 2.05), cf * CFrame.new(x, 0.12, 0.08), P.Ink, Enum.Material.Metal, nil, false)
+        Kit.part(model, "BackPost", Vector3.new(0.34, 2.75, 0.34),
+            cf * CFrame.new(x, 3.05, 0.91) * CFrame.Angles(-0.11, 0, 0), P.Ink, Enum.Material.Metal, nil, false)
+        Kit.part(model, "ArmPost", Vector3.new(0.3, 1.2, 0.3), cf * CFrame.new(side * 2.68, 2.42, -0.04), P.Ink, Enum.Material.Metal, nil, false)
+        Kit.part(model, "ArmRest", Vector3.new(0.34, 0.25, 2.25), cf * CFrame.new(side * 2.68, 2.95, -0.02), P.Ink, Enum.Material.Metal, nil, false)
     end
-    for i = 1, 3 do
-        Kit.part(model, "BackSlat", Vector3.new(5.4, 0.4, 0.2), cf * CFrame.new(0, 2.2 + i * 0.5, 0.9) * CFrame.Angles(-0.15, 0, 0), P.Oak, Enum.Material.Wood)
+    for index, y in ipairs({2.72, 3.3, 3.88}) do
+        Kit.part(model, "BackSlat", Vector3.new(5.5, 0.38, 0.24),
+            cf * CFrame.new(0, y, 0.98) * CFrame.Angles(-0.11, 0, 0),
+            if index == 2 then P.Wood else P.Oak, Enum.Material.Wood, nil, false)
     end
+    Kit.part(model, "CenterBrace", Vector3.new(0.24, 1.45, 1.7), cf * CFrame.new(0, 0.78, 0.08), P.Ink, Enum.Material.Metal, nil, false)
     return model
 end
 function Kit.chair(parent, cf, woodColor, cushionColor)
