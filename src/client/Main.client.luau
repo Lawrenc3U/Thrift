@@ -60,11 +60,12 @@ for _, entry in ipairs({{"Town","⌂"},{"Bag","▣"},{"Shop","✦"},{"Find","⌕
     ui:addNav(entry[1], entry[2], function() open(if entry[1] == "Find" then "Source" else entry[1]) end)
 end
 ui:addQuickAction("ϟ\nTravel", UI.Colors.Teal, function() open("Town") end)
-ui:addQuickAction("▣\nRewards", UI.Colors.Rose, function() open("Quests") end)
+local rewardsButton = ui:addQuickAction("▣\nRewards", UI.Colors.Rose, function() open("Quests") end)
 ui:addQuickAction("◇\nStore", Color3.fromRGB(122, 92, 224), function() open("Boutique") end)
-ui:addQuickAction("✦\nStyle", Color3.fromRGB(227, 112, 104), function() open("Themes") end)
-ui:addQuickAction("⌁\nTools", Color3.fromRGB(65, 139, 177), function() open("Tools") end)
-ui:addQuickAction("▤\nExpand", UI.Colors.Gold, function() open("Expand") end)
+ui:addMoreAction("✎  Style", function() open("Themes") end)
+ui:addMoreAction("⌁  Tools", function() open("Tools") end)
+ui:addMoreAction("↖  Expand", function() open("Expand") end)
+ui.AuctionBar.Activated:Connect(function() open("Auction") end)
 
 local tutorialHints = {
     [0]="Find your first treasure in Dumpster Alley", [1]="Open your bag and inspect the mystery find",
@@ -96,6 +97,22 @@ local function updateHud()
     local levelStart, levelEnd = 30 * (state.Level - 1) ^ 2, 30 * state.Level ^ 2
     ui.LevelProgress.Size = UDim2.fromScale(math.clamp((state.XP - levelStart) / math.max(1, levelEnd - levelStart), 0, 1), 1)
     ui.Hint.Text = nextObjective()
+    local auctionDefinition = state.Auction and state.Auction.Item and Catalog.ById[state.Auction.Item.DefId]
+    ui:updateAuction(state.Auction, auctionDefinition and auctionDefinition.Name or nil, state.ServerTime)
+    local daily = state.Daily or {Claimed = {}}
+    local claimed = daily.Claimed or {}
+    local weekly = state.Weekly or {}
+    local rewardsReady = (state.Login and state.Login.ClaimedDay ~= state.Day)
+        or ((daily.Found or 0) >= 3 and not claimed.Find)
+        or ((daily.Restored or 0) >= 3 and not claimed.Restore)
+        or ((daily.Sold or 0) >= 3 and not claimed.Sell)
+        or ((weekly.Restored or 0) >= 20 and (weekly.Sold or 0) >= 15 and not weekly.Claimed)
+    ui:setActionBadge(rewardsButton, rewardsReady == true)
+    if state.Tutorial < 5 then ui.ObjectiveTitle.Text = "OBJECTIVE • 0/1"
+    elseif not claimed.Find then ui.ObjectiveTitle.Text = "DAILY FIND • " .. math.min(3, daily.Found or 0) .. "/3"
+    elseif not claimed.Restore then ui.ObjectiveTitle.Text = "DAILY RESTORE • " .. math.min(3, daily.Restored or 0) .. "/3"
+    elseif not claimed.Sell then ui.ObjectiveTitle.Text = "DAILY SELL • " .. math.min(3, daily.Sold or 0) .. "/3"
+    else ui.ObjectiveTitle.Text = "OBJECTIVE" end
     ui:setSubtitle(if state.Ephemeral then "STUDIO PRACTICE • PROGRESS DOES NOT SAVE" else "YOUR COZY CORNER OF THRIFT STREET")
     ui.Effects = state.Settings.Effects
     audio:setEnabled(state.Settings.Music, state.Settings.Effects)
@@ -107,7 +124,7 @@ event.OnClientEvent:Connect(function(kind, payload)
         local wasVisible = ui.Panel.Visible; local oldCash = state and state.Cash or payload.Cash
         state = payload; updateHud()
         if state.IsAdmin and not adminButton then
-            adminButton = ui:addQuickAction("⚙\nAdmin", UI.Colors.Gold, function() open("Admin") end)
+            adminButton = ui:addMoreAction("⚙  Admin", function() open("Admin") end)
         end
         if state.Cash > oldCash then ui:cashFeedback(state.Cash - oldCash); audio:play("sale") end
         if state.Tutorial ~= lastTutorial then

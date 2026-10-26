@@ -195,7 +195,7 @@ end)
 test("auction reservations prevent overspending without persisting escrow", function()
     local s, p, profile, world = fixture(); profile.Cash = 1000; profile.XP = 1000
     s.Auction = {Bid = 0, Started = os.time(), Ends = os.time() + 30}
-    s:bid(p, {Amount = 900}); equal(profile.Cash, 1000); equal(s:spendable(p, profile), 100); equal(world.AuctionVisualBid, 900)
+    s:bid(p, {Amount = 900}); equal(profile.Cash, 1000); equal(s:spendable(p, profile), 100); equal(world.AuctionVisualBid, 900); equal(s.Auction.BidderName, "Tester")
     s:upgrade(p, {Kind = "Tool"}); equal(profile.Tool, 0); equal(profile.Cash, 1000)
     s:bid(p, {Amount = 999999}); equal(s.Auction.Bid, 900)
 end)

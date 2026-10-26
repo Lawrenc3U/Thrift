@@ -675,7 +675,9 @@ function Pages:townPage()
 end
 
 function Pages:render(page, context)
-    context = context or {}; self.UI:clear(page == "Bag" and "Your finds" or page, "THRIFT STREET")
+    context = context or {}
+    self.UI:setPanelMode(page == "Source" or page == "Estate" or page == "Delivery")
+    self.UI:clear(page == "Bag" and "Your finds" or page, "THRIFT STREET")
     local handlers = {
         Bag=function() self:inventory(context,"Bag") end, Item=function() self:itemPage(context) end,
         Source=function() self:sourcePage("Dumpster") end, Estate=function() self:sourcePage("Estate") end,

@@ -137,7 +137,7 @@ function GameService:snapshot(player)
     local auction
     if self.Auction then
         auction = {Ends = self.Auction.Ends, Bid = self.Auction.Bid, Bidder = self.Auction.Bidder,
-            Item = self.Auction.PublicItem}
+            BidderName = self.Auction.BidderName, Item = self.Auction.PublicItem}
     end
     local market, trade
     if self.Exchange then market, trade = self.Exchange:snapshot(player) end
@@ -490,7 +490,7 @@ function GameService:bid(player, payload)
     if #profile.Inventory >= Config.InventoryLimit then return self:notify(player, "Make room in your inventory first.") end
     local minimum = auction.Bid + math.max(10, math.floor(auction.Bid * 0.1))
     if not Economy.validAmount(payload.Amount, minimum, 10000000) or payload.Amount > profile.Cash - (if self.Exchange then self.Exchange:reservedCash(player.UserId) else 0) then return self:notify(player, "Your bid must beat $" .. (minimum - 1) .. " and fit your cash balance.") end
-    auction.Bid = payload.Amount; auction.Bidder = player.UserId
+    auction.Bid = payload.Amount; auction.Bidder = player.UserId; auction.BidderName = player.DisplayName
     -- Cash is reserved, never removed before a win. Save cannot persist an orphan escrow.
     auction.Ends = math.max(auction.Ends, math.min(auction.Started + 90, os.time() + 8))
     if self.World.updateAuctionBid then self.World:updateAuctionBid(auction.Bid) end
@@ -691,7 +691,10 @@ function GameService:leave(player)
     if self.Exchange then self.Exchange:leave(player.UserId) end
     if self.Live then self.Live:leave(player) end
     self.Ready[player.UserId] = nil
-    if self.Auction and self.Auction.Bidder == player.UserId then self.Auction.Bidder = nil; self.Auction.Bid = 0 end
+    if self.Auction and self.Auction.Bidder == player.UserId then
+        self.Auction.Bidder = nil; self.Auction.BidderName = nil; self.Auction.Bid = 0
+        if self.World.updateAuctionBid then self.World:updateAuctionBid(0) end
+    end
     self.Sessions[player.UserId] = nil; self.Offers[player.UserId] = nil
     self.Held[player.UserId] = nil; self.World:clearHeld(player)
     self.Cooldowns[player.UserId] = nil; self.Buckets[player.UserId] = nil; self.NextCustomer[player.UserId] = nil

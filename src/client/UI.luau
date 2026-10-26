@@ -1,17 +1,19 @@
 -- Shared visual language for the Thrift Flip client. All art here is vector UI or
 -- an in-game model, so menus work without third-party image dependencies.
 local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UI = {}
 UI.Colors = {
-    Cream = Color3.fromRGB(255, 248, 232), Panel = Color3.fromRGB(255, 253, 246),
-    Ink = Color3.fromRGB(22, 30, 48), Teal = Color3.fromRGB(20, 190, 164),
-    Muted = Color3.fromRGB(100, 116, 139), Rose = Color3.fromRGB(246, 96, 114),
-    Gold = Color3.fromRGB(255, 190, 55), Line = Color3.fromRGB(218, 226, 238),
-    Light = Color3.fromRGB(239, 244, 235), White = Color3.fromRGB(255, 255, 255),
-    Wood = Color3.fromRGB(146, 103, 72), Night = Color3.fromRGB(12, 18, 32),
+    Cream = Color3.fromRGB(255, 246, 229), Panel = Color3.fromRGB(255, 250, 241),
+    Ink = Color3.fromRGB(15, 79, 75), Teal = Color3.fromRGB(22, 122, 116),
+    Muted = Color3.fromRGB(83, 108, 104), Rose = Color3.fromRGB(242, 120, 92),
+    Gold = Color3.fromRGB(242, 181, 68), Line = Color3.fromRGB(203, 213, 201),
+    Light = Color3.fromRGB(236, 244, 234), White = Color3.fromRGB(255, 255, 255),
+    Wood = Color3.fromRGB(146, 103, 72), Night = Color3.fromRGB(31, 39, 42),
+    Red = Color3.fromRGB(210, 64, 43),
 }
 local Models, SharedConfig
 local function tween(object, properties, duration)
@@ -53,11 +55,10 @@ function UI.button(parent, text, callback, secondary)
     local button = Instance.new("TextButton"); button.Name = "Button"; button.Text = text
     button.Font = Enum.Font.GothamBold; button.TextSize = 16; button.TextWrapped = true
     button.TextColor3 = if secondary then UI.Colors.Ink else UI.Colors.Panel
-    button.BackgroundColor3 = if secondary then UI.Colors.Light else UI.Colors.Teal
+    button.BackgroundColor3 = if secondary then UI.Colors.Light else UI.Colors.Red
     button.Size = UDim2.new(1, 0, 0, 50); button.AutoButtonColor = false; button.Parent = parent
     UI.corner(button, 14); UI.padding(button, 10, 3)
     UI.stroke(button, if secondary then UI.Colors.Line else UI.Colors.White, 1, if secondary then 0.15 else 0.72)
-    if not secondary then UI.gradient(button, Color3.fromRGB(16, 202, 171), Color3.fromRGB(20, 154, 213), 15) end
     local scale = Instance.new("UIScale"); scale.Parent = button
     local baseColor = button.BackgroundColor3
     button.MouseEnter:Connect(function() tween(button, {BackgroundColor3 = baseColor:Lerp(UI.Colors.Gold, 0.12)}) end)
@@ -116,7 +117,6 @@ function UI.card(parent)
 end
 function UI.hero(parent, kicker, title, body, color)
     local frame = UI.card(parent); frame.BackgroundColor3 = color or UI.Colors.Ink
-    if not color then UI.gradient(frame, Color3.fromRGB(19, 31, 55), Color3.fromRGB(25, 95, 109), 20) end
     UI.eyebrow(frame, kicker, UI.Colors.Cream)
     local heading = UI.label(frame, title, 28, UI.Colors.Panel); heading.Font = Enum.Font.GothamBold
     if body and body ~= "" then UI.label(frame, body, 16, UI.Colors.Cream) end
@@ -248,21 +248,21 @@ function UI.new()
     end)
     local hud = Instance.new("Frame"); hud.Name = "TownHUD"; hud.Position = UDim2.fromOffset(10, 10)
     hud.Size = UDim2.new(1, -20, 0, 112); hud.BackgroundTransparency = 1; hud.Parent = gui
-    local brand = Instance.new("Frame"); brand.Name = "BrandPill"; brand.Size = UDim2.fromOffset(256, 46)
+    local brand = Instance.new("Frame"); brand.Name = "BrandPill"; brand.Size = UDim2.fromOffset(190, 42)
     brand.BackgroundColor3 = Color3.fromRGB(255, 248, 232); brand.Parent = hud; UI.corner(brand, 23); UI.stroke(brand, UI.Colors.White, 2, 0.15)
-    local badge = Instance.new("Frame"); badge.Size = UDim2.fromOffset(36, 36); badge.Position = UDim2.fromOffset(5, 5)
-    badge.BackgroundColor3 = Color3.fromRGB(23, 132, 124); badge.Parent = brand; UI.corner(badge, 18)
-    local icon = UI.label(badge, "⌄", 24, UI.Colors.White); icon.Size = UDim2.fromScale(1, 1); icon.TextXAlignment = Enum.TextXAlignment.Center
+    local badge = Instance.new("Frame"); badge.Size = UDim2.fromOffset(32, 32); badge.Position = UDim2.fromOffset(5, 5)
+    badge.BackgroundColor3 = Color3.fromRGB(23, 132, 124); badge.Parent = brand; UI.corner(badge, 16)
+    local icon = UI.label(badge, "⌄", 21, UI.Colors.White); icon.Size = UDim2.fromScale(1, 1); icon.TextXAlignment = Enum.TextXAlignment.Center
     icon.AutomaticSize = Enum.AutomaticSize.None; icon.Font = Enum.Font.GothamBold
     self.Brand = UI.label(brand, "Thrift Flip", 16, Color3.fromRGB(8, 91, 84)); self.Brand.Font = Enum.Font.GothamBold
-    self.Brand.Position = UDim2.fromOffset(48, 5); self.Brand.Size = UDim2.new(1, -55, 0, 20); self.Brand.AutomaticSize = Enum.AutomaticSize.None
+    self.Brand.Position = UDim2.fromOffset(43, 3); self.Brand.Size = UDim2.new(1, -49, 0, 20); self.Brand.AutomaticSize = Enum.AutomaticSize.None
     local tagline = UI.label(brand, "Every find has a story", 10, Color3.fromRGB(67, 86, 83))
-    tagline.Position = UDim2.fromOffset(48, 24); tagline.Size = UDim2.new(1, -55, 0, 16); tagline.AutomaticSize = Enum.AutomaticSize.None
-    local objective = Instance.new("Frame"); objective.Name = "Objective"; objective.Position = UDim2.fromOffset(0, 54)
-    objective.Size = UDim2.fromOffset(256, 58); objective.BackgroundColor3 = Color3.fromRGB(20, 132, 124); objective.Parent = hud; UI.corner(objective, 14)
+    tagline.Position = UDim2.fromOffset(43, 21); tagline.Size = UDim2.new(1, -49, 0, 15); tagline.AutomaticSize = Enum.AutomaticSize.None
+    local objective = Instance.new("Frame"); objective.Name = "Objective"; objective.Position = UDim2.fromOffset(0, 49)
+    objective.Size = UDim2.fromOffset(210, 56); objective.BackgroundColor3 = Color3.fromRGB(20, 132, 124); objective.Parent = hud; UI.corner(objective, 14)
     UI.stroke(objective, Color3.fromRGB(8, 107, 101), 1, 0.25)
     local arrow = UI.label(objective, "➜", 18, UI.Colors.White); arrow.Position = UDim2.fromOffset(13, 16); arrow.Size = UDim2.fromOffset(23, 27); arrow.AutomaticSize = Enum.AutomaticSize.None
-    local objectiveTitle = UI.label(objective, "OBJECTIVE", 9, Color3.fromRGB(187, 235, 226)); objectiveTitle.Font = Enum.Font.GothamBold
+    local objectiveTitle = UI.label(objective, "OBJECTIVE • 0/1", 9, Color3.fromRGB(187, 235, 226)); objectiveTitle.Font = Enum.Font.GothamBold; self.ObjectiveTitle = objectiveTitle
     objectiveTitle.Position = UDim2.fromOffset(36, 6); objectiveTitle.Size = UDim2.new(1, -45, 0, 14); objectiveTitle.AutomaticSize = Enum.AutomaticSize.None
     self.Hint = UI.label(objective, "Find your first treasure", 12, UI.Colors.White); self.Hint.Font = Enum.Font.GothamBold
     self.Hint.Position = UDim2.fromOffset(36, 18); self.Hint.Size = UDim2.new(1, -45, 0, 34); self.Hint.AutomaticSize = Enum.AutomaticSize.None
@@ -284,49 +284,83 @@ function UI.new()
     levelTrack.Size = UDim2.new(1, -48, 0, 3); levelTrack.BackgroundColor3 = Color3.fromRGB(31, 111, 104); levelTrack.BorderSizePixel = 0; levelTrack.Parent = objective; UI.corner(levelTrack, 3)
     local levelFill = Instance.new("Frame"); levelFill.Name = "Fill"; levelFill.Size = UDim2.fromScale(0, 1)
     levelFill.BackgroundColor3 = UI.Colors.Gold; levelFill.BorderSizePixel = 0; levelFill.Parent = levelTrack; UI.corner(levelFill, 3); self.LevelProgress = levelFill
+    local auctionBar = Instance.new("TextButton"); auctionBar.Name = "AuctionBossBar"; auctionBar.Text = ""; auctionBar.AutoButtonColor = false; auctionBar.AnchorPoint = Vector2.new(0.5, 0)
+    auctionBar.Position = UDim2.new(0.5, 0, 0, 10); auctionBar.Size = UDim2.new(0.46, 0, 0, 58)
+    auctionBar.BackgroundColor3 = UI.Colors.Ink; auctionBar.BorderSizePixel = 0; auctionBar.Visible = false; auctionBar.ZIndex = 20; auctionBar.Parent = gui
+    UI.corner(auctionBar, 15); UI.stroke(auctionBar, UI.Colors.Gold, 2, 0.08)
+    local auctionLimit = Instance.new("UISizeConstraint"); auctionLimit.MaxSize = Vector2.new(520, 58); auctionLimit.MinSize = Vector2.new(260, 58); auctionLimit.Parent = auctionBar
+    local gavel = UI.label(auctionBar, "◆", 18, UI.Colors.Gold); gavel.Position = UDim2.fromOffset(13, 7); gavel.Size = UDim2.fromOffset(25, 25)
+    gavel.AutomaticSize = Enum.AutomaticSize.None; gavel.TextXAlignment = Enum.TextXAlignment.Center; gavel.ZIndex = 21
+    self.AuctionTitle = UI.label(auctionBar, "LIVE AUCTION", 11, UI.Colors.Cream); self.AuctionTitle.Font = Enum.Font.GothamBold
+    self.AuctionTitle.Position = UDim2.fromOffset(42, 5); self.AuctionTitle.Size = UDim2.new(1, -116, 0, 20); self.AuctionTitle.AutomaticSize = Enum.AutomaticSize.None
+    self.AuctionTitle.TextTruncate = Enum.TextTruncate.AtEnd; self.AuctionTitle.TextWrapped = false; self.AuctionTitle.ZIndex = 21
+    self.AuctionBid = UI.label(auctionBar, "Opening bid • $0", 12, UI.Colors.White); self.AuctionBid.Font = Enum.Font.GothamBold
+    self.AuctionBid.Position = UDim2.fromOffset(42, 23); self.AuctionBid.Size = UDim2.new(1, -116, 0, 21); self.AuctionBid.AutomaticSize = Enum.AutomaticSize.None
+    self.AuctionBid.TextTruncate = Enum.TextTruncate.AtEnd; self.AuctionBid.TextWrapped = false; self.AuctionBid.ZIndex = 21
+    self.AuctionTime = UI.label(auctionBar, "0:00", 16, UI.Colors.Gold); self.AuctionTime.Font = Enum.Font.GothamBold
+    self.AuctionTime.Position = UDim2.new(1, -72, 0, 14); self.AuctionTime.Size = UDim2.fromOffset(60, 24); self.AuctionTime.AutomaticSize = Enum.AutomaticSize.None
+    self.AuctionTime.TextXAlignment = Enum.TextXAlignment.Right; self.AuctionTime.ZIndex = 21
+    local auctionTrack = Instance.new("Frame"); auctionTrack.Position = UDim2.new(0, 13, 1, -8); auctionTrack.Size = UDim2.new(1, -26, 0, 4)
+    auctionTrack.BackgroundColor3 = Color3.fromRGB(64, 112, 106); auctionTrack.BorderSizePixel = 0; auctionTrack.ZIndex = 21; auctionTrack.Parent = auctionBar; UI.corner(auctionTrack, 3)
+    self.AuctionProgress = Instance.new("Frame"); self.AuctionProgress.Size = UDim2.fromScale(1, 1); self.AuctionProgress.BackgroundColor3 = UI.Colors.Gold
+    self.AuctionProgress.BorderSizePixel = 0; self.AuctionProgress.ZIndex = 22; self.AuctionProgress.Parent = auctionTrack; UI.corner(self.AuctionProgress, 3)
+    self.AuctionBar = auctionBar
     local nav = Instance.new("Frame"); nav.Name = "Navigation"; nav.AnchorPoint = Vector2.new(0.5, 1)
-    nav.Position = UDim2.new(0.5, 0, 1, -12); nav.Size = UDim2.new(1, -24, 0, 70)
+    nav.Position = UDim2.new(0.5, 0, 1, -12); nav.Size = UDim2.new(1, -24, 0, 62)
     nav.BackgroundColor3 = Color3.fromRGB(255, 248, 232); nav.Parent = gui; nav.ZIndex = 12; UI.corner(nav, 22); UI.padding(nav, 6, 6)
     UI.stroke(nav, Color3.fromRGB(122, 143, 135), 1, 0.45)
-    local navLimit = Instance.new("UISizeConstraint"); navLimit.MaxSize = Vector2.new(410, 70); navLimit.Parent = nav
+    local navLimit = Instance.new("UISizeConstraint"); navLimit.MaxSize = Vector2.new(360, 62); navLimit.Parent = nav
     local grid = Instance.new("UIGridLayout"); grid.CellSize = UDim2.new(0.2, -4, 1, 0); grid.CellPadding = UDim2.fromOffset(5, 0)
     grid.SortOrder = Enum.SortOrder.LayoutOrder; grid.Parent = nav; self.Nav = nav; self.NavButtons = {}
     local actions = Instance.new("Frame"); actions.Name = "QuickActions"; actions.AnchorPoint = Vector2.new(1, 0.5)
-    actions.Position = UDim2.new(1, -14, 0.5, 0); actions.Size = UDim2.fromOffset(74, 0)
+    actions.Position = UDim2.new(1, -14, 0.5, 0); actions.Size = UDim2.fromOffset(60, 48)
     actions.BackgroundTransparency = 1; actions.Parent = gui; actions.ZIndex = 12; UI.list(actions, 6)
-    self.QuickActions = actions; self.QuickActionCount = 0
+    self.QuickActions = actions; self.QuickActionCount = 0; self.QuickButtons = {}
+    local moreMenu = Instance.new("Frame"); moreMenu.Name = "MoreMenu"; moreMenu.AnchorPoint = Vector2.new(1, 0.5)
+    moreMenu.Position = UDim2.new(1, -82, 0.5, 25); moreMenu.Size = UDim2.fromOffset(104, 0)
+    moreMenu.BackgroundColor3 = UI.Colors.Cream; moreMenu.BorderSizePixel = 0; moreMenu.Visible = false; moreMenu.ZIndex = 14; moreMenu.Parent = gui
+    UI.corner(moreMenu, 15); UI.stroke(moreMenu, Color3.fromRGB(122,143,135), 1, 0.38); UI.padding(moreMenu, 7, 7); UI.list(moreMenu, 2)
+    self.MoreMenu = moreMenu; self.MoreActionCount = 0
+    local moreButton = UI.button(actions, "•••\nMore", function() moreMenu.Visible = not moreMenu.Visible end, true)
+    moreButton.LayoutOrder = 100; moreButton.Size = UDim2.new(1, 0, 0, 48); moreButton.TextSize = 10; moreButton.ZIndex = 13
+    moreButton.BackgroundColor3 = UI.Colors.Teal; moreButton.TextColor3 = UI.Colors.White; self.MoreButton = moreButton
     local camera = workspace.CurrentCamera
-    local function fitQuickActions() actions.Visible = not camera or camera.ViewportSize.X >= 700 end
+    local function fitQuickActions()
+        local narrow = camera and camera.ViewportSize.X < 900
+        actions.Visible = true
+        auctionBar.Position = if narrow then UDim2.new(0.5, 0, 0, 122) else UDim2.new(0.5, 0, 0, 10)
+        auctionBar.Size = if narrow then UDim2.new(1, -190, 0, 58) else UDim2.new(0.46, 0, 0, 58)
+    end
     if camera then camera:GetPropertyChangedSignal("ViewportSize"):Connect(fitQuickActions) end
     fitQuickActions()
     local overlay = Instance.new("TextButton"); overlay.Name = "ModalBackdrop"; overlay.Text = ""; overlay.AutoButtonColor = false
-    overlay.Size = UDim2.fromScale(1, 1); overlay.BackgroundColor3 = UI.Colors.Night; overlay.BackgroundTransparency = 0.4
+    overlay.Size = UDim2.fromScale(1, 1); overlay.BackgroundColor3 = Color3.fromRGB(31, 79, 74); overlay.BackgroundTransparency = 0.46
     overlay.BorderSizePixel = 0; overlay.Visible = false; overlay.ZIndex = 4; overlay.Parent = gui; self.Overlay = overlay
     local shadow = Instance.new("Frame"); shadow.Name = "ModalShadow"; shadow.AnchorPoint = Vector2.new(0.5, 0.5)
     shadow.Position = UDim2.new(0.5, 4, 0.5, -16); shadow.Size = UDim2.new(1, -24, 1, -100)
     shadow.BackgroundColor3 = Color3.fromRGB(12, 52, 48); shadow.BackgroundTransparency = 0.62; shadow.Visible = false; shadow.ZIndex = 5; shadow.Parent = gui
-    UI.corner(shadow, 26); local shadowLimit = Instance.new("UISizeConstraint"); shadowLimit.MaxSize = Vector2.new(780, 730); shadowLimit.MinSize = Vector2.new(270, 170); shadowLimit.Parent = shadow; self.PanelShadow = shadow
+    UI.corner(shadow, 26); local shadowLimit = Instance.new("UISizeConstraint"); shadowLimit.MaxSize = Vector2.new(780, 730); shadowLimit.MinSize = Vector2.new(270, 170); shadowLimit.Parent = shadow; self.PanelShadow = shadow; self.ShadowLimit = shadowLimit
     local panel = Instance.new("Frame"); panel.Name = "Journal"; panel.AnchorPoint = Vector2.new(0.5, 0.5)
     panel.Position = UDim2.new(0.5, 0, 0.5, -22); panel.Size = UDim2.new(1, -24, 1, -100)
     panel.BackgroundColor3 = UI.Colors.Cream; panel.Visible = false; panel.Parent = gui; panel.ZIndex = 6
     UI.corner(panel, 26); UI.stroke(panel, UI.Colors.White, 2, 0.12)
-    local limit = Instance.new("UISizeConstraint"); limit.MaxSize = Vector2.new(780, 730); limit.MinSize = Vector2.new(270, 170); limit.Parent = panel
+    local limit = Instance.new("UISizeConstraint"); limit.MaxSize = Vector2.new(780, 730); limit.MinSize = Vector2.new(270, 170); limit.Parent = panel; self.PanelLimit = limit
     local panelScale = Instance.new("UIScale"); panelScale.Parent = panel; self.PanelScale = panelScale; self.Panel = panel
-    local header = Instance.new("Frame"); header.Name = "ModalHeader"; header.Size = UDim2.new(1, 0, 0, 70)
+    local header = Instance.new("Frame"); header.Name = "ModalHeader"; header.Size = UDim2.new(1, 0, 0, 58)
     header.BackgroundColor3 = Color3.fromRGB(20, 132, 124); header.BorderSizePixel = 0; header.Parent = panel; header.ZIndex = 7; UI.corner(header, 25)
-    local headerMask = Instance.new("Frame"); headerMask.Position = UDim2.new(0, 0, 1, -24); headerMask.Size = UDim2.new(1, 0, 0, 24)
+    local headerMask = Instance.new("Frame"); headerMask.Position = UDim2.new(0, 0, 1, -20); headerMask.Size = UDim2.new(1, 0, 0, 20)
     headerMask.BackgroundColor3 = header.BackgroundColor3; headerMask.BorderSizePixel = 0; headerMask.Parent = header; headerMask.ZIndex = 7
-    self.Title = UI.label(header, "Your finds", 24, UI.Colors.White); self.Title.Font = Enum.Font.GothamBold; self.Title.ZIndex = 8
-    self.Title.Position = UDim2.fromOffset(20, 8); self.Title.Size = UDim2.new(1, -88, 0, 30); self.Title.AutomaticSize = Enum.AutomaticSize.None
+    self.Title = UI.label(header, "Your finds", 20, UI.Colors.White); self.Title.Font = Enum.Font.GothamBold; self.Title.ZIndex = 8
+    self.Title.Position = UDim2.fromOffset(17, 5); self.Title.Size = UDim2.new(1, -72, 0, 26); self.Title.AutomaticSize = Enum.AutomaticSize.None
     self.Title.TextTruncate = Enum.TextTruncate.AtEnd; self.Title.TextWrapped = false
     self.Subtitle = UI.label(header, "THRIFT STREET", 10, Color3.fromRGB(191, 237, 229)); self.Subtitle.ZIndex = 8
-    self.Subtitle.Font = Enum.Font.GothamBold; self.Subtitle.Position = UDim2.fromOffset(21, 38)
-    self.Subtitle.Size = UDim2.new(1, -90, 0, 18); self.Subtitle.AutomaticSize = Enum.AutomaticSize.None
+    self.Subtitle.Font = Enum.Font.GothamBold; self.Subtitle.Position = UDim2.fromOffset(18, 31)
+    self.Subtitle.Size = UDim2.new(1, -74, 0, 16); self.Subtitle.AutomaticSize = Enum.AutomaticSize.None
     self.Subtitle.TextTruncate = Enum.TextTruncate.AtEnd; self.Subtitle.TextWrapped = false
     local close = UI.button(header, "×", function() self:hide() end, true)
-    close.Size = UDim2.fromOffset(42, 42); close.Position = UDim2.new(1, -54, 0, 13); close.TextSize = 25; close.ZIndex = 9; close.BackgroundColor3 = UI.Colors.Cream
-    local scroll = Instance.new("ScrollingFrame"); scroll.Name = "Pages"; scroll.Position = UDim2.fromOffset(15, 84)
-    scroll.Size = UDim2.new(1, -30, 1, -98); scroll.BackgroundTransparency = 1; scroll.BorderSizePixel = 0
+    close.Size = UDim2.fromOffset(36, 36); close.Position = UDim2.new(1, -46, 0, 10); close.TextSize = 22; close.ZIndex = 9; close.BackgroundColor3 = UI.Colors.Cream
+    local scroll = Instance.new("ScrollingFrame"); scroll.Name = "Pages"; scroll.Position = UDim2.fromOffset(13, 70)
+    scroll.Size = UDim2.new(1, -26, 1, -82); scroll.BackgroundTransparency = 1; scroll.BorderSizePixel = 0
     scroll.ScrollBarThickness = 4; scroll.ScrollBarImageColor3 = UI.Colors.Teal
     scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y; scroll.CanvasSize = UDim2.new()
     scroll.ScrollingDirection = Enum.ScrollingDirection.Y; scroll.Parent = panel; UI.list(scroll, 12); self.Content = scroll
@@ -346,15 +380,52 @@ function UI:addQuickAction(text, color, callback)
     local button = UI.button(self.QuickActions, text, callback, true)
     self.QuickActionCount += 1
     button.LayoutOrder = self.QuickActionCount
-    button.Size = UDim2.new(1, 0, 0, 52); button.TextSize = 11; button.ZIndex = 13
+    button.Size = UDim2.new(1, 0, 0, 48); button.TextSize = 10; button.ZIndex = 13
     for _, child in ipairs(button:GetChildren()) do if child:IsA("UIGradient") then child:Destroy() end end
     button.BackgroundColor3 = Color3.fromRGB(255, 248, 232); button.TextColor3 = Color3.fromRGB(8, 91, 84)
     UI.corner(button, 15)
-    local accent = Instance.new("Frame"); accent.Name = "Accent"; accent.Size = UDim2.fromOffset(5, 25)
-    accent.AnchorPoint = Vector2.new(0, 0.5); accent.Position = UDim2.new(0, 6, 0.5, 0)
-    accent.BackgroundColor3 = color; accent.BorderSizePixel = 0; accent.ZIndex = 14; accent.Parent = button; UI.corner(accent, 3)
-    self.QuickActions.Size = UDim2.fromOffset(74, self.QuickActionCount * 52 + math.max(0, self.QuickActionCount - 1) * 6)
+    self.QuickActions.Size = UDim2.fromOffset(60, (self.QuickActionCount + 1) * 48 + self.QuickActionCount * 6)
+    self.QuickButtons[text] = button
     return button
+end
+function UI:addMoreAction(text, callback)
+    self.MoreActionCount += 1
+    local button = UI.button(self.MoreMenu, text, function() self.MoreMenu.Visible = false; callback() end, true)
+    button.LayoutOrder = self.MoreActionCount; button.Size = UDim2.new(1, 0, 0, 34); button.TextSize = 11; button.ZIndex = 15
+    button.BackgroundTransparency = 1; button.TextColor3 = UI.Colors.Ink; button.TextXAlignment = Enum.TextXAlignment.Left
+    UI.padding(button, 8, 2)
+    self.MoreMenu.Size = UDim2.fromOffset(104, self.MoreActionCount * 36 + 14)
+    return button
+end
+function UI:setActionBadge(button, visible)
+    if not button then return end
+    local badge = button:FindFirstChild("NotificationBadge")
+    if visible and not badge then
+        badge = Instance.new("Frame"); badge.Name = "NotificationBadge"; badge.Size = UDim2.fromOffset(11, 11)
+        badge.Position = UDim2.new(1, -10, 0, -2); badge.BackgroundColor3 = UI.Colors.Red; badge.BorderSizePixel = 0; badge.ZIndex = 16; badge.Parent = button
+        UI.corner(badge, 6); UI.stroke(badge, UI.Colors.Cream, 2, 0)
+    elseif badge then badge.Visible = visible end
+end
+function UI:updateAuction(auction, itemName, serverTime)
+    if not auction then
+        self.AuctionBar.Visible = false; self.AuctionEnds = nil
+        return
+    end
+    self.AuctionBar.Visible = true
+    self.AuctionTitle.Text = "LIVE AUCTION  •  " .. string.upper(itemName or "MYSTERY LOT")
+    self.AuctionBid.Text = (auction.BidderName and ("Latest: " .. auction.BidderName) or "Opening bid") .. "  •  $" .. tostring(math.floor(auction.Bid or 0))
+    self.AuctionEnds = auction.Ends; self.AuctionClockOffset = (serverTime or os.time()) - os.time()
+    if not self.AuctionHeartbeat then
+        local last = 0
+        self.AuctionHeartbeat = RunService.Heartbeat:Connect(function()
+            if not self.AuctionBar.Visible or not self.AuctionEnds or os.clock() - last < 0.1 then return end
+            last = os.clock()
+            if not SharedConfig then SharedConfig = require(ReplicatedStorage.Shared.Config) end
+            local left = math.max(0, self.AuctionEnds - (os.time() + (self.AuctionClockOffset or 0)))
+            self.AuctionTime.Text = string.format("%d:%02d", math.floor(left / 60), left % 60)
+            self.AuctionProgress.Size = UDim2.fromScale(math.clamp(left / math.max(1, SharedConfig.AuctionDuration or 45), 0, 1), 1)
+        end)
+    end
 end
 function UI:addNav(name, symbol, callback)
     local button = UI.button(self.Nav, symbol .. "\n" .. name, callback, true)
@@ -369,9 +440,15 @@ function UI:selectNav(name)
     end
 end
 function UI:setSubtitle(text) self.Subtitle.Text = string.upper(text) end
+function UI:setPanelMode(compact)
+    local size = if compact then UDim2.new(0.9, 0, 0.82, 0) else UDim2.new(1, -24, 1, -100)
+    local maximum = if compact then Vector2.new(390, 650) else Vector2.new(780, 730)
+    self.Panel.Size = size; self.PanelShadow.Size = size
+    self.PanelLimit.MaxSize = maximum; self.ShadowLimit.MaxSize = maximum
+end
 function UI:hide()
     if self.Locked then self:notice("Finish or cancel your restoration first."); return end
-    self.Panel.Visible = false; self.PanelShadow.Visible = false; self.Overlay.Visible = false; self:selectNav(nil)
+    self.Panel.Visible = false; self.PanelShadow.Visible = false; self.Overlay.Visible = false; self.MoreMenu.Visible = false; self:selectNav(nil)
 end
 function UI:clear(title, subtitle, preserveScroll)
     for _, connection in ipairs(self.PageConnections) do connection:Disconnect() end; self.PageConnections = {}
@@ -381,7 +458,7 @@ function UI:clear(title, subtitle, preserveScroll)
     local opening = not self.Panel.Visible
     self.Panel.Visible = true; self.PanelShadow.Visible = true; self.Overlay.Visible = true
     if opening and self.Effects then
-        self.Overlay.BackgroundTransparency = 1; tween(self.Overlay, {BackgroundTransparency = 0.4}, 0.18)
+        self.Overlay.BackgroundTransparency = 1; tween(self.Overlay, {BackgroundTransparency = 0.46}, 0.18)
         self.PanelScale.Scale = 0.94; tween(self.PanelScale, {Scale = 1}, 0.2)
     end
     self.Content.CanvasPosition = scroll
@@ -487,8 +564,10 @@ end
 function UI:notice(text)
     self.ToastVersion += 1; local version = self.ToastVersion
     self.Toast.Text = text; self.Toast.Visible = true; self.Toast.TextTransparency = 0; self.Toast.BackgroundTransparency = 0.04
+    local targetY = if self.AuctionBar.Visible then 190 else 96
     if self.Effects then
-        self.Toast.Position = UDim2.new(0.5, 0, 0, 86); tween(self.Toast, {Position = UDim2.new(0.5, 0, 0, 96)}, 0.18)
+        self.Toast.Position = UDim2.new(0.5, 0, 0, targetY - 10); tween(self.Toast, {Position = UDim2.new(0.5, 0, 0, targetY)}, 0.18)
+    else self.Toast.Position = UDim2.new(0.5, 0, 0, targetY)
     end
     task.delay(4, function()
         if self.ToastVersion == version then
