@@ -19,7 +19,7 @@ Audience: Roblox players aged roughly 9 to 15, mobile-first, who like collecting
 First 60 seconds (tutorial): the player finds one item, restores it with a guided 10-second minigame, places it on a shelf, and sells it to a friendly NPC for a visible profit. No text walls. One big arrow and one big button at a time.
 3. Systems
 3.1 Items and rarity
-• Categories (launch): T-shirts, shirts, pants, shorts, jackets, dresses, shoes, and accessories. Ten catalog-inspired finds per category (80 total).
+• Categories (launch): T-shirts, shirts, pants, shorts, jackets, dresses, shoes, and accessories. Ten Roblox catalog finds per category (80 total), shown on real R15 display mannequins with a bundled fallback if avatar loading is unavailable.
 • Condition: Damaged, Worn, Good, Excellent, Like New. Freshening an item moves condition up.
 • Rarity: Common, Uncommon, Rare, Epic, Legendary. Rarity is hidden until inspected and sets the value range.
 • Value formula (server side): base value x rarity multiplier x condition multiplier x small random variance x active demand modifier.

@@ -301,12 +301,12 @@ function UI.preview(parent, definition, item, height, hidden)
     if definition and definition.CatalogAssetId then
         local catalog = Instance.new("ImageLabel"); catalog.Name = "CatalogReference"
         catalog.AnchorPoint = Vector2.new(1, 0); catalog.Position = UDim2.new(1, -8, 0, 8)
-        catalog.Size = UDim2.fromOffset(62, 62); catalog.BackgroundColor3 = UI.Colors.Panel
+        catalog.Size = UDim2.fromOffset(94, 94); catalog.BackgroundColor3 = UI.Colors.Panel
         catalog.BackgroundTransparency = 0.08; catalog.BorderSizePixel = 0; catalog.ZIndex = 4
         catalog.Image = "rbxthumb://type=" .. (definition.CatalogItemType or "Asset") .. "&id=" .. definition.CatalogAssetId .. "&w=150&h=150"
         catalog.ScaleType = Enum.ScaleType.Crop; catalog.Parent = viewport; UI.corner(catalog, 9); UI.stroke(catalog, UI.Colors.White, 1, 0.2)
-        local tag = UI.label(viewport, "ROBLOX PICK", 8, UI.Colors.White); tag.ZIndex = 5
-        tag.AnchorPoint = Vector2.new(1, 0); tag.Position = UDim2.new(1, -8, 0, 70); tag.Size = UDim2.fromOffset(62, 14)
+        local tag = UI.label(viewport, "ROBLOX CATALOG", 8, UI.Colors.White); tag.ZIndex = 5
+        tag.AnchorPoint = Vector2.new(1, 0); tag.Position = UDim2.new(1, -8, 0, 102); tag.Size = UDim2.fromOffset(94, 14)
         tag.AutomaticSize = Enum.AutomaticSize.None; tag.TextXAlignment = Enum.TextXAlignment.Center
         tag.BackgroundColor3 = UI.Colors.Teal; tag.BackgroundTransparency = 0.05; UI.corner(tag, 5)
     end

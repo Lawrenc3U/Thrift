@@ -166,7 +166,7 @@ local function exactShell(parent, name, cf, width, height, depth, wall, roof, op
     return model, front
 end
 function World.new()
-    local self = setmetatable({Plots = {}, Owners = {}, Customers = {}, CustomerSerial = 0}, World)
+    local self = setmetatable({Plots = {}, Owners = {}, Customers = {}, CustomerSerial = 0, CatalogTemplates = {}}, World)
     local existing = workspace:FindFirstChild("ThriftStreet")
     if existing then existing:Destroy() end
     self.Root = Kit.model(workspace, "ThriftStreet")
@@ -792,7 +792,7 @@ function World:setAuctionItem(item, catalog, config, bid)
     local definition = catalog.ById[item.DefId]
     if not definition then display.Label.Text = "LOT UNAVAILABLE"; return end
     local model = fitFeaturedItem(display.Root, definition, item, display.CF, config, 5.2)
-    if model then model.Name = "Current Lot · " .. definition.Name end
+    if model then model.Name = "Current Lot · " .. definition.Name; self:installCatalogMannequin(model, definition, display.CF) end
     display.ItemName = definition.Name
     local rarity = config.Rarities[item.Rarity] or "Special"
     display.RarityName = rarity
@@ -813,6 +813,7 @@ function World:setShowcaseItems(items, catalog, config, ownerName)
         local definition = item and catalog.ById[item.DefId]
         if definition then
             local model = fitFeaturedItem(display.Root, definition, item, display.CFrames[index], config, 4.5)
+            if model then self:installCatalogMannequin(model, definition, display.CFrames[index]) end
             if model then model.Name = "Showcase " .. index .. " · " .. definition.Name end
             label.Text = string.upper(definition.Name) .. "\n" .. string.upper(config.Rarities[item.Rarity] or "Special")
         else label.Text = "DISPLAY " .. index .. "\nAWAITING ENTRY" end
@@ -1679,6 +1680,77 @@ function World:decorate(plot, profile)
         Kit.ball(folder, "GoldenTreasure", Vector3.new(1.3, 1.6, 1.3), trophyCF * CFrame.new(0, 4.1, 0), P.Gold, Enum.Material.Metal, false)
     end
 end
+function World:catalogMannequin(definition)
+    if not definition or not definition.AvatarAssetType then return nil end
+    local cached = self.CatalogTemplates[definition.Id]
+    if cached then return cached:Clone() end
+    local description = Instance.new("HumanoidDescription")
+    local mannequin = Color3.fromRGB(218, 211, 197)
+    description.HeadColor = mannequin; description.LeftArmColor = mannequin; description.RightArmColor = mannequin
+    description.LeftLegColor = mannequin; description.RightLegColor = mannequin; description.TorsoColor = mannequin
+    description.BodyTypeScale = 0; description.ProportionScale = 0; description.HeightScale = 1
+    description.WidthScale = 1; description.DepthScale = 1; description.HeadScale = 1
+    if definition.AvatarAssetType == "ClassicShirt" then description.Shirt = definition.CatalogAssetId
+    elseif definition.AvatarAssetType == "ClassicPants" then description.Pants = definition.CatalogAssetId
+    else
+        local accessories = {}
+        if definition.AvatarAssetType == "Shoes" and definition.CatalogComponentIds then
+            table.insert(accessories, {AssetId = definition.CatalogComponentIds[1], AccessoryType = Enum.AccessoryType.LeftShoe, Order = 1, IsLayered = true})
+            table.insert(accessories, {AssetId = definition.CatalogComponentIds[2], AccessoryType = Enum.AccessoryType.RightShoe, Order = 2, IsLayered = true})
+        else
+            local accessoryType = Enum.AccessoryType[definition.AvatarAssetType]
+            if not accessoryType then description:Destroy(); return nil end
+            table.insert(accessories, {AssetId = definition.CatalogAssetId, AccessoryType = accessoryType,
+                Order = 1, IsLayered = definition.AvatarAssetType ~= "Hat"})
+        end
+        local applied = pcall(description.SetAccessories, description, accessories, true)
+        if not applied then description:Destroy(); return nil end
+    end
+    local ok, avatar = pcall(function()
+        return Players:CreateHumanoidModelFromDescriptionAsync(description, Enum.HumanoidRigType.R15)
+    end)
+    if not ok then
+        ok, avatar = pcall(function()
+            return Players:CreateHumanoidModelFromDescription(description, Enum.HumanoidRigType.R15)
+        end)
+    end
+    description:Destroy()
+    if not ok or not avatar then return nil end
+    avatar.Name = "RobloxCatalogMannequin"
+    local humanoid = avatar:FindFirstChildOfClass("Humanoid")
+    if humanoid then humanoid.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None end
+    for _, child in ipairs(avatar:GetDescendants()) do
+        if child:IsA("BasePart") then
+            child.Anchored = true; child.CanCollide = false; child.CanTouch = false; child.CanQuery = false
+            child.Material = Enum.Material.SmoothPlastic
+        elseif child:IsA("Decal") and child.Parent and child.Parent.Name == "Head" then child.Transparency = 1
+        elseif child:IsA("Script") or child:IsA("LocalScript") then child:Destroy() end
+    end
+    pcall(avatar.ScaleTo, avatar, 0.56)
+    avatar.Archivable = true
+    self.CatalogTemplates[definition.Id] = avatar:Clone()
+    return avatar
+end
+function World:installCatalogMannequin(model, definition, displayCF)
+    if not model or not definition or not definition.AvatarAssetType or model:GetAttribute("CatalogLoading") then return end
+    model:SetAttribute("CatalogLoading", true)
+    local fallbackParts = {}
+    for _, child in ipairs(model:GetDescendants()) do if child:IsA("BasePart") then table.insert(fallbackParts, child) end end
+    task.spawn(function()
+        local avatar = self:catalogMannequin(definition)
+        if not avatar then model:SetAttribute("CatalogLoading", false); return end
+        if not model.Parent then avatar:Destroy(); return end
+        local fallbackCF, fallbackSize = model:GetBoundingBox()
+        local desired = CFrame.new(fallbackCF.Position.X, fallbackCF.Position.Y - fallbackSize.Y / 2, fallbackCF.Position.Z)
+            * (displayCF - displayCF.Position)
+        avatar.Parent = model
+        local avatarCF, avatarSize = avatar:GetBoundingBox()
+        local desiredBounds = desired * CFrame.new(0, avatarSize.Y / 2, 0)
+        avatar:PivotTo(desiredBounds * avatarCF:Inverse() * avatar:GetPivot())
+        for _, part in ipairs(fallbackParts) do if part.Parent then part.Transparency = 1 end end
+        model:SetAttribute("CatalogLoading", false); model:SetAttribute("UsesRobloxCatalogAvatar", true)
+    end)
+end
 function World:makeItem(parent, definition, item, cf, config)
     local model = ItemModels.create(parent, definition, item, cf, config)
     local anchor = model:FindFirstChildWhichIsA("BasePart", true)
@@ -1686,6 +1758,7 @@ function World:makeItem(parent, definition, item, cf, config)
         local light = Instance.new("PointLight"); light.Name = "DisplayLight"; light.Color = Color3.fromRGB(255, 224, 177)
         light.Brightness = 0.22; light.Range = 6; light.Shadows = false; light.Parent = anchor
     end
+    self:installCatalogMannequin(model, definition, cf)
     return model
 end
 function World:clearHeld(player)

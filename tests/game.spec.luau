@@ -38,6 +38,8 @@ test("catalog has 80 unique, valid definitions in eight categories", function()
         assert(Catalog.ById[item.Id] == item and item.BaseValue > 0)
         assert(type(item.CatalogAssetId) == "number" and item.CatalogAssetId > 0 and item.CatalogCreator == "Roblox")
         assert(item.CatalogItemType == "Asset" or item.CatalogItemType == "BundleThumbnail")
+        assert(table.find({"TShirt","Shirt","ClassicShirt","ClassicPants","Pants","Shorts","Jacket","DressSkirt","Sweater","Shoes","Hat"}, item.AvatarAssetType))
+        if item.AvatarAssetType == "Shoes" then assert(#item.CatalogComponentIds == 2) end
         assert(table.find(Config.Styles, item.Style))
     end
 end)

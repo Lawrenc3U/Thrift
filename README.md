@@ -17,7 +17,7 @@ Optional Rojo workflow: install Rojo 7, run `rojo serve default.project.json`, a
 
 ## Implemented systems
 
-- 80 catalog-inspired fashion finds across T-shirts, shirts, pants, shorts, jackets, dresses, shoes, and accessories; five rarities and conditions; Roblox catalog attribution and thumbnails; original 3D replicas; rarity effects; and an exported `.rbxmx` model pack.
+- 80 Roblox catalog fashion finds across T-shirts, shirts, pants, shorts, jackets, dresses, shoes, and accessories; five rarities and conditions; catalog attribution and thumbnails; real R15 mannequins wearing the selected assets on shop, auction, and showcase displays; bundled fallback replicas; rarity effects; and an exported `.rbxmx` fallback model pack.
 - Server-owned inventory, currency, value, demand, progression, sourcing costs/cooldowns, daily delivery, collections, and milestone rewards.
 - Five restoration interactions: swipe scrub, trace polish, match rewiring pairs, paint palette/fill, and piece/outline assembly. Server validates tokens, targets, input rate, duration, ownership, and result quality.
 - A rebuilt cozy town matching the supplied 3D preview, with a Thrift Outlet, Fashion Flea, Donation Drop, Curated Rack, market row, Auction House, eight claimable shops, four visual tiers, movable floor decorations, and clothing displays. Shoppers use the player's friends list and avatar appearance when Roblox makes it available, with reliable fallback customers.

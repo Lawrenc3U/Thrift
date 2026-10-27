@@ -4,44 +4,44 @@ local Catalog = {}
 local styles = {"Vintage", "Preppy", "Streetwear", "Designer", "Y2K"}
 local categories = {
     {"T-Shirts", "Scrub", 18, "tshirts", {
-        {"Black Logo Tee",7178736794},{"Gray Everyday Tee",9112474888},{"White Logo Tee",7178737816},
-        {"Black Striped Tee",9119670803},{"White Striped Tee",9112483644},{"Golden Music Tee",9252603398},
-        {"Simple Pattern Tee",3670737444},{"Pizza Graphic Tee",4047884939},{"Heart Pizza Tee",382537085},{"Teal Classic Tee",382537702},
+        {"Black Logo Tee",7178736794,nil,"TShirt"},{"Gray Everyday Tee",9112474888,nil,"TShirt"},{"White Logo Tee",7178737816,nil,"TShirt"},
+        {"Black Striped Tee",9119670803,nil,"TShirt"},{"White Striped Tee",9112483644,nil,"TShirt"},{"Golden Music Tee",9252603398,nil,"TShirt"},
+        {"Simple Pattern Tee",3670737444,nil,"ClassicShirt"},{"Pizza Graphic Tee",4047884939,nil,"ClassicShirt"},{"Heart Pizza Tee",382537085,nil,"ClassicShirt"},{"Teal Classic Tee",382537702,nil,"ClassicShirt"},
     }},
     {"Shirts", "Polish", 24, "shirts", {
-        {"Blue Plaid Shirt",398635081},{"Moto Shirt",144076358},{"Denim Layer Shirt",144076436},
-        {"Pastel Layered Shirt",398634295},{"Purple Teal Top",4047886060},{"White Tie Front Top",9240752338},
-        {"Blue Tie Front Top",9174384558},{"Classic Zip Shirt",607785314},{"Denim Hoodie Shirt",398633584},{"Guitar Layer Shirt",4047884046},
+        {"Blue Plaid Shirt",398635081,nil,"ClassicShirt"},{"Moto Shirt",144076358,nil,"ClassicShirt"},{"Denim Layer Shirt",144076436,nil,"ClassicShirt"},
+        {"Pastel Layered Shirt",398634295,nil,"ClassicShirt"},{"Purple Teal Top",4047886060,nil,"ClassicShirt"},{"White Tie Front Top",9240752338,nil,"Shirt"},
+        {"Blue Tie Front Top",9174384558,nil,"Shirt"},{"Classic Zip Shirt",607785314,nil,"ClassicShirt"},{"Denim Hoodie Shirt",398633584,nil,"ClassicShirt"},{"Guitar Layer Shirt",4047884046,nil,"ClassicShirt"},
     }},
     {"Pants", "Assemble", 28, "pants", {
-        {"Ripped Skater Pants",398635338},{"Black Wetsuit Pants",9120251003},{"Brown Cargo Pants",6984740059},
-        {"White Leather Pants",7192681239},{"Brown Moto Pants",8721985925},{"Black Jeans White Shoes",398633812},
-        {"Classic Blue Jeans",398634487},{"Dark Green Jeans",144076760},{"Black Sneaker Jeans",382538503},{"Everyday Black Jeans",382537569},
+        {"Ripped Skater Pants",398635338,nil,"ClassicPants"},{"Black Wetsuit Pants",9120251003,nil,"Pants"},{"Brown Cargo Pants",6984740059,nil,"Pants"},
+        {"White Leather Pants",7192681239,nil,"Pants"},{"Brown Moto Pants",8721985925,nil,"Pants"},{"Black Jeans White Shoes",398633812,nil,"ClassicPants"},
+        {"Classic Blue Jeans",398634487,nil,"ClassicPants"},{"Dark Green Jeans",144076760,nil,"ClassicPants"},{"Black Sneaker Jeans",382538503,nil,"ClassicPants"},{"Everyday Black Jeans",382537569,nil,"ClassicPants"},
     }},
     {"Shorts", "Repaint", 22, "shorts", {
-        {"Jean Shorts White Shoes",382537950},{"Black Bermuda Shorts",9174391966},{"Classic Jean Shorts",382537806},
-        {"Light Wash Jean Shorts",7192687500},{"Light Blue Bermuda Shorts",9274782406},{"Red Basketball Shorts",7192689453},
-        {"Lime Boxing Shorts",7231091126},{"Salmon Bermuda Shorts",9240765837},{"Mint Bermuda Shorts",9240767370},{"Blue Basketball Shorts",7192688494},
+        {"Jean Shorts White Shoes",382537950,nil,"ClassicPants"},{"Black Bermuda Shorts",9174391966,nil,"Shorts"},{"Classic Jean Shorts",382537806,nil,"ClassicPants"},
+        {"Light Wash Jean Shorts",7192687500,nil,"Shorts"},{"Light Blue Bermuda Shorts",9274782406,nil,"Shorts"},{"Red Basketball Shorts",7192689453,nil,"Shorts"},
+        {"Lime Boxing Shorts",7231091126,nil,"ClassicPants"},{"Salmon Bermuda Shorts",9240765837,nil,"Shorts"},{"Mint Bermuda Shorts",9240767370,nil,"Shorts"},{"Blue Basketball Shorts",7192688494,nil,"Shorts"},
     }},
     {"Jackets", "Rewire", 36, "jackets", {
-        {"Classic Zip Jacket",607785314},{"Denim White Hoodie",398633584},{"Pastel Star Jacket",398634295},
-        {"Black Leather Jacket",7192549218},{"Light Wash Denim Jacket",8516609675},{"Gray Hooded Jacket",8516620262},
-        {"White Denim Jacket",8516612751},{"Black Guitar Jacket",4047884046},{"White Collared Jacket",7192546798},{"Brown Leather Jacket",6984767443},
+        {"Classic Zip Jacket",607785314,nil,"ClassicShirt"},{"Denim White Hoodie",398633584,nil,"ClassicShirt"},{"Pastel Star Jacket",398634295,nil,"ClassicShirt"},
+        {"Black Leather Jacket",7192549218,nil,"Jacket"},{"Light Wash Denim Jacket",8516609675,nil,"Jacket"},{"Gray Hooded Jacket",8516620262,nil,"Jacket"},
+        {"White Denim Jacket",8516612751,nil,"Jacket"},{"Black Guitar Jacket",4047884046,nil,"ClassicShirt"},{"White Collared Jacket",7192546798,nil,"Jacket"},{"Brown Leather Jacket",6984767443,nil,"Jacket"},
     }},
     {"Dresses", "Polish", 34, "dresses", {
-        {"Red Evening Dress",11821648884},{"Floral Day Dress",10896900057},{"White Ruffle Dress",9240776381},
-        {"Pink Chiffon Dress",9240772455},{"Red Ruffle Dress",7192696851},{"Blue Chiffon Dress",7192691582},
-        {"Beige Knit Dress",6984769289},{"Pink Knit Dress",6984771334},{"Black Knit Dress",9240757332},{"Gray Knit Dress",9240758221},
+        {"Red Evening Dress",11821648884,nil,"DressSkirt"},{"Floral Day Dress",10896900057,nil,"DressSkirt"},{"White Ruffle Dress",9240776381,nil,"DressSkirt"},
+        {"Pink Chiffon Dress",9240772455,nil,"DressSkirt"},{"Red Ruffle Dress",7192696851,nil,"DressSkirt"},{"Blue Chiffon Dress",7192691582,nil,"DressSkirt"},
+        {"Beige Knit Dress",6984769289,nil,"Sweater"},{"Pink Knit Dress",6984771334,nil,"Sweater"},{"Black Knit Dress",9240757332,nil,"Sweater"},{"Gray Knit Dress",9240758221,nil,"Sweater"},
     }},
     {"Shoes", "Assemble", 26, "shoes", {
-        {"White Canvas Shoes",894,"BundleThumbnail"},{"Gray Canvas Shoes",905,"BundleThumbnail"},{"Black Dress Shoes",907,"BundleThumbnail"},
-        {"Red Running Shoes",895,"BundleThumbnail"},{"Pink Canvas Shoes",877,"BundleThumbnail"},{"Black Running Shoes",926,"BundleThumbnail"},
-        {"Blue Running Shoes",921,"BundleThumbnail"},{"Blue Canvas Shoes",881,"BundleThumbnail"},{"White Running Shoes",903,"BundleThumbnail"},{"Black Purple Canvas Shoes",931,"BundleThumbnail"},
+        {"White Canvas Shoes",894,"BundleThumbnail","Shoes",9481782649,9481786623},{"Gray Canvas Shoes",905,"BundleThumbnail","Shoes",9483690316,9483697460},{"Black Dress Shoes",907,"BundleThumbnail","Shoes",8044843668,8044852814},
+        {"Red Running Shoes",895,"BundleThumbnail","Shoes",8722108564,8722044460},{"Pink Canvas Shoes",877,"BundleThumbnail","Shoes",7192850635,7192852086},{"Black Running Shoes",926,"BundleThumbnail","Shoes",8722159299,8722157748},
+        {"Blue Running Shoes",921,"BundleThumbnail","Shoes",8722154892,8722153183},{"Blue Canvas Shoes",881,"BundleThumbnail","Shoes",7192843096,7192846003},{"White Running Shoes",903,"BundleThumbnail","Shoes",8722031289,8722020587},{"Black Purple Canvas Shoes",931,"BundleThumbnail","Shoes",7650548422,7650550422},
     }},
     {"Accessories", "Repaint", 20, "accessories", {
-        {"Paper Bucket Hat",10476359},{"Black Cowboy Hat",425117435},{"Umbrella Hat",10658698},
-        {"Gray Winter Hat",105354517},{"Cheese Hat",1097026},{"Candy Scarf Hat",562493075},
-        {"Nurse Cap",10770260},{"Ranger Hat",13335289},{"Blue Top Hat",1016145591},{"Eternal Top Hat",835066603},
+        {"Paper Bucket Hat",10476359,nil,"Hat"},{"Black Cowboy Hat",425117435,nil,"Hat"},{"Umbrella Hat",10658698,nil,"Hat"},
+        {"Gray Winter Hat",105354517,nil,"Hat"},{"Cheese Hat",1097026,nil,"Hat"},{"Candy Scarf Hat",562493075,nil,"Hat"},
+        {"Nurse Cap",10770260,nil,"Hat"},{"Ranger Hat",13335289,nil,"Hat"},{"Blue Top Hat",1016145591,nil,"Hat"},{"Eternal Top Hat",835066603,nil,"Hat"},
     }},
 }
 Catalog.Items, Catalog.ById, Catalog.Categories = {}, {}, {}
@@ -51,7 +51,8 @@ for categoryIndex, group in ipairs(categories) do
         local item = {Id = group[4] .. "_" .. index, Name = choice[1], Category = group[1], Minigame = group[2],
             BaseValue = group[3] + index * 4, Style = styles[(index + categoryIndex - 2) % #styles + 1],
             UnlockLevel = math.max(1, categoryIndex - 2), Variant = index,
-            CatalogAssetId = choice[2], CatalogItemType = choice[3] or "Asset", CatalogCreator = "Roblox"}
+            CatalogAssetId = choice[2], CatalogItemType = choice[3] or "Asset", CatalogCreator = "Roblox",
+            AvatarAssetType = choice[4], CatalogComponentIds = choice[5] and {choice[5], choice[6]} or nil}
         table.insert(Catalog.Items, item); Catalog.ById[item.Id] = item
     end
 end
