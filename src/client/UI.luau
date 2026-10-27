@@ -298,6 +298,18 @@ function UI.preview(parent, definition, item, height, hidden)
         label.Size = UDim2.fromScale(1, 1); label.AutomaticSize = Enum.AutomaticSize.None; label.TextXAlignment = Enum.TextXAlignment.Center
         warn("Item preview failed: " .. tostring(model))
     end
+    if definition and definition.CatalogAssetId then
+        local catalog = Instance.new("ImageLabel"); catalog.Name = "CatalogReference"
+        catalog.AnchorPoint = Vector2.new(1, 0); catalog.Position = UDim2.new(1, -8, 0, 8)
+        catalog.Size = UDim2.fromOffset(62, 62); catalog.BackgroundColor3 = UI.Colors.Panel
+        catalog.BackgroundTransparency = 0.08; catalog.BorderSizePixel = 0; catalog.ZIndex = 4
+        catalog.Image = "rbxthumb://type=" .. (definition.CatalogItemType or "Asset") .. "&id=" .. definition.CatalogAssetId .. "&w=150&h=150"
+        catalog.ScaleType = Enum.ScaleType.Crop; catalog.Parent = viewport; UI.corner(catalog, 9); UI.stroke(catalog, UI.Colors.White, 1, 0.2)
+        local tag = UI.label(viewport, "ROBLOX PICK", 8, UI.Colors.White); tag.ZIndex = 5
+        tag.AnchorPoint = Vector2.new(1, 0); tag.Position = UDim2.new(1, -8, 0, 70); tag.Size = UDim2.fromOffset(62, 14)
+        tag.AutomaticSize = Enum.AutomaticSize.None; tag.TextXAlignment = Enum.TextXAlignment.Center
+        tag.BackgroundColor3 = UI.Colors.Teal; tag.BackgroundTransparency = 0.05; UI.corner(tag, 5)
+    end
     return viewport
 end
 function UI.new()
@@ -335,7 +347,7 @@ function UI.new()
     UI.vectorIcon(objective, "arrow", UI.Colors.White, UDim2.fromOffset(23, 16), 24, 3)
     local objectiveTitle = UI.label(objective, "OBJECTIVE | 0/1", 9, Color3.fromRGB(187, 235, 226)); objectiveTitle.Font = Enum.Font.GothamBold; self.ObjectiveTitle = objectiveTitle
     objectiveTitle.Position = UDim2.fromOffset(36, 6); objectiveTitle.Size = UDim2.new(1, -45, 0, 14); objectiveTitle.AutomaticSize = Enum.AutomaticSize.None
-    self.Hint = UI.label(objective, "Find your first treasure", 12, UI.Colors.White); self.Hint.Font = Enum.Font.GothamBold
+    self.Hint = UI.label(objective, "Thrift your first fashion find", 12, UI.Colors.White); self.Hint.Font = Enum.Font.GothamBold
     self.Hint.Position = UDim2.fromOffset(36, 18); self.Hint.Size = UDim2.new(1, -45, 0, 34); self.Hint.AutomaticSize = Enum.AutomaticSize.None
     self.Hint.TextTruncate = Enum.TextTruncate.AtEnd; self.Hint.TextWrapped = true
     local stats = Instance.new("Frame"); stats.Name = "Stats"; stats.AnchorPoint = Vector2.new(1, 0); stats.Position = UDim2.new(1, 0, 0, 0)
@@ -561,7 +573,7 @@ function UI:searchTreasure(source, callback)
     local header = block(panel, "Header", UDim2.new(1, 0, 0, 66), UDim2.fromOffset(0, 0), UI.Colors.Teal, baseZ + 2)
     local heading = UI.label(header, "Source", 25, UI.Colors.Cream); heading.Font = Enum.Font.GothamBold
     heading.Position = UDim2.fromOffset(20, 8); heading.Size = UDim2.new(1, -40, 0, 30); heading.AutomaticSize = Enum.AutomaticSize.None; heading.ZIndex = baseZ + 3
-    local sourceCopy = if source == "Delivery" then "PARCEL POST | DAILY DELIVERY" elseif source == "Estate" then "THRIFT STREET | WHOLESALE" else "DUMPSTER ALLEY | FREE FINDS"
+    local sourceCopy = if source == "Delivery" then "DONATION DROP | DAILY BAG" elseif source == "Estate" then "CURATED RACK | PREMIUM FINDS" else "THRIFT OUTLET | $25 PER FIND"
     local eyebrow = UI.label(header, sourceCopy, 11, UI.Colors.Cream); eyebrow.Font = Enum.Font.GothamBold
     eyebrow.TextTransparency = 0.08; eyebrow.Position = UDim2.fromOffset(20, 38); eyebrow.Size = UDim2.new(1, -40, 0, 17); eyebrow.AutomaticSize = Enum.AutomaticSize.None; eyebrow.ZIndex = baseZ + 3
 
@@ -579,7 +591,7 @@ function UI:searchTreasure(source, callback)
     local lampGlow = block(stage, "LampGlow", UDim2.fromOffset(58, 58), UDim2.new(1, -84, 0, 6), Color3.fromRGB(255, 233, 168), baseZ + 3)
     lampGlow.BackgroundTransparency = 0.76; UI.corner(lampGlow, 29)
 
-    local dumpster = Instance.new("Frame"); dumpster.Name = "Dumpster"; dumpster.AnchorPoint = Vector2.new(0.5, 1)
+    local dumpster = Instance.new("Frame"); dumpster.Name = "ClothingBin"; dumpster.AnchorPoint = Vector2.new(0.5, 1)
     dumpster.Position = UDim2.new(0.5, 0, 1, -48); dumpster.Size = UDim2.fromOffset(190, 128)
     dumpster.BackgroundTransparency = 1; dumpster.ZIndex = baseZ + 5; dumpster.Parent = stage
     local body = block(dumpster, "Body", UDim2.fromOffset(190, 92), UDim2.fromOffset(0, 36), Color3.fromRGB(62, 142, 90), baseZ + 6)
@@ -603,7 +615,7 @@ function UI:searchTreasure(source, callback)
 
     local flash = block(stage, "RevealFlash", UDim2.fromScale(1, 1), UDim2.fromScale(0, 0), UI.Colors.White, baseZ + 18)
     flash.BackgroundTransparency = 1
-    local status = UI.label(panel, "Digging through the bags...", 17, UI.Colors.Ink); status.Font = Enum.Font.GothamBold
+    local status = UI.label(panel, "Checking labels and sorting the rack...", 17, UI.Colors.Ink); status.Font = Enum.Font.GothamBold
     status.Position = UDim2.new(0, 18, 1, -56); status.Size = UDim2.new(1, -36, 0, 26); status.AutomaticSize = Enum.AutomaticSize.None
     status.TextXAlignment = Enum.TextXAlignment.Center; status.ZIndex = baseZ + 4
     local track = block(panel, "SearchProgress", UDim2.new(1, -40, 0, 7), UDim2.new(0, 20, 1, -18), Color3.fromRGB(218, 225, 211), baseZ + 3); UI.corner(track, 5)
@@ -634,7 +646,7 @@ function UI:searchTreasure(source, callback)
     end
 
     task.spawn(function()
-        local messages = {"Digging through the bags...", "Checking the corners...", "Something shiny..."}
+        local messages = {"Sorting through the rack...", "Checking size and condition...", "This label looks special..."}
         for step = 1, 21 do
             if not layer.Parent then self.Searching = false; return end
             if step == 8 then status.Text = messages[2] elseif step == 15 then status.Text = messages[3] end
@@ -651,7 +663,7 @@ function UI:searchTreasure(source, callback)
             task.wait(0.11)
         end
         dumpster.Rotation = 0; dumpster.Position = UDim2.new(0.5, 0, 1, -48); lid.Rotation = -58
-        status.Text = "You found something!"; fill.BackgroundColor3 = UI.Colors.Gold
+        status.Text = "You thrifted a fashion find!"; fill.BackgroundColor3 = UI.Colors.Gold
         if self.Effects then
             flash.BackgroundTransparency = 0.12; tween(flash, {BackgroundTransparency = 1}, 0.42); burst()
             tween(dumpster, {Position = UDim2.new(0.5, 0, 1, -12)}, 0.42)
@@ -659,7 +671,7 @@ function UI:searchTreasure(source, callback)
         task.wait(if self.Effects then 0.42 else 0.06)
         self.Searching = false
         local ok, message = pcall(callback)
-        if not ok then warn("Treasure search callback failed: " .. tostring(message)) end
+        if not ok then warn("Thrift search callback failed: " .. tostring(message)) end
         if layer.Parent then
             tween(layer, {BackgroundTransparency = 1}, 0.16); tween(panelScale, {Scale = 0.96}, 0.16)
             task.wait(0.16); layer:Destroy()

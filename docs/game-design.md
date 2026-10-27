@@ -1,7 +1,7 @@
 Thrift Flip: Game Plan
 A Roblox restore-and-resell shop game. Version 1.0 plan, October 2026.
 1. Vision
-One-line pitch: Buy junk, restore it, display it in your shop, and sell it for profit. Turn $5 junk into $5,000 antiques.
+One-line pitch: Start with $500, thrift fashion finds, freshen and display them, then sell outfits to shoppers based on your Roblox friends.
 What makes it different: Most shop games on Roblox are tycoons or roleplay. Thrift Flip combines the surprise of mystery-box finds, the satisfaction of restoring things, and the style appeal of decorating a shop. Players see value grow in front of them, then show it off.
 Design pillars
 1. Surprise: every item has hidden condition and rarity. Opening a find should feel like a small jackpot.
@@ -10,7 +10,7 @@ Design pillars
 4. Social: visit shops, bid at auctions, trade, and rate each other.
 Audience: Roblox players aged roughly 9 to 15, mobile-first, who like collecting, decorating and simple minigames. Design for phones first, then PC and tablet.
 2. Core gameplay loop (3 to 5 minutes)
-1. Find: visit a sourcing spot (dumpster run, estate sale, auction) and pick up mystery items.
+1. Thrift: visit a sourcing spot (outlet bins, curated rack, donation drop, auction) and buy mystery fashion pieces.
 2. Inspect: reveal the item's category, condition and hidden rarity.
 3. Restore: play a short minigame that raises condition and value.
 4. Display: place the item in the shop on a shelf, table or wall.
@@ -19,11 +19,11 @@ Audience: Roblox players aged roughly 9 to 15, mobile-first, who like collecting
 First 60 seconds (tutorial): the player finds one item, restores it with a guided 10-second minigame, places it on a shelf, and sells it to a friendly NPC for a visible profit. No text walls. One big arrow and one big button at a time.
 3. Systems
 3.1 Items and rarity
-• Categories (launch): lamps, radios, clocks, chairs, toys, mirrors, cameras, vases. About 10 base items per category (80 total).
-• Condition: Wrecked, Poor, Fair, Good, Mint. Restoring moves condition up.
+• Categories (launch): T-shirts, shirts, pants, shorts, jackets, dresses, shoes, and accessories. Ten catalog-inspired finds per category (80 total).
+• Condition: Damaged, Worn, Good, Excellent, Like New. Freshening an item moves condition up.
 • Rarity: Common, Uncommon, Rare, Epic, Legendary. Rarity is hidden until inspected and sets the value range.
 • Value formula (server side): base value x rarity multiplier x condition multiplier x small random variance x active demand modifier.
-• Style tags: each item has a style (Retro, Cozy, Futuristic, Antique, Cute). Matching styles in a shop gives a display bonus.
+• Style tags: each item has a style (Vintage, Preppy, Streetwear, Designer, Y2K). Matching a shop theme gives a display bonus.
 3.2 Restoration minigames
 Each takes 8 to 20 seconds and works with one thumb on mobile.
 • Scrub: swipe back and forth to clear grime. Fast and relaxing.
@@ -34,14 +34,14 @@ Each takes 8 to 20 seconds and works with one thumb on mobile.
 Result quality (Okay, Good, Perfect) changes the condition gain. Upgraded tools make minigames easier or give small bonuses. Never make a minigame a hard gate; failure just gives a smaller gain.
 3.3 Shop and customers
 • Shop layout: the player places items on shelves, tables and wall slots. Displays have capacity limits that upgrades raise.
-• NPC customers: 6 to 8 personality types. Each prefers certain styles and budgets. Some haggle; the player chooses to accept, counter or decline. A good haggle is a quick two-button choice, not a long dialogue.
+• NPC customers: use the player's Roblox friends' names and avatars when available, paired with varied style preferences and budgets. Reliable fallback shoppers cover unavailable or empty friend lists. Players accept, counter, or decline each automatic offer.
 • Reputation: serving customers well and decorating well raises shop reputation, which brings more and better customers.
 • Shop tiers: Corner Stall, Small Shop, Boutique, Department Store. Each is a bigger interior with more slots and a new look.
 3.4 Sourcing locations
-• Dumpster runs: free, low rarity, quick. Good for beginners.
-• Estate sales: paid mystery lots with better odds.
+• Thrift Outlet: $25 low-rarity fashion finds. The $500 starting balance gives room to learn and flip several pieces.
+• Curated Rack: $90 premium fashion pieces with better odds.
 • Auction house: live bidding events with up to 8 players. A single rare lot appears and players bid against each other. The most exciting multiplayer moment in the game.
-• Daily deliveries: one free lot per day to bring players back.
+• Donation Drop: one free fashion find per day to bring players back.
 3.5 Multiplayer features
 • Shared town: a street of eight shops with up to 8 players per server. Players walk between shops, browse, and chat.
 • Player market: list restored items for sale to other players. Price caps and a listing fee reduce abuse.
@@ -70,8 +70,8 @@ A charming cobblestone street with a central square and shops along both sides.
 • Town square: fountain, notice board (quests and contests), bench seating, and a market stall area for player-to-player listings.
 • Player shops: each shop has a unique storefront color and a sign showing the owner's name, level and rating. Awnings and window displays show the owner's best items.
 • Auction house: a grand brick building with a stage and a curtain. Seats for bidders, a spotlight on the lot, and a big gavel animation.
-• Estate sale lot: a front yard filled with boxes and furniture, with a friendly seller NPC.
-• Dumpster alley: a slightly messy but still colorful back street with bins, crates and neon signs.
+• Curated Rack: a premium restock building filled with sorted clothing and better rarity odds.
+• Thrift Outlet: a colorful back-street fashion outlet with rolling bins, folded clothing, racks, and readable price signs.
 • Edges: hills, trees, rooftops and a skyline backdrop so the world feels complete rather than boxed in.
 4.3 The shop interior
 • A compact room with a front counter, a shelf wall, a center display table, and a back workbench for restoring.
@@ -81,7 +81,7 @@ A charming cobblestone street with a central square and shops along both sides.
 • Decor: rugs, plants, posters, neon signs, curtains, and themed sets.
 4.4 Characters
 • Players use their own Roblox avatars. Optional cosmetics include aprons, hats, glasses and name tags.
-• NPC customers are simple, expressive and varied: an older collector, a hipster, a kid with pocket money, a decorator, a dealer. Each has a short idle and happy animation.
+• NPC customers use friends' display names and R15 avatar appearances when the Roblox services respond, then walk into the player's shop. Stylized fallback shoppers keep the flow working offline.
 4.5 UI style
 • Rounded panels, large buttons, bold readable text, and a consistent rarity color system.
 • Mobile layout: thumb-reachable controls on the bottom corners, minimal clutter, and no tiny text.
@@ -190,7 +190,7 @@ Spend extra time on the tutorial, thumbnail and first minute
 • Auction and market participation
 13. Asset checklist
 Environment: street pieces, shop exteriors (6 colors), shop interiors (4 tiers), auction house, estate sale lot, dumpster alley, trees, lamps, benches, signs.
-Items: 80 base items in 8 categories, each with Wrecked to Mint variants (a dirt or damage overlay can do most of the work).
+Items: 80 fashion finds in 8 categories, each with Damaged to Like New variants and a catalog reference thumbnail.
 Tools and workbench: brushes, cloths, polish, screwdrivers, paint cans, a lamp, a tool rack.
 Effects: sparkles, dust clouds, rarity glows, cash pop-ups, confetti, gavel hit.
 UI: panels, buttons, inventory grid, rarity borders, minigame frames, auction bid panel, market listing UI, quest list, collection book, settings, shop upgrade menu.

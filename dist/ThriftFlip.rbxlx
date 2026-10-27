@@ -60,36 +60,66 @@ return {
       <Item class="ModuleScript" referent="RBX14">
         <Properties>
           <string name="Name">Catalog</string>
-          <ProtectedString name="Source">local Catalog = {}
+          <ProtectedString name="Source">-- Fashion finds selected from Roblox's public catalog. Catalog IDs are used for
+-- attribution and thumbnails; the playable 3D replicas are bundled with the game.
+local Catalog = {}
+local styles = {"Vintage", "Preppy", "Streetwear", "Designer", "Y2K"}
 local categories = {
-    {"Lamps", "Scrub", 22, {"Tulip", "Banker", "Mushroom", "Arc", "Lantern", "Desk", "Lava", "Tiffany", "Studio", "Moon"}},
-    {"Radios", "Rewire", 28, {"Pocket", "Bakelite", "Boombox", "Cathedral", "Transistor", "Space", "Kitchen", "Travel", "Jukebox", "Crystal"}},
-    {"Clocks", "Assemble", 25, {"Cuckoo", "Mantel", "Alarm", "Sunburst", "Pendulum", "Flip", "Station", "Carriage", "Orbital", "Kitten"}},
-    {"Chairs", "Repaint", 32, {"Rocking", "Windsor", "Tulip", "School", "Lounge", "Bistro", "Velvet", "Rattan", "Rocket", "Doll"}},
-    {"Toys", "Assemble", 18, {"Robot", "Train", "Teddy", "Rocket", "Carousel", "Dollhouse", "Racecar", "Duck", "Airplane", "Dinosaur"}},
-    {"Mirrors", "Polish", 24, {"Oval", "Sun", "Vanity", "Arch", "Pocket", "Gilded", "Cloud", "Star", "Shell", "Heart"}},
-    {"Cameras", "Rewire", 30, {"Box", "Instant", "Twin Lens", "Pocket", "Bellows", "Rangefinder", "Studio", "Movie", "Underwater", "Toy"}},
-    {"Vases", "Polish", 20, {"Bud", "Ginger", "Amphora", "Bubble", "Fluted", "Swan", "Geometric", "Rose", "Celadon", "Moon"}},
+    {"T-Shirts", "Scrub", 18, "tshirts", {
+        {"Black Logo Tee",7178736794},{"Gray Everyday Tee",9112474888},{"White Logo Tee",7178737816},
+        {"Black Striped Tee",9119670803},{"White Striped Tee",9112483644},{"Golden Music Tee",9252603398},
+        {"Simple Pattern Tee",3670737444},{"Pizza Graphic Tee",4047884939},{"Heart Pizza Tee",382537085},{"Teal Classic Tee",382537702},
+    }},
+    {"Shirts", "Polish", 24, "shirts", {
+        {"Blue Plaid Shirt",398635081},{"Moto Shirt",144076358},{"Denim Layer Shirt",144076436},
+        {"Pastel Layered Shirt",398634295},{"Purple Teal Top",4047886060},{"White Tie Front Top",9240752338},
+        {"Blue Tie Front Top",9174384558},{"Classic Zip Shirt",607785314},{"Denim Hoodie Shirt",398633584},{"Guitar Layer Shirt",4047884046},
+    }},
+    {"Pants", "Assemble", 28, "pants", {
+        {"Ripped Skater Pants",398635338},{"Black Wetsuit Pants",9120251003},{"Brown Cargo Pants",6984740059},
+        {"White Leather Pants",7192681239},{"Brown Moto Pants",8721985925},{"Black Jeans White Shoes",398633812},
+        {"Classic Blue Jeans",398634487},{"Dark Green Jeans",144076760},{"Black Sneaker Jeans",382538503},{"Everyday Black Jeans",382537569},
+    }},
+    {"Shorts", "Repaint", 22, "shorts", {
+        {"Jean Shorts White Shoes",382537950},{"Black Bermuda Shorts",9174391966},{"Classic Jean Shorts",382537806},
+        {"Light Wash Jean Shorts",7192687500},{"Light Blue Bermuda Shorts",9274782406},{"Red Basketball Shorts",7192689453},
+        {"Lime Boxing Shorts",7231091126},{"Salmon Bermuda Shorts",9240765837},{"Mint Bermuda Shorts",9240767370},{"Blue Basketball Shorts",7192688494},
+    }},
+    {"Jackets", "Rewire", 36, "jackets", {
+        {"Classic Zip Jacket",607785314},{"Denim White Hoodie",398633584},{"Pastel Star Jacket",398634295},
+        {"Black Leather Jacket",7192549218},{"Light Wash Denim Jacket",8516609675},{"Gray Hooded Jacket",8516620262},
+        {"White Denim Jacket",8516612751},{"Black Guitar Jacket",4047884046},{"White Collared Jacket",7192546798},{"Brown Leather Jacket",6984767443},
+    }},
+    {"Dresses", "Polish", 34, "dresses", {
+        {"Red Evening Dress",11821648884},{"Floral Day Dress",10896900057},{"White Ruffle Dress",9240776381},
+        {"Pink Chiffon Dress",9240772455},{"Red Ruffle Dress",7192696851},{"Blue Chiffon Dress",7192691582},
+        {"Beige Knit Dress",6984769289},{"Pink Knit Dress",6984771334},{"Black Knit Dress",9240757332},{"Gray Knit Dress",9240758221},
+    }},
+    {"Shoes", "Assemble", 26, "shoes", {
+        {"White Canvas Shoes",894,"BundleThumbnail"},{"Gray Canvas Shoes",905,"BundleThumbnail"},{"Black Dress Shoes",907,"BundleThumbnail"},
+        {"Red Running Shoes",895,"BundleThumbnail"},{"Pink Canvas Shoes",877,"BundleThumbnail"},{"Black Running Shoes",926,"BundleThumbnail"},
+        {"Blue Running Shoes",921,"BundleThumbnail"},{"Blue Canvas Shoes",881,"BundleThumbnail"},{"White Running Shoes",903,"BundleThumbnail"},{"Black Purple Canvas Shoes",931,"BundleThumbnail"},
+    }},
+    {"Accessories", "Repaint", 20, "accessories", {
+        {"Paper Bucket Hat",10476359},{"Black Cowboy Hat",425117435},{"Umbrella Hat",10658698},
+        {"Gray Winter Hat",105354517},{"Cheese Hat",1097026},{"Candy Scarf Hat",562493075},
+        {"Nurse Cap",10770260},{"Ranger Hat",13335289},{"Blue Top Hat",1016145591},{"Eternal Top Hat",835066603},
+    }},
 }
-Catalog.Items = {}
-Catalog.ById = {}
-Catalog.Categories = {}
+Catalog.Items, Catalog.ById, Catalog.Categories = {}, {}, {}
 for categoryIndex, group in ipairs(categories) do
     table.insert(Catalog.Categories, group[1])
-    for index, name in ipairs(group[4]) do
-        local item = {
-            Id = string.lower(group[1]) .. "_" .. index,
-            Name = name .. " " .. string.sub(group[1], 1, #group[1] - 1),
-            Category = group[1], Minigame = group[2],
-            BaseValue = group[3] + index * 4,
-            Style = ({"Retro", "Cozy", "Futuristic", "Antique", "Cute"})[(index + categoryIndex - 2) % 5 + 1],
-            UnlockLevel = math.max(1, categoryIndex - 2),
-            Variant = index,
-        }
-        table.insert(Catalog.Items, item)
-        Catalog.ById[item.Id] = item
+    for index, choice in ipairs(group[5]) do
+        local item = {Id = group[4] .. "_" .. index, Name = choice[1], Category = group[1], Minigame = group[2],
+            BaseValue = group[3] + index * 4, Style = styles[(index + categoryIndex - 2) % #styles + 1],
+            UnlockLevel = math.max(1, categoryIndex - 2), Variant = index,
+            CatalogAssetId = choice[2], CatalogItemType = choice[3] or "Asset", CatalogCreator = "Roblox"}
+        table.insert(Catalog.Items, item); Catalog.ById[item.Id] = item
     end
 end
+-- Alias legacy IDs for exchange recovery and old server handoff payloads.
+local legacy = {lamps="tshirts", radios="shirts", clocks="pants", chairs="shorts", toys="jackets", mirrors="dresses", cameras="shoes", vases="accessories"}
+for old, current in pairs(legacy) do for index = 1, 10 do Catalog.ById[old .. "_" .. index] = Catalog.ById[current .. "_" .. index] end end
 return Catalog
 </ProtectedString>
         </Properties>
@@ -157,9 +187,9 @@ return Commerce
           <string name="Name">Config</string>
           <ProtectedString name="Source">-- Central tuning. No paid power or randomized Robux purchases.
 local Config = {
-    Version = 2,
+    Version = 3,
     StudioPracticeMode = true, -- Studio only; never disables live-server persistence.
-    StartingCash = 75,
+    StartingCash = 500,
     InventoryLimit = 100,
     -- The town has eight claimable storefronts. Keep the server cap aligned so
     -- every player always receives a shop.
@@ -171,7 +201,8 @@ local Config = {
     AutosaveSeconds = 60,
     SessionLease = 180,
     Sources = {
-        Dumpster = {Cost = 0, Level = 1, Cooldown = 15, Weights = {70, 24, 5, 0.9, 0.1}},
+        -- Internal keys stay stable so old clients and saved tutorial state remain compatible.
+        Dumpster = {Cost = 25, Level = 1, Cooldown = 10, Weights = {70, 24, 5, 0.9, 0.1}},
         Estate = {Cost = 90, Level = 3, Cooldown = 8, Weights = {30, 42, 22, 5, 1}},
         Delivery = {Cost = 0, Level = 1, Cooldown = 0, Weights = {35, 40, 20, 4, 1}},
     },
@@ -182,9 +213,9 @@ local Config = {
     RarityColors = {"#AEB7B5", "#70C58D", "#6CABF3", "#C29AE8", "#EDC66D"},
     RarityEffectNames = {"Found", "Fresh", "Shimmer", "Enchanted", "Golden Legend"},
     RarityMultipliers = {1, 1.8, 3.5, 7, 15},
-    Conditions = {"Wrecked", "Poor", "Fair", "Good", "Mint"},
+    Conditions = {"Damaged", "Worn", "Good", "Excellent", "Like New"},
     ConditionMultipliers = {0.25, 0.5, 0.85, 1.3, 2},
-    Styles = {"Retro", "Cozy", "Futuristic", "Antique", "Cute"},
+    Styles = {"Vintage", "Preppy", "Streetwear", "Designer", "Y2K"},
     Tiers = {
         {Name = "Corner Stall", Cost = 0, Slots = 4, Level = 1},
         {Name = "Small Shop", Cost = 600, Slots = 8, Level = 4},
@@ -204,7 +235,7 @@ local Config = {
         {Id = "Poster", Name = "Second chances poster", Cost = 90},
         {Id = "Neon", Name = "Good finds neon sign", Cost = 400},
         {Id = "Curtains", Name = "Rose linen curtains", Cost = 240},
-        {Id = "Trophy", Name = "Golden treasure sculpture", Cost = 1200},
+        {Id = "Trophy", Name = "Golden fashion mannequin", Cost = 1200},
     },
     CosmeticPasses = {}, -- [Roblox game-pass id] = cosmetic theme key; no placeholder IDs
     Themes = {
@@ -390,7 +421,11 @@ local palette = {
     Lilac = {0.61, 0.49, 0.73}, Glass = {0.62, 0.82, 0.83},
     Dirt = {0.39, 0.34, 0.24}, White = {0.96, 0.96, 0.92},
 }
-local styleColors = {Retro = "Coral", Cozy = "Mint", Futuristic = "Blue", Antique = "Wood", Cute = "Rose"}
+local styleColors = {
+    Vintage = "Coral", Preppy = "Mint", Streetwear = "Blue", Designer = "Dark", Y2K = "Rose",
+    -- Legacy style names remain renderable during cross-server migration.
+    Retro = "Coral", Cozy = "Mint", Futuristic = "Blue", Antique = "Wood", Cute = "Rose",
+}
 local function clone3(value) return {value[1], value[2], value[3]} end
 local function blend(a, b, t)
     return {a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t, a[3] + (b[3] - a[3]) * t}
@@ -1154,8 +1189,99 @@ local function vases(g)
     end
 end
 
-local builders = {Lamps = lamps, Radios = radios, Clocks = clocks, Chairs = chairs, Toys = toys,
-    Mirrors = mirrors, Cameras = cameras, Vases = vases}
+-- Fashion silhouettes are original, low-part replicas inspired by each catalog
+-- pick. They stay reliable in every experience without inserting third-party meshes.
+local function tshirts(g)
+    local tint, v = g.Theme, g.Variant
+    g.box("TeeBody", {2.5, 2.25, 0.42}, {0, 1.45, 0}, tint, nil, "Fabric")
+    g.box("LeftSleeve", {0.85, 0.82, 0.46}, {-1.55, 1.98, 0}, tint, {0, 0, -0.22}, "Fabric")
+    g.box("RightSleeve", {0.85, 0.82, 0.46}, {1.55, 1.98, 0}, tint, {0, 0, 0.22}, "Fabric")
+    g.disc("Collar", 0.62, 0.08, {0, 2.48, -0.24}, "Cream")
+    if v % 3 == 0 then
+        for y = 1, 3 do g.box("Stripe", {2.25, 0.16, 0.05}, {0, 0.9 + y * 0.45, -0.24}, if y % 2 == 0 then "Cream" else "Gold") end
+    else
+        local mark = if v % 2 == 0 then "Gold" else "Cream"
+        g.ball("ChestGraphic", {0.72, 0.72, 0.08}, {0, 1.55, -0.25}, mark)
+    end
+    g.box("Hanger", {3.4, 0.08, 0.08}, {0, 2.85, 0.16}, "Gold", {0, 0, 0}, "Metal")
+end
+local function shirts(g)
+    local tint, v = g.Theme, g.Variant
+    g.box("ShirtBody", {2.45, 2.65, 0.48}, {0, 1.55, 0}, tint, nil, "Fabric")
+    for side = -1, 1, 2 do
+        g.box("LongSleeve", {0.62, 2.25, 0.48}, {side * 1.47, 1.55, 0}, tint, {0, 0, side * 0.12}, "Fabric")
+        g.wedge("Collar", {0.72, 0.62, 0.12}, {side * 0.36, 2.55, -0.3}, "Cream", {0, side * 0.08, side * 0.15})
+    end
+    g.box("Placket", {0.1, 2.25, 0.07}, {0, 1.45, -0.29}, if v % 2 == 0 then "Gold" else "Cream")
+    for y = 1, 4 do g.disc("Button", 0.12, 0.05, {0, 0.65 + y * 0.42, -0.35}, "Gold", "Metal") end
+end
+local function pants(g)
+    local tint, v = g.Theme, g.Variant
+    g.box("Waistband", {2.35, 0.45, 0.62}, {0, 3.05, 0}, tint, nil, "Fabric")
+    for side = -1, 1, 2 do
+        g.box("PantLeg", {1.02, 2.9, 0.62}, {side * 0.62, 1.48, 0}, tint, {0, 0, side * 0.025}, "Fabric")
+        g.box("Hem", {1.02, 0.15, 0.66}, {side * 0.66, 0.12, 0}, if v % 2 == 0 then "Cream" else tint, nil, "Fabric")
+        if v % 3 == 0 then g.box("CargoPocket", {0.62, 0.7, 0.12}, {side * 1.02, 1.9, -0.36}, "Gold", nil, "Fabric") end
+    end
+    g.box("Belt", {2.42, 0.15, 0.66}, {0, 2.92, 0}, "Dark", nil, "Fabric")
+    g.box("Buckle", {0.36, 0.28, 0.08}, {0, 2.93, -0.38}, "Gold", nil, "Metal")
+end
+local function shorts(g)
+    local tint, v = g.Theme, g.Variant
+    g.box("Waistband", {2.5, 0.46, 0.72}, {0, 2.2, 0}, tint, nil, "Fabric")
+    for side = -1, 1, 2 do
+        g.box("ShortLeg", {1.12, 1.65, 0.72}, {side * 0.66, 1.18, 0}, tint, {0, 0, side * 0.04}, "Fabric")
+        g.box("Cuff", {1.14, 0.16, 0.76}, {side * 0.69, 0.38, 0}, if v % 2 == 0 then "Cream" else "Gold", nil, "Fabric")
+    end
+    g.box("Drawstring", {0.08, 0.75, 0.08}, {-0.13, 1.83, -0.42}, "Cream", {0, 0, 0.15})
+    g.box("Drawstring", {0.08, 0.75, 0.08}, {0.13, 1.83, -0.42}, "Cream", {0, 0, -0.15})
+end
+local function jackets(g)
+    local tint, v = g.Theme, g.Variant
+    g.box("JacketBody", {2.7, 2.65, 0.65}, {0, 1.58, 0}, tint, nil, if v % 3 == 0 then "Leather" else "Fabric")
+    for side = -1, 1, 2 do
+        g.box("JacketSleeve", {0.72, 2.45, 0.65}, {side * 1.65, 1.55, 0}, tint, {0, 0, side * 0.12}, "Fabric")
+        g.wedge("Lapel", {0.72, 1.45, 0.16}, {side * 0.43, 2.02, -0.43}, if v % 2 == 0 then "Cream" else tint, {0, side * 0.08, side * 0.25})
+    end
+    g.box("Zipper", {0.11, 2.42, 0.09}, {0, 1.45, -0.39}, "Silver", nil, "Metal")
+    for side = -1, 1, 2 do g.box("Pocket", {0.75, 0.45, 0.08}, {side * 0.75, 0.92, -0.39}, "Gold", {0, 0, side * 0.12}, "Fabric") end
+end
+local function dresses(g)
+    local tint, v = g.Theme, g.Variant
+    g.box("Bodice", {1.85, 1.55, 0.5}, {0, 2.45, 0}, tint, nil, "Fabric")
+    g.wedge("SkirtFront", {3.25, 2.35, 0.62}, {0, 1.05, -0.02}, tint, {0, 0, math.pi}, "Fabric")
+    g.wedge("SkirtBack", {3.25, 2.35, 0.62}, {0, 1.05, 0.02}, tint, {0, math.pi, math.pi}, "Fabric")
+    g.box("WaistRibbon", {2.05, 0.25, 0.62}, {0, 1.78, 0}, if v % 2 == 0 then "Gold" else "Cream", nil, "Fabric")
+    for side = -1, 1, 2 do g.box("Strap", {0.28, 0.72, 0.35}, {side * 0.62, 3.35, 0}, tint, nil, "Fabric") end
+    if v % 3 == 0 then for side = -1, 1, 2 do g.ball("Bow", {0.55, 0.35, 0.15}, {side * 0.34, 1.8, -0.4}, "Cream") end end
+end
+local function shoes(g)
+    local tint, v = g.Theme, g.Variant
+    for side = -1, 1, 2 do
+        g.box("Sole", {1.25, 0.24, 2.35}, {side * 0.78, 0.14, -0.15}, "Cream", nil, "Rubber")
+        g.wedge("ShoeUpper", {1.18, 0.85, 1.95}, {side * 0.78, 0.62, -0.06}, tint, {0, 0, 0})
+        g.box("Heel", {1.12, 0.55, 0.62}, {side * 0.78, 0.48, 0.78}, if v % 2 == 0 then "Dark" else tint)
+        for lace = -1, 1 do g.box("Lace", {0.82, 0.055, 0.07}, {side * 0.78, 0.96, -0.2 + lace * 0.26}, "Cream", nil, "Fabric") end
+    end
+end
+local function accessories(g)
+    local tint, v = g.Theme, g.Variant
+    if v == 3 then
+        g.cyl("UmbrellaCrown", 2.5, 0.3, {0, 1.85, 0}, tint, "Fabric")
+        for i = 1, 6 do local a = i * pi / 3; g.rod("UmbrellaRib", {0,1.85,0}, {math.cos(a)*1.3,1.68,math.sin(a)*1.3}, 0.06, "Silver", "Metal") end
+    elseif v == 5 then
+        g.cyl("CheeseHat", 2.1, 1.4, {0, 1.15, 0}, "Mustard")
+        for i = 1, 5 do g.ball("CheeseHole", {0.28,0.12,0.28}, {-0.7 + i*0.28,1.25,-1.02}, "Gold") end
+    else
+        g.cyl("HatBrim", 3.15, 0.18, {0, 0.65, 0}, if v % 2 == 0 then "Cream" else tint, "Fabric")
+        g.cyl("HatCrown", 1.95, 1.35 + (v % 3) * 0.25, {0, 1.35, 0}, tint, "Fabric")
+        g.box("HatBand", {2.0, 0.28, 2.0}, {0, 0.98, 0}, if v % 2 == 0 then "Gold" else "Dark", nil, "Fabric")
+    end
+    g.ball("DisplayHead", {1.55, 1.75, 1.55}, {0, 0.15, 0}, "Ivory").Transparency = 0.55
+end
+
+local builders = {["T-Shirts"] = tshirts, Shirts = shirts, Pants = pants, Shorts = shorts,
+    Jackets = jackets, Dresses = dresses, Shoes = shoes, Accessories = accessories}
 
 function ItemModels.describe(definition, item)
     assert(type(definition) == "table" and builders[definition.Category], "Unknown item category")
@@ -1270,7 +1396,7 @@ local LiveConfig = {
     Events = {
         {
             Id = "harvest_2026", Name = "Harvest of Second Chances",
-            Description = "Bring forgotten treasures back to life for a warm autumn window display.",
+            Description = "Bring vintage outfits back to life for a warm autumn window display.",
             Starts = 1792108800, Ends = 1794182400, -- Oct 16 through Nov 8, 2026 UTC
             Goal = {Restored = 15, Sold = 8},
             Reward = {Title = "HarvestCurator", Theme = "Retro", Decoration = "Plant"},
@@ -1310,7 +1436,7 @@ local LiveConfig = {
         {
             Key = "neon_night_market", Id = 0, Order = 2, Badge = "BOLD STYLE", SuggestedPrice = 79,
             Name = "Neon Night Market", Accent = "#657FDB", PreviewTheme = "NeonNight",
-            Description = "Turn your shop into a vivid after-dark treasure stop.",
+            Description = "Turn your shop into a vivid after-dark fashion stop.",
             Benefits = {"Exclusive Neon Night shop theme", "Good Finds neon decoration", "Neon Curator title"},
             Reward = {Themes = {"NeonNight"}, Decorations = {"Neon"}, Titles = {"NeonCurator"}},
         },
@@ -1343,7 +1469,7 @@ return LiveConfig
           <ProtectedString name="Source">local Profile = {}
 function Profile.new()
     return {
-        Version = 2, Cash = 75, XP = 0, Tier = 1, Tool = 0,
+        Version = 3, Cash = 500, XP = 0, Tier = 1, Tool = 0,
         Inventory = {}, Collection = {}, Themes = {Cozy = true}, Theme = "Cozy",
         Stats = {Found = 0, Restored = 0, Sold = 0, Earned = 0},
         Tutorial = 0, LastDelivery = -1, Daily = {Day = -1, Claimed = {}},
@@ -1357,7 +1483,7 @@ end
 function Profile.reconcile(data)
     assert(type(data) == "table", "Profile data is not a table")
     local version = data.Version or 1
-    assert(type(version) == "number" and version &gt;= 1 and version &lt;= 2, "Unsupported profile schema version")
+    assert(type(version) == "number" and version &gt;= 1 and version &lt;= 3, "Unsupported profile schema version")
     if data.Cash ~= nil then
         assert(type(data.Cash) == "number" and data.Cash == data.Cash and data.Cash &gt;= 0 and data.Cash &lt; math.huge, "Invalid saved cash")
     end
@@ -1373,7 +1499,27 @@ function Profile.reconcile(data)
         end
     end
     merge(data, defaults)
-    data.Version = 2
+    if version &lt; 3 then
+        local prefixes = {lamps = "tshirts", radios = "shirts", clocks = "pants", chairs = "shorts",
+            toys = "jackets", mirrors = "dresses", cameras = "shoes", vases = "accessories"}
+        local styles = {Retro = "Vintage", Cozy = "Preppy", Futuristic = "Streetwear", Antique = "Designer", Cute = "Y2K"}
+        local function fashionId(id)
+            if type(id) ~= "string" then return id end
+            local prefix, number = string.match(id, "^(%a+)_(%d+)$")
+            return (prefixes[prefix] and number) and (prefixes[prefix] .. "_" .. number) or id
+        end
+        for _, item in ipairs(data.Inventory or {}) do
+            item.DefId = fashionId(item.DefId)
+            item.Style = styles[item.Style] or item.Style
+        end
+        local migrated = {}
+        for key, owned in pairs(data.Collection or {}) do
+            local id, rarity = string.match(key, "^(.+):(%d+)$")
+            migrated[id and (fashionId(id) .. ":" .. rarity) or key] = owned
+        end
+        data.Collection = migrated
+    end
+    data.Version = 3
     return data
 end
 return Profile
@@ -23295,14 +23441,14 @@ local DecorPlacement = require(Shared.DecorPlacement)
 local GameService = {}
 GameService.__index = GameService
 local customers = {
-    {Name = "Mabel · Collector", Style = "Antique", Budget = 20000},
-    {Name = "Jules · Designer", Style = "Retro", Budget = 10000},
-    {Name = "Pip · Pocket money", Style = "Cute", Budget = 180},
-    {Name = "Robin · Decorator", Style = "Cozy", Budget = 5000},
-    {Name = "Alex · Inventor", Style = "Futuristic", Budget = 6000},
-    {Name = "Sam · Bargain hunter", Style = "Retro", Budget = 1000},
-    {Name = "Lee · Neighbor", Style = "Cozy", Budget = 600},
-    {Name = "Bea · Curator", Style = "Antique", Budget = 40000},
+    {Name = "Mabel · Vintage collector", Style = "Vintage", Budget = 20000},
+    {Name = "Jules · Fashion editor", Style = "Designer", Budget = 10000},
+    {Name = "Pip · Trend hunter", Style = "Y2K", Budget = 180},
+    {Name = "Robin · Preppy stylist", Style = "Preppy", Budget = 5000},
+    {Name = "Alex · Streetwear fan", Style = "Streetwear", Budget = 6000},
+    {Name = "Sam · Vintage shopper", Style = "Vintage", Budget = 1000},
+    {Name = "Lee · Neighborhood shopper", Style = "Preppy", Budget = 600},
+    {Name = "Bea · Designer curator", Style = "Designer", Budget = 40000},
 }
 local function shallowPublicItem(item)
     if item.Inspected then return table.clone(item) end
@@ -23311,7 +23457,7 @@ end
 function GameService.new(data, world, event)
     return setmetatable({Data = data, World = world, Event = event,
         Random = Random.new(), Sessions = {}, Offers = {}, Cooldowns = {}, Buckets = {}, TeleportAt = {},
-        Held = {},
+        Held = {}, CustomerFriends = {},
         Auction = nil, NextAuction = os.time() + 45, NextCustomer = {}, Ready = {},
         Closing = false, JoinedAt = {}, Showcase = {Week = Economy.week(os.time()), Entries = {}, Votes = {}}}, GameService)
 end
@@ -23363,7 +23509,9 @@ end
 function GameService:value(profile, item)
     local definition = Catalog.ById[item.DefId]
     local demand = if (item.Style or definition.Style) == self:demandStyle() then 1.2 else 1
-    local bonus = if (item.Style or definition.Style) == profile.Theme then 1.1 else 1
+    local themeStyle = {Cozy="Preppy", Retro="Vintage", Futuristic="Streetwear", Antique="Designer", Cute="Y2K",
+        RoseGold="Y2K", NeonNight="Streetwear", Curator="Designer"}
+    local bonus = if (item.Style or definition.Style) == (themeStyle[profile.Theme] or profile.Theme) then 1.1 else 1
     return Economy.value(definition, item, Config.RarityMultipliers, Config.ConditionMultipliers, demand, bonus)
 end
 function GameService:resetQuests(profile)
@@ -23514,7 +23662,7 @@ function GameService:source(player, payload)
     profile.XP += 4; self:stat(profile, "Found", 1)
     if profile.Tutorial == 0 then profile.Tutorial = 1; self:analytics(player, "TutorialFind") end
     if profile.Stats.Found == 2 then self:analytics(player, "SecondFind") end
-    self:notify(player, "A mystery find! Open your bag to inspect it."); self:snapshot(player)
+    self:notify(player, "A mystery fashion find! Open your bag and inspect the label."); self:snapshot(player)
 end
 function GameService:inspect(player, payload)
     local profile = self:profile(player)
@@ -23562,7 +23710,7 @@ function GameService:beginRestore(player, payload)
     local item = self:find(profile, payload.Uid)
     if item and self.Exchange and self.Exchange:itemReserved(player.UserId, item.Uid) then return self:notify(player, "Remove this item from its listing or trade first.") end
     if item and self:isHeld(player.UserId, item.Uid) then return self:notify(player, "Put this item back in your bag before restoring it.") end
-    if not item or not item.Inspected or item.Slot or item.Condition &gt;= 5 then return self:notify(player, "Choose an inspected item below Mint; take it off display first.") end
+    if not item or not item.Inspected or item.Slot or item.Condition &gt;= 5 then return self:notify(player, "Choose an inspected item below Like New; take it off display first.") end
     local kind = payload.Kind or Catalog.ById[item.DefId].Minigame
     if not table.find({"Scrub", "Polish", "Rewire", "Repaint", "Assemble"}, kind) then return end
     local order = {}; for i = 1, 16 do order[i] = i end
@@ -23660,16 +23808,39 @@ function GameService:makeOffer(player)
     if not profile or self.Offers[player.UserId] then return end
     local displayed = {}; for _, item in ipairs(profile.Inventory) do if item.Slot then table.insert(displayed, item) end end
     if #displayed == 0 then return end
-    local customer = customers[self.Random:NextInteger(1, #customers)]
+    local customer = table.clone(customers[self.Random:NextInteger(1, #customers)])
+    local friends = self.CustomerFriends[player.UserId]
+    if friends and #friends &gt; 0 then
+        local friend = friends[self.Random:NextInteger(1, #friends)]
+        customer.Name = (friend.DisplayName or friend.Username or "Friend") .. " · Your friend"
+        customer.AvatarUserId = friend.Id
+    end
     local item = displayed[self.Random:NextInteger(1, #displayed)]
     local value = self:value(profile, item)
     local preferred = item.Style == customer.Style
     local amount = math.floor(value * (if preferred then 1.15 else self.Random:NextNumber(0.85, 1.05)))
-    if profile.Tutorial == 4 then customer = {Name = "Mabel · Welcome gift", Budget = 100000}; amount = math.max(150, amount) end
+    if profile.Tutorial == 4 then customer.Budget = 100000; customer.Name = customer.Name .. " · First customer"; amount = math.max(150, amount) end
     if amount &gt; customer.Budget then return end
     self.Offers[player.UserId] = {Uid = item.Uid, Amount = amount, Customer = customer.Name,
         Ends = os.time() + 20, Countered = false, Preferred = preferred}
-    self.World:customer(player.UserId, customer.Name); self:snapshot(player)
+    self.World:customer(player.UserId, customer.Name, customer.AvatarUserId); self:snapshot(player)
+end
+
+function GameService:loadCustomerFriends(player)
+    local friends = {}
+    local ok, pages = pcall(Players.GetFriendsAsync, Players, player.UserId)
+    if ok and pages then
+        for _ = 1, 3 do
+            for _, friend in ipairs(pages:GetCurrentPage()) do
+                if type(friend.Id) == "number" then table.insert(friends, friend) end
+                if #friends &gt;= 30 then break end
+            end
+            if #friends &gt;= 30 or pages.IsFinished then break end
+            local advanced = pcall(pages.AdvanceToNextPageAsync, pages)
+            if not advanced then break end
+        end
+    end
+    if player.Parent then self.CustomerFriends[player.UserId] = friends end
 end
 function GameService:haggle(player, payload)
     local profile = self:profile(player)
@@ -23959,6 +24130,7 @@ function GameService:join(player)
     if not self.World:assign(player) then self.Data:release(player.UserId); player:Kick("This town is full. Please join another server."); return end
     self.Ready[player.UserId] = true; self.JoinedAt[player.UserId] = os.clock(); self:resetQuests(profile); self:prepareLogin(profile)
     self.NextCustomer[player.UserId] = os.time() + 10
+    task.spawn(function() self:loadCustomerFriends(player) end)
     player.CharacterAdded:Connect(function()
         task.wait(0.8)
         local uid = self.Held[player.UserId]
@@ -23972,7 +24144,7 @@ function GameService:join(player)
     local level = Instance.new("IntValue"); level.Name = "Level"; level.Value = Economy.level(profile.XP); level.Parent = leaderstats
     self:refresh(player); self:analytics(player, "SessionStart")
     if self.Live then task.spawn(function() self.Live:join(player) end) end
-    self:notify(player, if profile.Tutorial &lt; 5 then "Welcome! Find a mystery item in Dumpster Alley." else "Welcome back to Thrift Street!")
+    self:notify(player, if profile.Tutorial &lt; 5 then "Welcome! Start with $500 and thrift your first fashion find at the outlet." else "Welcome back to Thrift Street!")
 end
 function GameService:leave(player)
     local joined = self.JoinedAt[player.UserId]
@@ -23987,7 +24159,7 @@ function GameService:leave(player)
     end
     self.Sessions[player.UserId] = nil; self.Offers[player.UserId] = nil
     self.Held[player.UserId] = nil; self.World:clearHeld(player)
-    self.Cooldowns[player.UserId] = nil; self.Buckets[player.UserId] = nil; self.NextCustomer[player.UserId] = nil
+    self.Cooldowns[player.UserId] = nil; self.Buckets[player.UserId] = nil; self.NextCustomer[player.UserId] = nil; self.CustomerFriends[player.UserId] = nil
     self.World:release(player.UserId)
     self.Data:release(player.UserId)
 end
@@ -24744,6 +24916,7 @@ end)
         <Properties>
           <string name="Name">World</string>
           <ProtectedString name="Source">local CollectionService = game:GetService("CollectionService")
+local Players = game:GetService("Players")
 local Lighting = game:GetService("Lighting")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
@@ -25039,7 +25212,7 @@ function World:exactSquare()
     Kit.part(quests, "Cork", Vector3.new(13, 7, 0.2), qcf * CFrame.new(0, 6.5, -0.55), Color3.fromRGB(214, 170, 120))
     Kit.part(quests, "Canopy", Vector3.new(16, 0.6, 3.6), qcf * CFrame.new(0, 11.8, -0.4), E.Teal)
     local _, questBoard = Kit.sign(quests, "DAILY QUESTS", qcf * CFrame.new(0, 10.6, -0.7), Vector3.new(12, 1.8, 0.15), E.Teal, E.Cream); prompt(questBoard, "Open daily quests", "Quests")
-    for index, card in ipairs({"SELL\n3 stories", "RESTORE\n3 keepsakes", "FIND\n3 treasures"}) do
+    for index, card in ipairs({"SELL\n3 outfits", "FRESHEN\n3 pieces", "THRIFT\n3 finds"}) do
         Kit.sign(quests, card, qcf * CFrame.new(-4.2 + (index - 1) * 4.2, 6.2, -0.75), Vector3.new(3.6, 4.2, 0.12), E.Cream, E.Dark)
     end
     local spawn = Instance.new("SpawnLocation"); spawn.Name = "TownSpawn"; spawn.Size = Vector3.new(7, 0.3, 7); spawn.CFrame = CFrame.new(0, 0.5, -8)
@@ -25050,7 +25223,7 @@ function World:exactSquare()
 end
 function World:exactSourcing()
     local sourcing = Kit.model(self.Root, "ExactSourcingDistrict")
-    local alley = Kit.model(sourcing, "DumpsterAlley")
+    local alley = Kit.model(sourcing, "ThriftOutlet")
     Kit.part(alley, "NorthBrickWall", Vector3.new(55, 16, 10), CFrame.new(-77.5, 8, -33), E.BrickDark, Enum.Material.Brick)
     Kit.part(alley, "SouthBrickWall", Vector3.new(55, 16, 10), CFrame.new(-77.5, 8, -73), E.BrickDark, Enum.Material.Brick)
     Kit.part(alley, "WestBrickWall", Vector3.new(2, 16, 30), CFrame.new(-106, 8, -53), E.BrickDark, Enum.Material.Brick)
@@ -25065,24 +25238,26 @@ function World:exactSourcing()
     Kit.cylinder(alley, "DrainPipe", 0.4, 16, CFrame.new(-95, 8, -67.5), E.Steel, Enum.Material.Metal)
     Kit.part(alley, "FireEscape", Vector3.new(8, 0.4, 3), CFrame.new(-85, 8, -66.5), E.Charcoal, Enum.Material.Metal)
     for _, x in ipairs({-87, -85.4}) do Kit.part(alley, "LadderRail", Vector3.new(0.2, 8, 0.2), CFrame.new(x, 4, -66), E.Charcoal, Enum.Material.Metal) end
-    local function dumpster(x, z, color)
-        local bin = Kit.part(alley, "SalvageDumpster", Vector3.new(7, 4, 4), CFrame.new(x, 2.1, z), color, Enum.Material.Metal)
-        Kit.part(alley, "DumpsterBand", Vector3.new(7.2, 0.4, 4.2), CFrame.new(x, 3.3, z), E.Charcoal, Enum.Material.Metal)
-        Kit.part(alley, "OpenLid", Vector3.new(7.2, 0.4, 4.4), CFrame.new(x, 4.7, z + 1.4) * CFrame.Angles(-0.38, 0, 0), E.Charcoal, Enum.Material.Metal)
-        Kit.ball(alley, "TrashBag", Vector3.new(2.2, 2.2, 2.2), CFrame.new(x - 1.5, 4.4, z - 0.4), E.Charcoal)
-        Kit.ball(alley, "TrashBag", Vector3.new(1.8, 1.8, 1.8), CFrame.new(x + 1.2, 4.2, z - 0.8), Color3.fromRGB(60, 80, 70))
-        prompt(bin, "Search for a treasure", "Source")
+    local function thriftBin(x, z, color)
+        local bin = Kit.part(alley, "RollingThriftBin", Vector3.new(7, 2.5, 4), CFrame.new(x, 1.45, z), color, Enum.Material.Metal)
+        Kit.part(alley, "BinTopRail", Vector3.new(7.3, 0.3, 4.3), CFrame.new(x, 2.7, z), E.Gold, Enum.Material.Metal)
+        for side = -1, 1, 2 do
+            Kit.ball(alley, "Caster", Vector3.new(0.75, 0.75, 0.5), CFrame.new(x + side * 2.7, 0.35, z + 1.45), E.Charcoal)
+            Kit.part(alley, "FoldedClothes", Vector3.new(2.2, 0.45, 2.8), CFrame.new(x + side * 1.35, 3.15, z), if side &lt; 0 then E.Coral else E.Blue, Enum.Material.Fabric, nil, false)
+            Kit.part(alley, "FoldedClothes", Vector3.new(2, 0.38, 2.5), CFrame.new(x + side * 1.35, 3.6, z), if side &lt; 0 then E.Cream else E.Gold, Enum.Material.Fabric, nil, false)
+        end
+        prompt(bin, "Thrift a fashion find · $25", "Source")
     end
-    dumpster(-95, -62, E.Dumpster); dumpster(-82, -63, E.Blue); dumpster(-68, -62, E.Dumpster); dumpster(-90, -44, Color3.fromRGB(150, 60, 50))
+    thriftBin(-95, -62, E.Teal); thriftBin(-82, -63, E.Blue); thriftBin(-68, -62, E.Teal); thriftBin(-90, -44, E.Coral)
     for _, position in ipairs({{-100,-45},{-75,-43},{-58,-66}}) do Kit.crate(alley, CFrame.new(position[1], 0.2, position[2]), Vector3.new(2.8, 2.8, 2.8), false) end
-    for _, position in ipairs({{-102,-60},{-72,-44}}) do Kit.cylinder(alley, "Barrel", 1.2, 3, CFrame.new(position[1], 1.6, position[2]), E.Red, Enum.Material.Metal) end
-    for index = 0, 5 do Kit.ball(alley, "LooseTrash", Vector3.new(1.6 + index % 3 * 0.4, 1.6 + index % 3 * 0.4, 1.6 + index % 3 * 0.4), CFrame.new(-98 + index * 9, 0.9, -52 + index % 2 * 4), E.Charcoal) end
+    for _, position in ipairs({{-102,-60},{-72,-44}}) do Kit.cylinder(alley, "GarmentRackPost", 0.32, 6, CFrame.new(position[1], 3.1, position[2]), E.Gold, Enum.Material.Metal) end
+    for index = 0, 5 do Kit.part(alley, "FoldedFashion", Vector3.new(2.2, 0.4, 1.6), CFrame.new(-98 + index * 9, 0.35, -52 + index % 2 * 4), ({E.Coral,E.Cream,E.Teal,E.Blue,E.Gold})[index % 5 + 1], Enum.Material.Fabric, nil, false) end
     local puddle = Kit.cylinder(alley, "Puddle", 3, 0.05, CFrame.new(-72, 0.14, -52), E.Water, Enum.Material.Glass, false); puddle.Transparency = 0.5
     local smallPuddle = Kit.cylinder(alley, "Puddle", 2, 0.05, CFrame.new(-92, 0.14, -50), E.Water, Enum.Material.Glass, false); smallPuddle.Transparency = 0.5
     local alleySignCF = CFrame.lookAt(Vector3.new(-52, 0, -53), Vector3.new(0, 0, -53))
     for _, x in ipairs({-15, 15}) do Kit.part(alley, "AlleySignPost", Vector3.new(1.6, 14, 1.6), alleySignCF * CFrame.new(x, 7, 0), E.Charcoal, Enum.Material.Metal) end
-    Kit.sign(alley, "DUMPSTER ALLEY", alleySignCF * CFrame.new(0, 13, 0), Vector3.new(30, 3, 0.4), E.Charcoal, E.Gold)
-    Kit.sign(alley, "START HERE", alleySignCF * CFrame.new(0, 10.3, -0.3), Vector3.new(9, 1.7, 0.2), E.Red, E.Cream)
+    Kit.sign(alley, "THRIFT OUTLET", alleySignCF * CFrame.new(0, 13, 0), Vector3.new(30, 3, 0.4), E.Charcoal, E.Gold)
+    Kit.sign(alley, "START HERE · $25 FINDS", alleySignCF * CFrame.new(0, 10.3, -0.3), Vector3.new(17, 1.7, 0.2), E.Red, E.Cream)
     for index = 0, 5 do for _, x in ipairs({-66,-80,-94}) do Kit.ball(alley, "AlleyLight", Vector3.new(1.2, 1.2, 1.2), CFrame.new(x, 11.5, -62 + index * 5), Color3.fromRGB(255, 233, 168), Enum.Material.Neon, false) end end
     local flea = Kit.model(sourcing, "FleaField")
     Kit.part(flea, "Field", Vector3.new(50, 0.2, 40), CFrame.new(-88, 0.05, -112), Color3.fromRGB(176, 214, 140), Enum.Material.Grass)
@@ -25096,21 +25271,21 @@ function World:exactSourcing()
     for _, z in ipairs({-118,-106}) do Kit.part(flea, "GatePost", Vector3.new(1, 7, 1), CFrame.new(-63, 3.5, z), E.Wood, Enum.Material.Wood) end
     Kit.part(flea, "GateHeader", Vector3.new(0.8, 0.8, 13), CFrame.new(-63, 7, -112), E.Wood, Enum.Material.Wood)
     local fieldSignCF = CFrame.lookAt(Vector3.new(-63, 0, -112), Vector3.new(0, 0, -112))
-    Kit.sign(flea, "FLEA FIELD", fieldSignCF * CFrame.new(0, 5.6, 0), Vector3.new(9, 2, 0.3), E.Coral, E.Cream)
+    Kit.sign(flea, "FASHION FLEA", fieldSignCF * CFrame.new(0, 5.6, 0), Vector3.new(11, 2, 0.3), E.Coral, E.Cream)
     for _, position in ipairs({{-106,-125},{-94,-121},{-82,-126},{-72,-119},{-104,-108},{-88,-112},{-74,-106},{-98,-97}}) do
         local spot = Kit.cylinder(flea, "FindSpot", 2.5, 0.8, CFrame.new(position[1], 0.5, position[2]), Color3.fromRGB(139, 104, 70), Enum.Material.Ground)
-        prompt(spot, "Search the flea field", "Source")
+        prompt(spot, "Browse the fashion flea", "Source")
         for _, angle in ipairs({0.785, -0.785}) do Kit.part(flea, "DigMarker", Vector3.new(2.8, 0.1, 0.5), CFrame.new(position[1], 0.95, position[2]) * CFrame.Angles(0, angle, 0), E.Red, nil, nil, false) end
     end
     for index, x in ipairs({-106,-92,-78}) do
         local tableTop = Kit.part(flea, "FleaTable", Vector3.new(7, 0.4, 3.4), CFrame.new(x, 3.4, -97), E.LightWood, Enum.Material.Wood)
-        prompt(tableTop, "Browse flea finds", "Source")
+        prompt(tableTop, "Browse vintage clothing", "Source")
         for _, offset in ipairs({-3, 3}) do Kit.part(flea, "TableLeg", Vector3.new(0.5, 3.2, 0.5), CFrame.new(x + offset, 1.8, -97), E.Wood, Enum.Material.Wood) end
         for item = 1, 4 do Kit.part(flea, "FleaFind", Vector3.new(0.9, 0.8 + item % 3 * 0.4, 0.9), CFrame.new(x - 2.3 + item, 4.3, -97), ({E.Purple,E.Cream,E.Red,E.Dark})[item]) end
     end
     local parcelCF = CFrame.new(78, 0, -35) * CFrame.Angles(0, math.pi / 2, 0)
     local parcelPost = exactShell(sourcing, "ParcelPost", parcelCF, 24, 12, 20, E.Soft, E.Teal, {{-2.5,2.5,0,8},{-9,-5,3,8},{5,9,3,8}})
-    Kit.sign(parcelPost, "PARCEL POST", parcelCF * CFrame.new(0, 10, -10.3), Vector3.new(16, 2.8, 0.25), E.Cream, E.Dark)
+    Kit.sign(parcelPost, "DONATION DROP", parcelCF * CFrame.new(0, 10, -10.3), Vector3.new(16, 2.8, 0.25), E.Cream, E.Dark)
     Kit.part(parcelPost, "RedAwning", Vector3.new(14, 0.4, 3.4), parcelCF * CFrame.new(0, 8.9, -11.7), E.Red, Enum.Material.Fabric)
     for _, x in ipairs({-11, 11}) do
         Kit.part(parcelPost, "MailboxPost", Vector3.new(0.5, 2, 0.5), parcelCF * CFrame.new(x, 1, -13), E.Charcoal, Enum.Material.Metal)
@@ -25125,21 +25300,28 @@ function World:exactSourcing()
     local sourceCF = CFrame.new(80, 0, -80) * CFrame.Angles(0, math.pi / 2, 0)
     local wholesale = exactShell(sourcing, "WholesaleSource", sourceCF, 28, 14, 24, E.Brick, E.Steel, {{-6,6,0,10},{-13,-10,5,10},{10,13,5,10}})
     Kit.cylinder(wholesale, "SteelHeader", 1, 12, sourceCF * CFrame.new(0, 10.8, -12.5) * CFrame.Angles(0, 0, math.pi / 2), E.Steel, Enum.Material.Metal)
-    Kit.sign(wholesale, "SOURCE", sourceCF * CFrame.new(0, 12.4, -12.3), Vector3.new(14, 3.4, 0.3), E.Cream, E.Red)
-    Kit.sign(wholesale, "WHOLESALE RESTOCK", sourceCF * CFrame.new(0, 9.6, -12.2), Vector3.new(14, 1.4, 0.2), E.Red, E.Cream)
-    local sourceCrate
-    for index = 0, 2 do
-        sourceCrate = Kit.part(wholesale, "WholesaleCrate", Vector3.new(4, 0.5, 4), sourceCF * CFrame.new(-12 + index * 4.4, 0.35, -16), E.LightWood, Enum.Material.Wood)
-        for level = 1, 2 + index % 2 do Kit.part(wholesale, "StockBox", Vector3.new(3.6, 1.6, 3.6), sourceCF * CFrame.new(-12 + index * 4.4, 0.6 + level * 1.65 - 0.8, -16), ({E.LightWood,E.Card,E.Wood})[(index + level) % 3 + 1]) end
+    Kit.sign(wholesale, "CURATED RACK", sourceCF * CFrame.new(0, 12.4, -12.3), Vector3.new(18, 3.4, 0.3), E.Cream, E.Red)
+    Kit.sign(wholesale, "PREMIUM FASHION FINDS", sourceCF * CFrame.new(0, 9.6, -12.2), Vector3.new(18, 1.4, 0.2), E.Red, E.Cream)
+    local browseRack
+    for rackIndex, rackX in ipairs({-10, -3.5, 3.5, 10}) do
+        local base = Kit.part(wholesale, "RackBase", Vector3.new(5.4, 0.3, 3.6), sourceCF * CFrame.new(rackX, 0.35, -16), E.LightWood, Enum.Material.Wood)
+        if rackIndex == 1 then browseRack = base end
+        for side = -1, 1, 2 do Kit.part(wholesale, "RackPost", Vector3.new(0.22, 6.4, 0.22), sourceCF * CFrame.new(rackX + side * 2.3, 3.5, -16), E.Gold, Enum.Material.Metal) end
+        Kit.part(wholesale, "RackRail", Vector3.new(5, 0.2, 0.2), sourceCF * CFrame.new(rackX, 6.4, -16), E.Gold, Enum.Material.Metal)
+        for garment = 0, 4 do
+            local gx = rackX - 1.8 + garment * 0.9
+            Kit.part(wholesale, "PremiumGarment", Vector3.new(0.72, 2.8 + garment % 2 * 0.5, 1.5), sourceCF * CFrame.new(gx, 4.65, -16),
+                ({E.Coral,E.Cream,E.Teal,E.Blue,E.Gold})[(garment + rackIndex) % 5 + 1], Enum.Material.Fabric, nil, false)
+            Kit.part(wholesale, "Hanger", Vector3.new(0.82, 0.08, 0.08), sourceCF * CFrame.new(gx, 6.2, -16), E.Steel, Enum.Material.Metal, nil, false)
+        end
     end
-    if sourceCrate then prompt(sourceCrate, "Browse wholesale lots", "Estate") end
-    Kit.cylinder(wholesale, "BlueBarrel", 1.2, 3, sourceCF * CFrame.new(12, 1.6, -15), E.Blue, Enum.Material.Metal)
-    Kit.cylinder(wholesale, "RedBarrel", 1.2, 3, sourceCF * CFrame.new(14.8, 1.6, -15.6), E.Red, Enum.Material.Metal)
-    Kit.part(wholesale, "ForkliftBody", Vector3.new(3, 2, 4.4), sourceCF * CFrame.new(6, 1.7, -17), Color3.fromRGB(240, 190, 40), Enum.Material.Metal)
-    Kit.part(wholesale, "ForkliftSeat", Vector3.new(3, 1.6, 1.2), sourceCF * CFrame.new(6, 2.2, -14.4), E.Charcoal)
-    Kit.part(wholesale, "ForkliftRoof", Vector3.new(3, 0.2, 2.8), sourceCF * CFrame.new(6, 5.8, -16.6), E.Charcoal, Enum.Material.Metal)
-    for _, x in ipairs({5.1, 6.9}) do Kit.part(wholesale, "ForkliftMast", Vector3.new(0.4, 6, 0.4), sourceCF * CFrame.new(x, 3.7, -19.4), E.Charcoal, Enum.Material.Metal) end
-    for level = 0, 3 do for item = 0, 6 do Kit.part(wholesale, "WholesaleStock", Vector3.new(1.3, 1.5, 1.3), sourceCF * CFrame.new(-12 + item * 2.1, 1.8 + level * 2.4, 10), ({E.Card,E.LightWood,E.Red,E.Teal})[(item + level) % 4 + 1]) end end
+    if browseRack then prompt(browseRack, "Browse premium clothing · $90", "Estate") end
+    local foldTable = Kit.part(wholesale, "FoldingTable", Vector3.new(12, 0.4, 4), sourceCF * CFrame.new(0, 3.2, 8), E.LightWood, Enum.Material.Wood)
+    for side = -1, 1, 2 do Kit.part(wholesale, "TableLeg", Vector3.new(0.35, 3, 0.35), sourceCF * CFrame.new(side * 5.2, 1.6, 8), E.Gold, Enum.Material.Metal) end
+    for stack = 0, 5 do for level = 0, 2 do
+        Kit.part(wholesale, "FoldedPremiumFashion", Vector3.new(1.65, 0.28, 2.4), sourceCF * CFrame.new(-4.5 + stack * 1.8, 3.55 + level * 0.3, 8),
+            ({E.Cream,E.Coral,E.Blue,E.Teal,E.Gold})[(stack + level) % 5 + 1], Enum.Material.Fabric, nil, false)
+    end end
 end
 function World:exactDistrict()
     local district = Kit.model(self.Root, "ExactPublicBuildings")
@@ -25204,10 +25386,10 @@ function World:exactDistrict()
         for _, legX in ipairs({-5.5,5.5}) do for _, legZ in ipairs({-1.3,1.3}) do
             Kit.part(restore, "WorkshopLeg", Vector3.new(0.5, 3.1, 0.5), restoreCF * CFrame.new(x + legX, 2, -2 + legZ), E.Wood, Enum.Material.Wood)
         end end
-        if x &lt; 0 then prompt(bench, "Restore a treasure", "Workbench") end
+        if x &lt; 0 then prompt(bench, "Freshen a fashion find", "Workbench") end
     end
     local restoreTrigger = Kit.part(restore, "RestoreInteraction", Vector3.new(6, 8, 1), restoreCF * CFrame.new(0, 4, -15), E.Cream, nil, nil, false); restoreTrigger.Transparency = 1
-    prompt(restoreTrigger, "Restore a treasure", "Workbench")
+    prompt(restoreTrigger, "Freshen a fashion find", "Workbench")
     local designerCF = CFrame.new(40, 0, -105) * CFrame.Angles(0, math.pi, 0)
     local designer = exactShell(district, "DesignerShowcase", designerCF, 36, 16, 28, E.Dark, E.Charcoal,
         {{-3,3,0,9.5},{-16,-6,2,11},{6,16,2,11}})
@@ -25433,7 +25615,7 @@ function World:exactEnvironment()
     local signpost = Kit.model(environment, "TownSignpost")
     Kit.cylinder(signpost, "Post", 0.45, 12, CFrame.new(10, 6, -74), E.Wood, Enum.Material.Wood)
     Kit.ball(signpost, "Finial", Vector3.new(1.4,1.4,1.4), CFrame.new(10,12.2,-74), E.Gold, Enum.Material.Metal, false)
-    local directions = {{"↑ THRIFT STREET",E.Teal,E.Cream},{"DUMPSTER ALLEY →",E.Charcoal,E.Gold},{"← PARCEL POST",E.Gold,Color3.fromRGB(58,42,0)},{"← SOURCE",E.Red,E.Cream},{"FLEA FIELD →",E.Coral,E.Cream}}
+    local directions = {{"↑ THRIFT STREET",E.Teal,E.Cream},{"THRIFT OUTLET →",E.Charcoal,E.Gold},{"← DONATION DROP",E.Gold,Color3.fromRGB(58,42,0)},{"← CURATED RACK",E.Red,E.Cream},{"FASHION FLEA →",E.Coral,E.Cream}}
     for index, direction in ipairs(directions) do
         Kit.sign(signpost, direction[1], CFrame.new(10, 12.55 - index * 1.55, -74.7), Vector3.new(8,1.3,0.2), direction[2], direction[3])
     end
@@ -26517,8 +26699,32 @@ function World:holdItem(player, definition, item, config)
     end
     return true
 end
-function World:customer(userId, name)
+function World:customer(userId, name, avatarUserId)
     local plot = self.Owners[userId]; if not plot then return end
+    if avatarUserId then
+        task.spawn(function()
+            local okDescription, description = pcall(Players.GetHumanoidDescriptionFromUserId, Players, avatarUserId)
+            if not okDescription or not self.Owners[userId] then self:customer(userId, name); return end
+            local okModel, avatar = pcall(Players.CreateHumanoidModelFromDescription, Players, description, Enum.HumanoidRigType.R15)
+            if not okModel or not avatar or not self.Owners[userId] then self:customer(userId, name); return end
+            self.CustomerSerial += 1
+            local id = self.CustomerSerial; avatar.Name = "FriendCustomer_" .. id; avatar.Parent = self.Root
+            pcall(avatar.ScaleTo, avatar, 0.82)
+            for _, child in ipairs(avatar:GetDescendants()) do
+                if child:IsA("BasePart") then child.Anchored = true; child.CanCollide = false; child.CanTouch = false; child.CanQuery = false
+                elseif child:IsA("Script") or child:IsA("LocalScript") then child:Destroy() end
+            end
+            local head = avatar:FindFirstChild("Head") or avatar:FindFirstChildWhichIsA("BasePart")
+            if head then
+                local bill = Instance.new("BillboardGui"); bill.Size = UDim2.fromOffset(210, 44); bill.StudsOffset = Vector3.new(0, 1.7, 0); bill.MaxDistance = 45; bill.Parent = head
+                local label = Instance.new("TextLabel"); label.Size = UDim2.fromScale(1, 1); label.BackgroundTransparency = 0.1; label.BackgroundColor3 = P.Paper
+                label.Text = name; label.TextColor3 = P.Ink; label.TextSize = 14; label.TextWrapped = true; label.Font = Enum.Font.GothamBold; label.Parent = bill
+                local corner = Instance.new("UICorner"); corner.CornerRadius = UDim.new(0, 8); corner.Parent = label
+            end
+            self.Customers[id] = {Model = avatar, Owner = userId, CF = plot.CF, Age = 0, Parts = {}, Id = id, Avatar = true}
+        end)
+        return
+    end
     self.CustomerSerial += 1
     local id = self.CustomerSerial
     local model = Kit.model(self.Root, "Customer_" .. id)
@@ -26570,13 +26776,16 @@ function World:animateCustomers(delta)
                 else x = math.sin((age - 4) / 13 * math.pi) * 1.5 end
                 local face = if age &gt; 17 then math.pi else 0
                 local base = npc.CF * CFrame.new(x, if moving then math.abs(math.sin(age * 8)) * 0.08 else 0, z) * CFrame.Angles(0, face, 0)
-                for name, entry in pairs(npc.Parts) do
-                    local swing = 0
-                    if moving then
-                        if name == "LeftLeg" or name == "LeftShoe" or name == "RightArm" or name == "RightHand" then swing = math.sin(age * 8) * 0.3
-                        elseif name == "RightLeg" or name == "RightShoe" or name == "LeftArm" or name == "LeftHand" then swing = -math.sin(age * 8) * 0.3 end
+                if npc.Avatar then npc.Model:PivotTo(base * CFrame.new(0, 3, 0))
+                else
+                    for name, entry in pairs(npc.Parts) do
+                        local swing = 0
+                        if moving then
+                            if name == "LeftLeg" or name == "LeftShoe" or name == "RightArm" or name == "RightHand" then swing = math.sin(age * 8) * 0.3
+                            elseif name == "RightLeg" or name == "RightShoe" or name == "LeftArm" or name == "LeftHand" then swing = -math.sin(age * 8) * 0.3 end
+                        end
+                        entry.Part.CFrame = base * entry.Offset * CFrame.Angles(swing, 0, 0)
                     end
-                    entry.Part.CFrame = base * entry.Offset * CFrame.Angles(swing, 0, 0)
                 end
             end
         end
@@ -26967,8 +27176,8 @@ ui:addMoreAction("Audio", "settings", function() open("Settings") end)
 ui.AuctionBar.Activated:Connect(function() open("Auction") end)
 
 local tutorialHints = {
-    [0]="Find your first treasure in Dumpster Alley", [1]="Open your bag and inspect the mystery find",
-    [2]="Restore it at your shop workbench", [3]="Place it on one of your displays",
+    [0]="Thrift your first fashion find at the outlet", [1]="Open your bag and inspect the clothing label",
+    [2]="Freshen it up at your shop workbench", [3]="Place it on one of your displays",
     [4]="Open Shop and welcome your first customer",
 }
 local function nextObjective()
@@ -27083,11 +27292,11 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Minigames = {}
 local descriptions = {
-    Scrub = {Title = "A fresh start", Instruction = "Hold and sweep across the grime. Let the original finish shine through.", Tool = "SOFT BRUSH"},
-    Polish = {Title = "Find the shine", Instruction = "Trace the numbered shine trail, starting at 1. Slow, smooth strokes work best.", Tool = "POLISHING CLOTH"},
-    Rewire = {Title = "Bring it back to life", Instruction = "Join matching wire symbols. Drag between a pair, or tap each end.", Tool = "PRECISION PLIERS"},
-    Repaint = {Title = "A new coat of character", Instruction = "Choose the requested paint, then brush across every section.", Tool = "DETAIL BRUSH"},
-    Assemble = {Title = "Piece by lovely piece", Instruction = "Drag a piece to its matching outline, or select it and tap the outline.", Tool = "WORKSHOP KIT"},
+    Scrub = {Title = "Wash away the wear", Instruction = "Hold and sweep across every stained patch until the fabric looks fresh.", Tool = "GARMENT BRUSH"},
+    Polish = {Title = "Steam every crease", Instruction = "Trace the numbered steam path, starting at 1. Slow, smooth strokes work best.", Tool = "HAND STEAMER"},
+    Rewire = {Title = "Stitch the seams", Instruction = "Join matching thread symbols. Drag between a pair, or tap each end.", Tool = "SEWING KIT"},
+    Repaint = {Title = "A fresh color", Instruction = "Choose the requested dye, then brush across every fabric section.", Tool = "FABRIC DYE"},
+    Assemble = {Title = "Mend it piece by piece", Instruction = "Drag a pattern piece to its matching outline, or select it and tap the outline.", Tool = "MENDING KIT"},
 }
 local paintColors = {
     Color3.fromRGB(210, 141, 103), Color3.fromRGB(127, 174, 145), Color3.fromRGB(121, 158, 199),
@@ -27725,11 +27934,11 @@ function Minigames.progress(session, data, UI)
                 if session.Active and style.Stroke.Parent then style.Stroke.Color = old end
             end)
         end
-        session.Status.Text = if session.Kind == "Repaint" then "Try the requested paint: " .. session.Config.Styles[session.Challenge.RequiredPalette]
-            elseif session.Kind == "Polish" then "Follow the highlighted number. You can still improve this find."
-            elseif session.Kind == "Rewire" then "Those symbols differ. Pick a matching pair."
-            elseif session.Kind == "Assemble" then "That piece belongs in another outline. Match its number."
-            else "Sweep across a patch you have not cleaned yet."
+        session.Status.Text = if session.Kind == "Repaint" then "Try the requested dye: " .. session.Config.Styles[session.Challenge.RequiredPalette]
+            elseif session.Kind == "Polish" then "Follow the highlighted steam mark. You can still improve this piece."
+            elseif session.Kind == "Rewire" then "Those thread symbols differ. Pick a matching pair."
+            elseif session.Kind == "Assemble" then "That pattern piece belongs in another outline. Match its number."
+            else "Sweep across a fabric patch you have not cleaned yet."
     end
 end
 
@@ -27825,7 +28034,7 @@ function Pages:itemTile(parent, item, actionText, callback)
     title.Font = Enum.Font.GothamBold; title.Position = UDim2.fromOffset(12, 147)
     title.Size = UDim2.new(1, -24, 0, 39); title.AutomaticSize = Enum.AutomaticSize.None
     title.TextYAlignment = Enum.TextYAlignment.Top
-    local subtitle = if item.Inspected then Config.RarityIcons[item.Rarity] .. " " .. Config.Rarities[item.Rarity] .. " · " .. money(item.Value) else "A hidden treasure awaits"
+    local subtitle = if item.Inspected then Config.RarityIcons[item.Rarity] .. " " .. Config.Rarities[item.Rarity] .. " · " .. money(item.Value) else "A mystery label awaits"
     local color = if item.Inspected then Color3.fromHex(Config.RarityColors[item.Rarity]):Lerp(UI.Colors.Ink, 0.3) else UI.Colors.Muted
     local detail = UI.label(tile, subtitle, 13, color); detail.Position = UDim2.fromOffset(12, 185)
     detail.Size = UDim2.new(1, -24, 0, 20); detail.AutomaticSize = Enum.AutomaticSize.None; detail.TextTruncate = Enum.TextTruncate.AtEnd; detail.TextWrapped = false
@@ -27850,6 +28059,7 @@ function Pages:itemSummary(parent, item, height)
         UI.pill(tags, Config.Conditions[item.Condition], UI.Colors.Teal)
         UI.label(parent, definition.Name, 24).Font = Enum.Font.GothamBold
         UI.label(parent, (item.Style or definition.Style) .. " • " .. definition.Category, 15, UI.Colors.Muted)
+        UI.eyebrow(parent, "Curated from the Roblox catalog · ID " .. definition.CatalogAssetId)
     else UI.label(parent, "Your mystery " .. definition.Category, 23).Font = Enum.Font.GothamBold end
 end
 function Pages:guideButton(parent, location, label)
@@ -27898,8 +28108,8 @@ function Pages:inventory(context, mode)
     end
     UI.eyebrow(header, #items .. " finds • " .. #state.Inventory .. "/" .. Config.InventoryLimit .. " in your bag")
     if #items == 0 then
-        local empty = UI.hero(self.UI.Content, "Your next story", "Something wonderful is waiting.", if mode == "Workbench" then "Inspect a find and take it off display before restoring it." else "Try a different filter, or explore Dumpster Alley for a new find.")
-        self:guideButton(empty, "Source", "Head to Dumpster Alley"); return
+        local empty = UI.hero(self.UI.Content, "Your next outfit", "A great fashion find is waiting.", if mode == "Workbench" then "Inspect a find and take it off display before freshening it up." else "Try a different filter, or browse the Thrift Outlet for a new find.")
+        self:guideButton(empty, "Source", "Head to the Thrift Outlet"); return
     end
     local perPage = 8
     local pageCount = math.ceil(#items / perPage); self.BagPage = math.clamp(self.BagPage, 1, pageCount)
@@ -27943,7 +28153,7 @@ function Pages:itemPage(context)
     else
         self:button(frame, "Hold and show off this find", "Hold", {Uid = item.Uid}, true)
         if item.Condition &lt; 5 then self:nav(frame, "Restore at your workbench", "Restore", {Uid = item.Uid}, false)
-        else UI.disabled(frame, "MINT  |  Beautifully restored") end
+        else UI.disabled(frame, "LIKE NEW  |  Freshly restored") end
         self:nav(frame, "Display in your shop", "Slots", {Uid = item.Uid})
         if self.State.Market then self:nav(frame, "List in the player market", "ListingEditor", {Uid = item.Uid}) end
     end
@@ -27952,9 +28162,9 @@ end
 function Pages:sourcePage(source)
     local state, tuning = self.State, Config.Sources[source]
     local copy = {
-        Dumpster = {"Everyday treasure", "Someone's junk. Your next great find.", "Free finds, fresh possibilities. There is always another story in the alley."},
-        Estate = {"Wholesale Source", "Restock with better mystery lots.", "Browse wholesale finds with improved rare-item odds. Weekend sourcing brings an extra surprise."},
-        Delivery = {"A daily little delight", "A parcel with your name on it.", "Your free daily find is ready to unwrap. Come back tomorrow for another."},
+        Dumpster = {"Thrift Outlet", "Hunt the racks for your next fashion flip.", "Pay $25 to thrift one mystery piece. Read its label, freshen it up, then style your shop and sell it."},
+        Estate = {"Curated Rack", "Restock with premium fashion finds.", "Browse a curated rack with improved rare-item odds. Weekend thrifting brings an extra surprise."},
+        Delivery = {"Daily Donation Bag", "A donated fashion find with your name on it.", "Your free daily clothing find is ready to open. Come back tomorrow for another."},
     }
     local words = copy[source]
     local frame = UI.hero(self.UI.Content, words[1], words[2], words[3], if source == "Estate" then UI.Colors.Rose else UI.Colors.Teal)
@@ -27968,18 +28178,18 @@ function Pages:sourcePage(source)
     elseif state.AvailableCash &lt; tuning.Cost then
         UI.disabled(info, "You need " .. money(tuning.Cost) .. " available cash")
     else
-        UI.button(info, if source == "Delivery" then "Open today's parcel" elseif source == "Dumpster" then "Search for a treasure" else "Choose a mystery lot · " .. money(tuning.Cost), function()
+        UI.button(info, if source == "Delivery" then "Open today's donation bag" elseif source == "Dumpster" then "Thrift a mystery piece · " .. money(tuning.Cost) else "Browse the curated rack · " .. money(tuning.Cost), function()
             self.UI:searchTreasure(source, function() self.Send("Source", {Source = source}) end)
         end)
     end
-    self:guideButton(info, if source == "Dumpster" then "Source" else source, "Find this spot in town")
+    self:guideButton(info, if source == "Dumpster" then "Source" else source, "Find this fashion spot in town")
     local odds = self:card("A little surprise, with clear odds")
     for index, chance in ipairs(tuning.Weights) do
         local line = UI.label(odds, Config.RarityIcons[index] .. " " .. Config.Rarities[index] .. "  ·  " .. chance .. "%", 16)
         line.TextColor3 = Color3.fromHex(Config.RarityColors[index]):Lerp(UI.Colors.Ink, 0.35)
         UI.progress(odds, chance / 100, Color3.fromHex(Config.RarityColors[index]))
     end
-    if source == "Estate" then UI.label(odds, "Weekend bonus: 8% of finds move up one rarity, up to Legendary. In-game cash only.", 14, UI.Colors.Muted) end
+    if source == "Estate" then UI.label(odds, "Weekend bonus: 8% of pieces move up one rarity, up to Legendary. In-game cash only.", 14, UI.Colors.Muted) end
     self:nav(frame, "Look in your bag", "Bag")
 end
 function Pages:restorePage(context)
@@ -27990,16 +28200,16 @@ function Pages:restorePage(context)
     UI.label(frame, "Work at your own shop bench. Every attempt improves the item, and careful work gives a bigger condition boost.", 16, UI.Colors.Muted)
     self:guideButton(frame, "Workbench", "Guide me to my workbench")
     local techniques = {
-        {"Scrub", "S", "Swipe away the grime", "Relaxing, generous and satisfying."},
-        {"Polish", "P", "Trace a clean shine", "Follow the path with a steady hand."},
-        {"Rewire", "W", "Bring it back to life", "Match wire colors and symbols."},
-        {"Repaint", "R", "Make it your own", "Choose paint, fill the surface, change its style."},
-        {"Assemble", "A", "Put the story together", "Fit the missing pieces into their outlines."},
+        {"Scrub", "Wash", "W", "Lift the stains", "Sweep every fabric section clean."},
+        {"Polish", "Steam", "S", "Smooth every crease", "Follow the steaming path with a steady hand."},
+        {"Rewire", "Stitch", "T", "Repair the seams", "Match thread colors and symbols."},
+        {"Repaint", "Dye", "D", "Make it your own", "Choose a dye, fill the fabric, and change its style."},
+        {"Assemble", "Mend", "M", "Piece it back together", "Fit the missing pattern pieces into their outlines."},
     }
     for _, technique in ipairs(techniques) do
-        local choice = self:card(technique[2] .. " " .. technique[1])
-        UI.label(choice, technique[3], 17); UI.label(choice, technique[4], 14, UI.Colors.Muted)
-        self:button(choice, "Start " .. string.lower(technique[1]) .. " · 8–20 sec", "BeginRestore", {Uid = item.Uid, Kind = technique[1]})
+        local choice = self:card(technique[3] .. " " .. technique[2])
+        UI.label(choice, technique[4], 17); UI.label(choice, technique[5], 14, UI.Colors.Muted)
+        self:button(choice, "Start " .. string.lower(technique[2]) .. " · 8–20 sec", "BeginRestore", {Uid = item.Uid, Kind = technique[1]})
     end
 end
 function Pages:slotsPage(context)
@@ -28034,7 +28244,7 @@ end
 function Pages:offerPage()
     local offer = self.State.Offer
     if not offer then
-        local gone = UI.hero(self.UI.Content, "This customer has moved on", "Another treasure will catch someone's eye soon", "Keep your displays stocked and a new offer will arrive.")
+        local gone = UI.hero(self.UI.Content, "This customer has moved on", "Another outfit will catch someone's eye soon", "Keep your clothing displays stocked and a new offer will arrive.")
         return self:nav(gone, "Back to your shop", "Shop")
     end
     local welcome = UI.hero(self.UI.Content, "A customer found something they love", offer.Customer, "Their offer is ready now — no trip to the counter required.")
@@ -28167,7 +28377,7 @@ end
 function Pages:auctionPage()
     local auction = self.State.Auction
     if not auction then
-        local hero = UI.hero(self.UI.Content, "The gavel rests", "The next treasure is on its way", "Explore the street while the auctioneer prepares a special find.")
+        local hero = UI.hero(self.UI.Content, "The gavel rests", "The next fashion lot is on its way", "Explore the street while the auctioneer prepares a special piece.")
         self:timer(hero, "Next auction in ", self.State.NextAuction)
         self:guideButton(hero, "Auction", "Walk to the auction house")
         return
@@ -28375,7 +28585,7 @@ function Pages:adminPage()
 
     local itemCard = self:card("Grant a collectible")
     UI.label(itemCard, "Search by name, category, or ID. Leave blank for a random item.", 14, UI.Colors.Muted)
-    local query = UI.input(itemCard, "Example: jukebox, chair, radios", draft.Query)
+    local query = UI.input(itemCard, "Example: jacket, shoes, t-shirt", draft.Query)
     query.FocusLost:Connect(function() draft.Query = query.Text end)
     local rarityButton = UI.button(itemCard, Config.RarityIcons[draft.Rarity] .. "  Rarity: " .. Config.Rarities[draft.Rarity] .. "  • tap to change", function()
         draft.Query = query.Text; draft.Target = target.Text; draft.Rarity = draft.Rarity % 5 + 1; self.Open("Admin")
@@ -28468,8 +28678,8 @@ function Pages:settingsPage()
 end
 
 function Pages:townPage()
-    local hero = UI.hero(self.UI.Content, "Welcome to Thrift Street", "Every treasure deserves a second chance", "Today's favorite style is " .. self.State.Demand .. ", worth 20% more when it finds the right home.")
-    for _, link in ipairs({{"Dumpster Alley","Source"},{"Wholesale Source","Estate"},{"Parcel Post","Delivery"},{"Auction House","Auction"},{"Market","Market"},{"Designer Showcase","Showcase"},{"Cosmetic Store","Boutique"},{"Visit neighbors","Visit"},{"Settings","Settings"}}) do self:nav(hero,link[1],link[2]) end
+    local hero = UI.hero(self.UI.Content, "Welcome to Thrift Street", "Every outfit deserves a second chance", "Today's favorite style is " .. self.State.Demand .. ", worth 20% more when it finds the right home.")
+    for _, link in ipairs({{"Thrift Outlet","Source"},{"Curated Rack","Estate"},{"Donation Drop","Delivery"},{"Auction House","Auction"},{"Market","Market"},{"Designer Showcase","Showcase"},{"Cosmetic Store","Boutique"},{"Visit neighbors","Visit"},{"Settings","Settings"}}) do self:nav(hero,link[1],link[2]) end
     if self.State.IsAdmin then self:nav(hero, "Admin control room", "Admin", nil, false) end
 end
 
@@ -28802,6 +29012,18 @@ function UI.preview(parent, definition, item, height, hidden)
         label.Size = UDim2.fromScale(1, 1); label.AutomaticSize = Enum.AutomaticSize.None; label.TextXAlignment = Enum.TextXAlignment.Center
         warn("Item preview failed: " .. tostring(model))
     end
+    if definition and definition.CatalogAssetId then
+        local catalog = Instance.new("ImageLabel"); catalog.Name = "CatalogReference"
+        catalog.AnchorPoint = Vector2.new(1, 0); catalog.Position = UDim2.new(1, -8, 0, 8)
+        catalog.Size = UDim2.fromOffset(62, 62); catalog.BackgroundColor3 = UI.Colors.Panel
+        catalog.BackgroundTransparency = 0.08; catalog.BorderSizePixel = 0; catalog.ZIndex = 4
+        catalog.Image = "rbxthumb://type=" .. (definition.CatalogItemType or "Asset") .. "&amp;id=" .. definition.CatalogAssetId .. "&amp;w=150&amp;h=150"
+        catalog.ScaleType = Enum.ScaleType.Crop; catalog.Parent = viewport; UI.corner(catalog, 9); UI.stroke(catalog, UI.Colors.White, 1, 0.2)
+        local tag = UI.label(viewport, "ROBLOX PICK", 8, UI.Colors.White); tag.ZIndex = 5
+        tag.AnchorPoint = Vector2.new(1, 0); tag.Position = UDim2.new(1, -8, 0, 70); tag.Size = UDim2.fromOffset(62, 14)
+        tag.AutomaticSize = Enum.AutomaticSize.None; tag.TextXAlignment = Enum.TextXAlignment.Center
+        tag.BackgroundColor3 = UI.Colors.Teal; tag.BackgroundTransparency = 0.05; UI.corner(tag, 5)
+    end
     return viewport
 end
 function UI.new()
@@ -28839,7 +29061,7 @@ function UI.new()
     UI.vectorIcon(objective, "arrow", UI.Colors.White, UDim2.fromOffset(23, 16), 24, 3)
     local objectiveTitle = UI.label(objective, "OBJECTIVE | 0/1", 9, Color3.fromRGB(187, 235, 226)); objectiveTitle.Font = Enum.Font.GothamBold; self.ObjectiveTitle = objectiveTitle
     objectiveTitle.Position = UDim2.fromOffset(36, 6); objectiveTitle.Size = UDim2.new(1, -45, 0, 14); objectiveTitle.AutomaticSize = Enum.AutomaticSize.None
-    self.Hint = UI.label(objective, "Find your first treasure", 12, UI.Colors.White); self.Hint.Font = Enum.Font.GothamBold
+    self.Hint = UI.label(objective, "Thrift your first fashion find", 12, UI.Colors.White); self.Hint.Font = Enum.Font.GothamBold
     self.Hint.Position = UDim2.fromOffset(36, 18); self.Hint.Size = UDim2.new(1, -45, 0, 34); self.Hint.AutomaticSize = Enum.AutomaticSize.None
     self.Hint.TextTruncate = Enum.TextTruncate.AtEnd; self.Hint.TextWrapped = true
     local stats = Instance.new("Frame"); stats.Name = "Stats"; stats.AnchorPoint = Vector2.new(1, 0); stats.Position = UDim2.new(1, 0, 0, 0)
@@ -29065,7 +29287,7 @@ function UI:searchTreasure(source, callback)
     local header = block(panel, "Header", UDim2.new(1, 0, 0, 66), UDim2.fromOffset(0, 0), UI.Colors.Teal, baseZ + 2)
     local heading = UI.label(header, "Source", 25, UI.Colors.Cream); heading.Font = Enum.Font.GothamBold
     heading.Position = UDim2.fromOffset(20, 8); heading.Size = UDim2.new(1, -40, 0, 30); heading.AutomaticSize = Enum.AutomaticSize.None; heading.ZIndex = baseZ + 3
-    local sourceCopy = if source == "Delivery" then "PARCEL POST | DAILY DELIVERY" elseif source == "Estate" then "THRIFT STREET | WHOLESALE" else "DUMPSTER ALLEY | FREE FINDS"
+    local sourceCopy = if source == "Delivery" then "DONATION DROP | DAILY BAG" elseif source == "Estate" then "CURATED RACK | PREMIUM FINDS" else "THRIFT OUTLET | $25 PER FIND"
     local eyebrow = UI.label(header, sourceCopy, 11, UI.Colors.Cream); eyebrow.Font = Enum.Font.GothamBold
     eyebrow.TextTransparency = 0.08; eyebrow.Position = UDim2.fromOffset(20, 38); eyebrow.Size = UDim2.new(1, -40, 0, 17); eyebrow.AutomaticSize = Enum.AutomaticSize.None; eyebrow.ZIndex = baseZ + 3
 
@@ -29083,7 +29305,7 @@ function UI:searchTreasure(source, callback)
     local lampGlow = block(stage, "LampGlow", UDim2.fromOffset(58, 58), UDim2.new(1, -84, 0, 6), Color3.fromRGB(255, 233, 168), baseZ + 3)
     lampGlow.BackgroundTransparency = 0.76; UI.corner(lampGlow, 29)
 
-    local dumpster = Instance.new("Frame"); dumpster.Name = "Dumpster"; dumpster.AnchorPoint = Vector2.new(0.5, 1)
+    local dumpster = Instance.new("Frame"); dumpster.Name = "ClothingBin"; dumpster.AnchorPoint = Vector2.new(0.5, 1)
     dumpster.Position = UDim2.new(0.5, 0, 1, -48); dumpster.Size = UDim2.fromOffset(190, 128)
     dumpster.BackgroundTransparency = 1; dumpster.ZIndex = baseZ + 5; dumpster.Parent = stage
     local body = block(dumpster, "Body", UDim2.fromOffset(190, 92), UDim2.fromOffset(0, 36), Color3.fromRGB(62, 142, 90), baseZ + 6)
@@ -29107,7 +29329,7 @@ function UI:searchTreasure(source, callback)
 
     local flash = block(stage, "RevealFlash", UDim2.fromScale(1, 1), UDim2.fromScale(0, 0), UI.Colors.White, baseZ + 18)
     flash.BackgroundTransparency = 1
-    local status = UI.label(panel, "Digging through the bags...", 17, UI.Colors.Ink); status.Font = Enum.Font.GothamBold
+    local status = UI.label(panel, "Checking labels and sorting the rack...", 17, UI.Colors.Ink); status.Font = Enum.Font.GothamBold
     status.Position = UDim2.new(0, 18, 1, -56); status.Size = UDim2.new(1, -36, 0, 26); status.AutomaticSize = Enum.AutomaticSize.None
     status.TextXAlignment = Enum.TextXAlignment.Center; status.ZIndex = baseZ + 4
     local track = block(panel, "SearchProgress", UDim2.new(1, -40, 0, 7), UDim2.new(0, 20, 1, -18), Color3.fromRGB(218, 225, 211), baseZ + 3); UI.corner(track, 5)
@@ -29138,7 +29360,7 @@ function UI:searchTreasure(source, callback)
     end
 
     task.spawn(function()
-        local messages = {"Digging through the bags...", "Checking the corners...", "Something shiny..."}
+        local messages = {"Sorting through the rack...", "Checking size and condition...", "This label looks special..."}
         for step = 1, 21 do
             if not layer.Parent then self.Searching = false; return end
             if step == 8 then status.Text = messages[2] elseif step == 15 then status.Text = messages[3] end
@@ -29155,7 +29377,7 @@ function UI:searchTreasure(source, callback)
             task.wait(0.11)
         end
         dumpster.Rotation = 0; dumpster.Position = UDim2.new(0.5, 0, 1, -48); lid.Rotation = -58
-        status.Text = "You found something!"; fill.BackgroundColor3 = UI.Colors.Gold
+        status.Text = "You thrifted a fashion find!"; fill.BackgroundColor3 = UI.Colors.Gold
         if self.Effects then
             flash.BackgroundTransparency = 0.12; tween(flash, {BackgroundTransparency = 1}, 0.42); burst()
             tween(dumpster, {Position = UDim2.new(0.5, 0, 1, -12)}, 0.42)
@@ -29163,7 +29385,7 @@ function UI:searchTreasure(source, callback)
         task.wait(if self.Effects then 0.42 else 0.06)
         self.Searching = false
         local ok, message = pcall(callback)
-        if not ok then warn("Treasure search callback failed: " .. tostring(message)) end
+        if not ok then warn("Thrift search callback failed: " .. tostring(message)) end
         if layer.Parent then
             tween(layer, {BackgroundTransparency = 1}, 0.16); tween(panelScale, {Scale = 0.96}, 0.16)
             task.wait(0.16); layer:Destroy()

@@ -69,8 +69,8 @@ ui:addMoreAction("Audio", "settings", function() open("Settings") end)
 ui.AuctionBar.Activated:Connect(function() open("Auction") end)
 
 local tutorialHints = {
-    [0]="Find your first treasure in Dumpster Alley", [1]="Open your bag and inspect the mystery find",
-    [2]="Restore it at your shop workbench", [3]="Place it on one of your displays",
+    [0]="Thrift your first fashion find at the outlet", [1]="Open your bag and inspect the clothing label",
+    [2]="Freshen it up at your shop workbench", [3]="Place it on one of your displays",
     [4]="Open Shop and welcome your first customer",
 }
 local function nextObjective()

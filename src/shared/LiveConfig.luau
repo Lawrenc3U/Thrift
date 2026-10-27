@@ -19,7 +19,7 @@ local LiveConfig = {
     Events = {
         {
             Id = "harvest_2026", Name = "Harvest of Second Chances",
-            Description = "Bring forgotten treasures back to life for a warm autumn window display.",
+            Description = "Bring vintage outfits back to life for a warm autumn window display.",
             Starts = 1792108800, Ends = 1794182400, -- Oct 16 through Nov 8, 2026 UTC
             Goal = {Restored = 15, Sold = 8},
             Reward = {Title = "HarvestCurator", Theme = "Retro", Decoration = "Plant"},
@@ -59,7 +59,7 @@ local LiveConfig = {
         {
             Key = "neon_night_market", Id = 0, Order = 2, Badge = "BOLD STYLE", SuggestedPrice = 79,
             Name = "Neon Night Market", Accent = "#657FDB", PreviewTheme = "NeonNight",
-            Description = "Turn your shop into a vivid after-dark treasure stop.",
+            Description = "Turn your shop into a vivid after-dark fashion stop.",
             Benefits = {"Exclusive Neon Night shop theme", "Good Finds neon decoration", "Neon Curator title"},
             Reward = {Themes = {"NeonNight"}, Decorations = {"Neon"}, Titles = {"NeonCurator"}},
         },

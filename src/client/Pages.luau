@@ -73,7 +73,7 @@ function Pages:itemTile(parent, item, actionText, callback)
     title.Font = Enum.Font.GothamBold; title.Position = UDim2.fromOffset(12, 147)
     title.Size = UDim2.new(1, -24, 0, 39); title.AutomaticSize = Enum.AutomaticSize.None
     title.TextYAlignment = Enum.TextYAlignment.Top
-    local subtitle = if item.Inspected then Config.RarityIcons[item.Rarity] .. " " .. Config.Rarities[item.Rarity] .. " · " .. money(item.Value) else "A hidden treasure awaits"
+    local subtitle = if item.Inspected then Config.RarityIcons[item.Rarity] .. " " .. Config.Rarities[item.Rarity] .. " · " .. money(item.Value) else "A mystery label awaits"
     local color = if item.Inspected then Color3.fromHex(Config.RarityColors[item.Rarity]):Lerp(UI.Colors.Ink, 0.3) else UI.Colors.Muted
     local detail = UI.label(tile, subtitle, 13, color); detail.Position = UDim2.fromOffset(12, 185)
     detail.Size = UDim2.new(1, -24, 0, 20); detail.AutomaticSize = Enum.AutomaticSize.None; detail.TextTruncate = Enum.TextTruncate.AtEnd; detail.TextWrapped = false
@@ -98,6 +98,7 @@ function Pages:itemSummary(parent, item, height)
         UI.pill(tags, Config.Conditions[item.Condition], UI.Colors.Teal)
         UI.label(parent, definition.Name, 24).Font = Enum.Font.GothamBold
         UI.label(parent, (item.Style or definition.Style) .. " • " .. definition.Category, 15, UI.Colors.Muted)
+        UI.eyebrow(parent, "Curated from the Roblox catalog · ID " .. definition.CatalogAssetId)
     else UI.label(parent, "Your mystery " .. definition.Category, 23).Font = Enum.Font.GothamBold end
 end
 function Pages:guideButton(parent, location, label)
@@ -146,8 +147,8 @@ function Pages:inventory(context, mode)
     end
     UI.eyebrow(header, #items .. " finds • " .. #state.Inventory .. "/" .. Config.InventoryLimit .. " in your bag")
     if #items == 0 then
-        local empty = UI.hero(self.UI.Content, "Your next story", "Something wonderful is waiting.", if mode == "Workbench" then "Inspect a find and take it off display before restoring it." else "Try a different filter, or explore Dumpster Alley for a new find.")
-        self:guideButton(empty, "Source", "Head to Dumpster Alley"); return
+        local empty = UI.hero(self.UI.Content, "Your next outfit", "A great fashion find is waiting.", if mode == "Workbench" then "Inspect a find and take it off display before freshening it up." else "Try a different filter, or browse the Thrift Outlet for a new find.")
+        self:guideButton(empty, "Source", "Head to the Thrift Outlet"); return
     end
     local perPage = 8
     local pageCount = math.ceil(#items / perPage); self.BagPage = math.clamp(self.BagPage, 1, pageCount)
@@ -191,7 +192,7 @@ function Pages:itemPage(context)
     else
         self:button(frame, "Hold and show off this find", "Hold", {Uid = item.Uid}, true)
         if item.Condition < 5 then self:nav(frame, "Restore at your workbench", "Restore", {Uid = item.Uid}, false)
-        else UI.disabled(frame, "MINT  |  Beautifully restored") end
+        else UI.disabled(frame, "LIKE NEW  |  Freshly restored") end
         self:nav(frame, "Display in your shop", "Slots", {Uid = item.Uid})
         if self.State.Market then self:nav(frame, "List in the player market", "ListingEditor", {Uid = item.Uid}) end
     end
@@ -200,9 +201,9 @@ end
 function Pages:sourcePage(source)
     local state, tuning = self.State, Config.Sources[source]
     local copy = {
-        Dumpster = {"Everyday treasure", "Someone's junk. Your next great find.", "Free finds, fresh possibilities. There is always another story in the alley."},
-        Estate = {"Wholesale Source", "Restock with better mystery lots.", "Browse wholesale finds with improved rare-item odds. Weekend sourcing brings an extra surprise."},
-        Delivery = {"A daily little delight", "A parcel with your name on it.", "Your free daily find is ready to unwrap. Come back tomorrow for another."},
+        Dumpster = {"Thrift Outlet", "Hunt the racks for your next fashion flip.", "Pay $25 to thrift one mystery piece. Read its label, freshen it up, then style your shop and sell it."},
+        Estate = {"Curated Rack", "Restock with premium fashion finds.", "Browse a curated rack with improved rare-item odds. Weekend thrifting brings an extra surprise."},
+        Delivery = {"Daily Donation Bag", "A donated fashion find with your name on it.", "Your free daily clothing find is ready to open. Come back tomorrow for another."},
     }
     local words = copy[source]
     local frame = UI.hero(self.UI.Content, words[1], words[2], words[3], if source == "Estate" then UI.Colors.Rose else UI.Colors.Teal)
@@ -216,18 +217,18 @@ function Pages:sourcePage(source)
     elseif state.AvailableCash < tuning.Cost then
         UI.disabled(info, "You need " .. money(tuning.Cost) .. " available cash")
     else
-        UI.button(info, if source == "Delivery" then "Open today's parcel" elseif source == "Dumpster" then "Search for a treasure" else "Choose a mystery lot · " .. money(tuning.Cost), function()
+        UI.button(info, if source == "Delivery" then "Open today's donation bag" elseif source == "Dumpster" then "Thrift a mystery piece · " .. money(tuning.Cost) else "Browse the curated rack · " .. money(tuning.Cost), function()
             self.UI:searchTreasure(source, function() self.Send("Source", {Source = source}) end)
         end)
     end
-    self:guideButton(info, if source == "Dumpster" then "Source" else source, "Find this spot in town")
+    self:guideButton(info, if source == "Dumpster" then "Source" else source, "Find this fashion spot in town")
     local odds = self:card("A little surprise, with clear odds")
     for index, chance in ipairs(tuning.Weights) do
         local line = UI.label(odds, Config.RarityIcons[index] .. " " .. Config.Rarities[index] .. "  ·  " .. chance .. "%", 16)
         line.TextColor3 = Color3.fromHex(Config.RarityColors[index]):Lerp(UI.Colors.Ink, 0.35)
         UI.progress(odds, chance / 100, Color3.fromHex(Config.RarityColors[index]))
     end
-    if source == "Estate" then UI.label(odds, "Weekend bonus: 8% of finds move up one rarity, up to Legendary. In-game cash only.", 14, UI.Colors.Muted) end
+    if source == "Estate" then UI.label(odds, "Weekend bonus: 8% of pieces move up one rarity, up to Legendary. In-game cash only.", 14, UI.Colors.Muted) end
     self:nav(frame, "Look in your bag", "Bag")
 end
 function Pages:restorePage(context)
@@ -238,16 +239,16 @@ function Pages:restorePage(context)
     UI.label(frame, "Work at your own shop bench. Every attempt improves the item, and careful work gives a bigger condition boost.", 16, UI.Colors.Muted)
     self:guideButton(frame, "Workbench", "Guide me to my workbench")
     local techniques = {
-        {"Scrub", "S", "Swipe away the grime", "Relaxing, generous and satisfying."},
-        {"Polish", "P", "Trace a clean shine", "Follow the path with a steady hand."},
-        {"Rewire", "W", "Bring it back to life", "Match wire colors and symbols."},
-        {"Repaint", "R", "Make it your own", "Choose paint, fill the surface, change its style."},
-        {"Assemble", "A", "Put the story together", "Fit the missing pieces into their outlines."},
+        {"Scrub", "Wash", "W", "Lift the stains", "Sweep every fabric section clean."},
+        {"Polish", "Steam", "S", "Smooth every crease", "Follow the steaming path with a steady hand."},
+        {"Rewire", "Stitch", "T", "Repair the seams", "Match thread colors and symbols."},
+        {"Repaint", "Dye", "D", "Make it your own", "Choose a dye, fill the fabric, and change its style."},
+        {"Assemble", "Mend", "M", "Piece it back together", "Fit the missing pattern pieces into their outlines."},
     }
     for _, technique in ipairs(techniques) do
-        local choice = self:card(technique[2] .. " " .. technique[1])
-        UI.label(choice, technique[3], 17); UI.label(choice, technique[4], 14, UI.Colors.Muted)
-        self:button(choice, "Start " .. string.lower(technique[1]) .. " · 8–20 sec", "BeginRestore", {Uid = item.Uid, Kind = technique[1]})
+        local choice = self:card(technique[3] .. " " .. technique[2])
+        UI.label(choice, technique[4], 17); UI.label(choice, technique[5], 14, UI.Colors.Muted)
+        self:button(choice, "Start " .. string.lower(technique[2]) .. " · 8–20 sec", "BeginRestore", {Uid = item.Uid, Kind = technique[1]})
     end
 end
 function Pages:slotsPage(context)
@@ -282,7 +283,7 @@ end
 function Pages:offerPage()
     local offer = self.State.Offer
     if not offer then
-        local gone = UI.hero(self.UI.Content, "This customer has moved on", "Another treasure will catch someone's eye soon", "Keep your displays stocked and a new offer will arrive.")
+        local gone = UI.hero(self.UI.Content, "This customer has moved on", "Another outfit will catch someone's eye soon", "Keep your clothing displays stocked and a new offer will arrive.")
         return self:nav(gone, "Back to your shop", "Shop")
     end
     local welcome = UI.hero(self.UI.Content, "A customer found something they love", offer.Customer, "Their offer is ready now — no trip to the counter required.")
@@ -415,7 +416,7 @@ end
 function Pages:auctionPage()
     local auction = self.State.Auction
     if not auction then
-        local hero = UI.hero(self.UI.Content, "The gavel rests", "The next treasure is on its way", "Explore the street while the auctioneer prepares a special find.")
+        local hero = UI.hero(self.UI.Content, "The gavel rests", "The next fashion lot is on its way", "Explore the street while the auctioneer prepares a special piece.")
         self:timer(hero, "Next auction in ", self.State.NextAuction)
         self:guideButton(hero, "Auction", "Walk to the auction house")
         return
@@ -623,7 +624,7 @@ function Pages:adminPage()
 
     local itemCard = self:card("Grant a collectible")
     UI.label(itemCard, "Search by name, category, or ID. Leave blank for a random item.", 14, UI.Colors.Muted)
-    local query = UI.input(itemCard, "Example: jukebox, chair, radios", draft.Query)
+    local query = UI.input(itemCard, "Example: jacket, shoes, t-shirt", draft.Query)
     query.FocusLost:Connect(function() draft.Query = query.Text end)
     local rarityButton = UI.button(itemCard, Config.RarityIcons[draft.Rarity] .. "  Rarity: " .. Config.Rarities[draft.Rarity] .. "  • tap to change", function()
         draft.Query = query.Text; draft.Target = target.Text; draft.Rarity = draft.Rarity % 5 + 1; self.Open("Admin")
@@ -716,8 +717,8 @@ function Pages:settingsPage()
 end
 
 function Pages:townPage()
-    local hero = UI.hero(self.UI.Content, "Welcome to Thrift Street", "Every treasure deserves a second chance", "Today's favorite style is " .. self.State.Demand .. ", worth 20% more when it finds the right home.")
-    for _, link in ipairs({{"Dumpster Alley","Source"},{"Wholesale Source","Estate"},{"Parcel Post","Delivery"},{"Auction House","Auction"},{"Market","Market"},{"Designer Showcase","Showcase"},{"Cosmetic Store","Boutique"},{"Visit neighbors","Visit"},{"Settings","Settings"}}) do self:nav(hero,link[1],link[2]) end
+    local hero = UI.hero(self.UI.Content, "Welcome to Thrift Street", "Every outfit deserves a second chance", "Today's favorite style is " .. self.State.Demand .. ", worth 20% more when it finds the right home.")
+    for _, link in ipairs({{"Thrift Outlet","Source"},{"Curated Rack","Estate"},{"Donation Drop","Delivery"},{"Auction House","Auction"},{"Market","Market"},{"Designer Showcase","Showcase"},{"Cosmetic Store","Boutique"},{"Visit neighbors","Visit"},{"Settings","Settings"}}) do self:nav(hero,link[1],link[2]) end
     if self.State.IsAdmin then self:nav(hero, "Admin control room", "Admin", nil, false) end
 end
 

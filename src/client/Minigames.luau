@@ -6,11 +6,11 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Minigames = {}
 local descriptions = {
-    Scrub = {Title = "A fresh start", Instruction = "Hold and sweep across the grime. Let the original finish shine through.", Tool = "SOFT BRUSH"},
-    Polish = {Title = "Find the shine", Instruction = "Trace the numbered shine trail, starting at 1. Slow, smooth strokes work best.", Tool = "POLISHING CLOTH"},
-    Rewire = {Title = "Bring it back to life", Instruction = "Join matching wire symbols. Drag between a pair, or tap each end.", Tool = "PRECISION PLIERS"},
-    Repaint = {Title = "A new coat of character", Instruction = "Choose the requested paint, then brush across every section.", Tool = "DETAIL BRUSH"},
-    Assemble = {Title = "Piece by lovely piece", Instruction = "Drag a piece to its matching outline, or select it and tap the outline.", Tool = "WORKSHOP KIT"},
+    Scrub = {Title = "Wash away the wear", Instruction = "Hold and sweep across every stained patch until the fabric looks fresh.", Tool = "GARMENT BRUSH"},
+    Polish = {Title = "Steam every crease", Instruction = "Trace the numbered steam path, starting at 1. Slow, smooth strokes work best.", Tool = "HAND STEAMER"},
+    Rewire = {Title = "Stitch the seams", Instruction = "Join matching thread symbols. Drag between a pair, or tap each end.", Tool = "SEWING KIT"},
+    Repaint = {Title = "A fresh color", Instruction = "Choose the requested dye, then brush across every fabric section.", Tool = "FABRIC DYE"},
+    Assemble = {Title = "Mend it piece by piece", Instruction = "Drag a pattern piece to its matching outline, or select it and tap the outline.", Tool = "MENDING KIT"},
 }
 local paintColors = {
     Color3.fromRGB(210, 141, 103), Color3.fromRGB(127, 174, 145), Color3.fromRGB(121, 158, 199),
@@ -648,11 +648,11 @@ function Minigames.progress(session, data, UI)
                 if session.Active and style.Stroke.Parent then style.Stroke.Color = old end
             end)
         end
-        session.Status.Text = if session.Kind == "Repaint" then "Try the requested paint: " .. session.Config.Styles[session.Challenge.RequiredPalette]
-            elseif session.Kind == "Polish" then "Follow the highlighted number. You can still improve this find."
-            elseif session.Kind == "Rewire" then "Those symbols differ. Pick a matching pair."
-            elseif session.Kind == "Assemble" then "That piece belongs in another outline. Match its number."
-            else "Sweep across a patch you have not cleaned yet."
+        session.Status.Text = if session.Kind == "Repaint" then "Try the requested dye: " .. session.Config.Styles[session.Challenge.RequiredPalette]
+            elseif session.Kind == "Polish" then "Follow the highlighted steam mark. You can still improve this piece."
+            elseif session.Kind == "Rewire" then "Those thread symbols differ. Pick a matching pair."
+            elseif session.Kind == "Assemble" then "That pattern piece belongs in another outline. Match its number."
+            else "Sweep across a fabric patch you have not cleaned yet."
     end
 end
 

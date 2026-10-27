@@ -13,7 +13,7 @@ local function fixture()
     local profile = Profile.new()
     local data = {Profiles = {[101] = profile}, Closing = {}, Ephemeral = true}
     local world = {Allowed = true, Owners = {[101] = {Index = 1}}, near = function(self) return self.Allowed end,
-        render = function() end, customer = function() end,
+        render = function() end, customer = function(self, _, name, avatar) self.CustomerName = name; self.CustomerAvatar = avatar end,
         setAuctionItem = function(self, item) self.AuctionVisual = item; self.AuctionVisualUpdates = (self.AuctionVisualUpdates or 0) + 1 end,
         updateAuctionBid = function(self, bid) self.AuctionVisualBid = bid end,
         holdItem = function(self, _, _, item) self.Holding = item.Uid; return true end,
@@ -26,7 +26,7 @@ local function fixture()
 end
 local function addItem(profile, condition)
     local item = {Uid = "one", DefId = Catalog.Items[1].Id, Rarity = 2, Condition = condition or 2,
-        Variance = 1, Style = "Retro", Inspected = true}
+        Variance = 1, Style = "Vintage", Inspected = true}
     table.insert(profile.Inventory, item); return item
 end
 
@@ -36,6 +36,8 @@ test("catalog has 80 unique, valid definitions in eight categories", function()
     for _, item in ipairs(Catalog.Items) do
         assert(not seen[item.Id]); seen[item.Id] = true
         assert(Catalog.ById[item.Id] == item and item.BaseValue > 0)
+        assert(type(item.CatalogAssetId) == "number" and item.CatalogAssetId > 0 and item.CatalogCreator == "Roblox")
+        assert(item.CatalogItemType == "Asset" or item.CatalogItemType == "BundleThumbnail")
         assert(table.find(Config.Styles, item.Style))
     end
 end)
@@ -60,7 +62,7 @@ test("valuation increases with rarity and condition; multipliers compose", funct
     item.Rarity = 1; item.Condition = 5
     equal(Economy.value(definition, item, Config.RarityMultipliers, Config.ConditionMultipliers, 1.2, 1.1), 264)
 end)
-test("restoration always helps and caps at Mint", function()
+test("restoration always helps and caps at Like New", function()
     equal(Economy.restore(1, 0, 0), 2); equal(Economy.restore(1, 1, 0), 3)
     equal(Economy.restore(4, 1, 3), 5)
 end)
@@ -72,6 +74,12 @@ test("profile reconciliation preserves saved state and isolates inventories", fu
     local p = Profile.reconcile({Cash = 999, Inventory = {{Uid = "saved"}}, Stats = {Sold = 5}})
     equal(p.Cash, 999); equal(p.Stats.Sold, 5); equal(p.Stats.Found, 0); equal(p.Inventory[1].Uid, "saved")
     local a, b = Profile.new(), Profile.new(); a.Inventory[1] = {}; equal(#b.Inventory, 0)
+end)
+test("version two furniture saves migrate to fashion without losing ownership", function()
+    local old = Profile.reconcile({Version = 2, Cash = 321, Inventory = {{Uid="old", DefId="chairs_4", Style="Cute"}},
+        Collection = {["lamps_2:3"] = true}})
+    equal(old.Version, 3); equal(old.Cash, 321); equal(old.Inventory[1].DefId, "shorts_4"); equal(old.Inventory[1].Style, "Y2K")
+    assert(old.Collection["tshirts_2:3"] and Catalog.ById[old.Inventory[1].DefId])
 end)
 test("daily welcome streak advances once and claims exactly once", function()
     local s, p, profile = fixture()
@@ -96,7 +104,7 @@ test("lost lease cannot overwrite another server's data", function()
     local a = DataService.new(); assert(a:load(2))
     stores.ThriftFlip_Profiles_v1.Records.p_2.Lock.Token = "other-server"
     a.Profiles[2].Cash = 99999
-    assert(not a:save(2, false)); equal(stores.ThriftFlip_Profiles_v1.Records.p_2.Data.Cash, 75)
+    assert(not a:save(2, false)); equal(stores.ThriftFlip_Profiles_v1.Records.p_2.Data.Cash, 500)
 end)
 test("datastore outage refuses to create an empty fallback save", function()
     stores = {}; failStore = true
@@ -126,7 +134,7 @@ test("mystery snapshots hide rarity, variance and value", function()
 end)
 test("studio item command is unavailable in published servers", function()
     local s, p, profile = fixture()
-    local ok = s:studioLegendary(p, "chair")
+    local ok = s:studioLegendary(p, "jacket")
     assert(not ok); equal(#profile.Inventory, 0)
 end)
 test("restoration blocks forged tokens, early finish and replay", function()
@@ -180,7 +188,7 @@ test("admin tools reject ordinary players and validate server-side grants", func
     s:admin(p, {Command = "GiftBundle", Key = "curator_club"})
     assert(gifted[1] == p and gifted[2] == p and gifted[3] == "curator_club")
     s:admin(p, {Command = "Cash", Amount = 1000}); equal(profile.Cash, startingCash + 1000)
-    s:admin(p, {Command = "GiveItem", Query = "lamp", Rarity = 5})
+    s:admin(p, {Command = "GiveItem", Query = "t-shirt", Rarity = 5})
     equal(#profile.Inventory, 1); equal(profile.Inventory[1].Rarity, 5); assert(profile.Inventory[1].Inspected)
     s:admin(p, {Command = "Cash", Amount = 0 / 0}); equal(profile.Cash, startingCash + 1000)
 end)
@@ -197,17 +205,24 @@ test("sale executes once and removes the exact inventory item", function()
     local s, p, profile, world = fixture(); local item = addItem(profile); item.Slot = 1
     world.Allowed = false -- Automatic offers can be answered from anywhere in town.
     s.Offers[101] = {Uid = item.Uid, Amount = 200, Ends = os.time() + 20}
-    s:haggle(p, {Choice = "Accept"}); equal(profile.Cash, 275); equal(#profile.Inventory, 0)
-    s:haggle(p, {Choice = "Accept"}); equal(profile.Cash, 275); equal(profile.Stats.Sold, 1)
+    s:haggle(p, {Choice = "Accept"}); equal(profile.Cash, 700); equal(#profile.Inventory, 0)
+    s:haggle(p, {Choice = "Accept"}); equal(profile.Cash, 700); equal(profile.Stats.Sold, 1)
+end)
+test("customer offers use a Roblox friend identity when one is available", function()
+    local s, p, profile, world = fixture(); local item = addItem(profile); item.Slot = 1
+    s.CustomerFriends[p.UserId] = {{Id = 2468, Username = "FriendUser", DisplayName = "Best Friend"}}
+    s:makeOffer(p)
+    assert(s.Offers[p.UserId] and string.find(s.Offers[p.UserId].Customer, "Best Friend", 1, true))
+    equal(world.CustomerAvatar, 2468); assert(string.find(world.CustomerName, "Your friend", 1, true))
 end)
 test("daily and weekly rewards cannot be claimed twice", function()
     local s, p, profile = fixture()
-    s:quest(p, {Id = "Find"}); equal(profile.Cash, 75)
-    profile.Daily.Found = 3; s:quest(p, {Id = "Find"}); equal(profile.Cash, 140)
-    s:quest(p, {Id = "Find"}); equal(profile.Cash, 140)
+    s:quest(p, {Id = "Find"}); equal(profile.Cash, 500)
+    profile.Daily.Found = 3; s:quest(p, {Id = "Find"}); equal(profile.Cash, 565)
+    s:quest(p, {Id = "Find"}); equal(profile.Cash, 565)
     profile.Weekly.Restored = 20; profile.Weekly.Sold = 15
-    s:quest(p, {Id = "Weekly"}); equal(profile.Cash, 1340)
-    s:quest(p, {Id = "Weekly"}); equal(profile.Cash, 1340)
+    s:quest(p, {Id = "Weekly"}); equal(profile.Cash, 1765)
+    s:quest(p, {Id = "Weekly"}); equal(profile.Cash, 1765)
 end)
 test("auction reservations prevent overspending without persisting escrow", function()
     local s, p, profile, world = fixture(); profile.Cash = 1000; profile.XP = 1000
@@ -237,15 +252,15 @@ end)
 test("auction settles cash and item in the same winning profile", function()
     local s, p, profile, world = fixture(); local item = addItem(profile); table.clear(profile.Inventory)
     s.Auction = {Bid = 50, Bidder = p.UserId, Started = os.time() - 60, Ends = os.time() - 1, Item = item}
-    s:tick(); equal(profile.Cash, 25); equal(#profile.Inventory, 1); assert(s.Auction == nil); assert(world.AuctionVisual == nil and world.AuctionVisualUpdates == 1)
-    s:tick(); equal(profile.Cash, 25); equal(#profile.Inventory, 1)
+    s:tick(); equal(profile.Cash, 450); equal(#profile.Inventory, 1); assert(s.Auction == nil); assert(world.AuctionVisual == nil and world.AuctionVisualUpdates == 1)
+    s:tick(); equal(profile.Cash, 450); equal(#profile.Inventory, 1)
 end)
 test("remote input rejects nested data, non-finite numbers and unknown actions", function()
     local s, p, profile = fixture()
     for _, payload in ipairs({{Source = {}}, {Source = string.rep("x", 101)}, {Amount = 0 / 0}, {Amount = math.huge}}) do
         s:request(p, "Source", payload)
     end
-    s:request(p, "leave", {}); equal(profile.Cash, 75); equal(#profile.Inventory, 0)
+    s:request(p, "leave", {}); equal(profile.Cash, 500); equal(#profile.Inventory, 0)
 end)
 test("one showcase entry cannot reset earned votes on re-entry", function()
     local s, p = fixture(); s:showcase(p, {Choice = "Enter"})

@@ -15,7 +15,11 @@ local palette = {
     Lilac = {0.61, 0.49, 0.73}, Glass = {0.62, 0.82, 0.83},
     Dirt = {0.39, 0.34, 0.24}, White = {0.96, 0.96, 0.92},
 }
-local styleColors = {Retro = "Coral", Cozy = "Mint", Futuristic = "Blue", Antique = "Wood", Cute = "Rose"}
+local styleColors = {
+    Vintage = "Coral", Preppy = "Mint", Streetwear = "Blue", Designer = "Dark", Y2K = "Rose",
+    -- Legacy style names remain renderable during cross-server migration.
+    Retro = "Coral", Cozy = "Mint", Futuristic = "Blue", Antique = "Wood", Cute = "Rose",
+}
 local function clone3(value) return {value[1], value[2], value[3]} end
 local function blend(a, b, t)
     return {a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t, a[3] + (b[3] - a[3]) * t}
@@ -779,8 +783,99 @@ local function vases(g)
     end
 end
 
-local builders = {Lamps = lamps, Radios = radios, Clocks = clocks, Chairs = chairs, Toys = toys,
-    Mirrors = mirrors, Cameras = cameras, Vases = vases}
+-- Fashion silhouettes are original, low-part replicas inspired by each catalog
+-- pick. They stay reliable in every experience without inserting third-party meshes.
+local function tshirts(g)
+    local tint, v = g.Theme, g.Variant
+    g.box("TeeBody", {2.5, 2.25, 0.42}, {0, 1.45, 0}, tint, nil, "Fabric")
+    g.box("LeftSleeve", {0.85, 0.82, 0.46}, {-1.55, 1.98, 0}, tint, {0, 0, -0.22}, "Fabric")
+    g.box("RightSleeve", {0.85, 0.82, 0.46}, {1.55, 1.98, 0}, tint, {0, 0, 0.22}, "Fabric")
+    g.disc("Collar", 0.62, 0.08, {0, 2.48, -0.24}, "Cream")
+    if v % 3 == 0 then
+        for y = 1, 3 do g.box("Stripe", {2.25, 0.16, 0.05}, {0, 0.9 + y * 0.45, -0.24}, if y % 2 == 0 then "Cream" else "Gold") end
+    else
+        local mark = if v % 2 == 0 then "Gold" else "Cream"
+        g.ball("ChestGraphic", {0.72, 0.72, 0.08}, {0, 1.55, -0.25}, mark)
+    end
+    g.box("Hanger", {3.4, 0.08, 0.08}, {0, 2.85, 0.16}, "Gold", {0, 0, 0}, "Metal")
+end
+local function shirts(g)
+    local tint, v = g.Theme, g.Variant
+    g.box("ShirtBody", {2.45, 2.65, 0.48}, {0, 1.55, 0}, tint, nil, "Fabric")
+    for side = -1, 1, 2 do
+        g.box("LongSleeve", {0.62, 2.25, 0.48}, {side * 1.47, 1.55, 0}, tint, {0, 0, side * 0.12}, "Fabric")
+        g.wedge("Collar", {0.72, 0.62, 0.12}, {side * 0.36, 2.55, -0.3}, "Cream", {0, side * 0.08, side * 0.15})
+    end
+    g.box("Placket", {0.1, 2.25, 0.07}, {0, 1.45, -0.29}, if v % 2 == 0 then "Gold" else "Cream")
+    for y = 1, 4 do g.disc("Button", 0.12, 0.05, {0, 0.65 + y * 0.42, -0.35}, "Gold", "Metal") end
+end
+local function pants(g)
+    local tint, v = g.Theme, g.Variant
+    g.box("Waistband", {2.35, 0.45, 0.62}, {0, 3.05, 0}, tint, nil, "Fabric")
+    for side = -1, 1, 2 do
+        g.box("PantLeg", {1.02, 2.9, 0.62}, {side * 0.62, 1.48, 0}, tint, {0, 0, side * 0.025}, "Fabric")
+        g.box("Hem", {1.02, 0.15, 0.66}, {side * 0.66, 0.12, 0}, if v % 2 == 0 then "Cream" else tint, nil, "Fabric")
+        if v % 3 == 0 then g.box("CargoPocket", {0.62, 0.7, 0.12}, {side * 1.02, 1.9, -0.36}, "Gold", nil, "Fabric") end
+    end
+    g.box("Belt", {2.42, 0.15, 0.66}, {0, 2.92, 0}, "Dark", nil, "Fabric")
+    g.box("Buckle", {0.36, 0.28, 0.08}, {0, 2.93, -0.38}, "Gold", nil, "Metal")
+end
+local function shorts(g)
+    local tint, v = g.Theme, g.Variant
+    g.box("Waistband", {2.5, 0.46, 0.72}, {0, 2.2, 0}, tint, nil, "Fabric")
+    for side = -1, 1, 2 do
+        g.box("ShortLeg", {1.12, 1.65, 0.72}, {side * 0.66, 1.18, 0}, tint, {0, 0, side * 0.04}, "Fabric")
+        g.box("Cuff", {1.14, 0.16, 0.76}, {side * 0.69, 0.38, 0}, if v % 2 == 0 then "Cream" else "Gold", nil, "Fabric")
+    end
+    g.box("Drawstring", {0.08, 0.75, 0.08}, {-0.13, 1.83, -0.42}, "Cream", {0, 0, 0.15})
+    g.box("Drawstring", {0.08, 0.75, 0.08}, {0.13, 1.83, -0.42}, "Cream", {0, 0, -0.15})
+end
+local function jackets(g)
+    local tint, v = g.Theme, g.Variant
+    g.box("JacketBody", {2.7, 2.65, 0.65}, {0, 1.58, 0}, tint, nil, if v % 3 == 0 then "Leather" else "Fabric")
+    for side = -1, 1, 2 do
+        g.box("JacketSleeve", {0.72, 2.45, 0.65}, {side * 1.65, 1.55, 0}, tint, {0, 0, side * 0.12}, "Fabric")
+        g.wedge("Lapel", {0.72, 1.45, 0.16}, {side * 0.43, 2.02, -0.43}, if v % 2 == 0 then "Cream" else tint, {0, side * 0.08, side * 0.25})
+    end
+    g.box("Zipper", {0.11, 2.42, 0.09}, {0, 1.45, -0.39}, "Silver", nil, "Metal")
+    for side = -1, 1, 2 do g.box("Pocket", {0.75, 0.45, 0.08}, {side * 0.75, 0.92, -0.39}, "Gold", {0, 0, side * 0.12}, "Fabric") end
+end
+local function dresses(g)
+    local tint, v = g.Theme, g.Variant
+    g.box("Bodice", {1.85, 1.55, 0.5}, {0, 2.45, 0}, tint, nil, "Fabric")
+    g.wedge("SkirtFront", {3.25, 2.35, 0.62}, {0, 1.05, -0.02}, tint, {0, 0, math.pi}, "Fabric")
+    g.wedge("SkirtBack", {3.25, 2.35, 0.62}, {0, 1.05, 0.02}, tint, {0, math.pi, math.pi}, "Fabric")
+    g.box("WaistRibbon", {2.05, 0.25, 0.62}, {0, 1.78, 0}, if v % 2 == 0 then "Gold" else "Cream", nil, "Fabric")
+    for side = -1, 1, 2 do g.box("Strap", {0.28, 0.72, 0.35}, {side * 0.62, 3.35, 0}, tint, nil, "Fabric") end
+    if v % 3 == 0 then for side = -1, 1, 2 do g.ball("Bow", {0.55, 0.35, 0.15}, {side * 0.34, 1.8, -0.4}, "Cream") end end
+end
+local function shoes(g)
+    local tint, v = g.Theme, g.Variant
+    for side = -1, 1, 2 do
+        g.box("Sole", {1.25, 0.24, 2.35}, {side * 0.78, 0.14, -0.15}, "Cream", nil, "Rubber")
+        g.wedge("ShoeUpper", {1.18, 0.85, 1.95}, {side * 0.78, 0.62, -0.06}, tint, {0, 0, 0})
+        g.box("Heel", {1.12, 0.55, 0.62}, {side * 0.78, 0.48, 0.78}, if v % 2 == 0 then "Dark" else tint)
+        for lace = -1, 1 do g.box("Lace", {0.82, 0.055, 0.07}, {side * 0.78, 0.96, -0.2 + lace * 0.26}, "Cream", nil, "Fabric") end
+    end
+end
+local function accessories(g)
+    local tint, v = g.Theme, g.Variant
+    if v == 3 then
+        g.cyl("UmbrellaCrown", 2.5, 0.3, {0, 1.85, 0}, tint, "Fabric")
+        for i = 1, 6 do local a = i * pi / 3; g.rod("UmbrellaRib", {0,1.85,0}, {math.cos(a)*1.3,1.68,math.sin(a)*1.3}, 0.06, "Silver", "Metal") end
+    elseif v == 5 then
+        g.cyl("CheeseHat", 2.1, 1.4, {0, 1.15, 0}, "Mustard")
+        for i = 1, 5 do g.ball("CheeseHole", {0.28,0.12,0.28}, {-0.7 + i*0.28,1.25,-1.02}, "Gold") end
+    else
+        g.cyl("HatBrim", 3.15, 0.18, {0, 0.65, 0}, if v % 2 == 0 then "Cream" else tint, "Fabric")
+        g.cyl("HatCrown", 1.95, 1.35 + (v % 3) * 0.25, {0, 1.35, 0}, tint, "Fabric")
+        g.box("HatBand", {2.0, 0.28, 2.0}, {0, 0.98, 0}, if v % 2 == 0 then "Gold" else "Dark", nil, "Fabric")
+    end
+    g.ball("DisplayHead", {1.55, 1.75, 1.55}, {0, 0.15, 0}, "Ivory").Transparency = 0.55
+end
+
+local builders = {["T-Shirts"] = tshirts, Shirts = shirts, Pants = pants, Shorts = shorts,
+    Jackets = jackets, Dresses = dresses, Shoes = shoes, Accessories = accessories}
 
 function ItemModels.describe(definition, item)
     assert(type(definition) == "table" and builders[definition.Category], "Unknown item category")

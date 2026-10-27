@@ -9,7 +9,7 @@ ROOT=Path(__file__).resolve().parents[1]
 source=(ROOT/"src/shared/ExchangeRules.luau").read_text(encoding="utf-8")
 source=source.rsplit("return ExchangeRules",1)[0]
 suite=r'''
-local function item(id) return {Uid=id,DefId="lamps_1",Rarity=2,Condition=4,Variance=1,Inspected=true} end
+local function item(id) return {Uid=id,DefId="tshirts_1",Rarity=2,Condition=4,Variance=1,Inspected=true} end
 local function side(id,delta,outgoing,incoming) return {UserId=id,CashDelta=delta,Outgoing=outgoing,Incoming=incoming} end
 local a={Cash=500,Inventory={item("a")},Collection={}}
 local b={Cash=100,Inventory={item("b")},Collection={}}

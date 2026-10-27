@@ -10,14 +10,14 @@ local DecorPlacement = require(Shared.DecorPlacement)
 local GameService = {}
 GameService.__index = GameService
 local customers = {
-    {Name = "Mabel · Collector", Style = "Antique", Budget = 20000},
-    {Name = "Jules · Designer", Style = "Retro", Budget = 10000},
-    {Name = "Pip · Pocket money", Style = "Cute", Budget = 180},
-    {Name = "Robin · Decorator", Style = "Cozy", Budget = 5000},
-    {Name = "Alex · Inventor", Style = "Futuristic", Budget = 6000},
-    {Name = "Sam · Bargain hunter", Style = "Retro", Budget = 1000},
-    {Name = "Lee · Neighbor", Style = "Cozy", Budget = 600},
-    {Name = "Bea · Curator", Style = "Antique", Budget = 40000},
+    {Name = "Mabel · Vintage collector", Style = "Vintage", Budget = 20000},
+    {Name = "Jules · Fashion editor", Style = "Designer", Budget = 10000},
+    {Name = "Pip · Trend hunter", Style = "Y2K", Budget = 180},
+    {Name = "Robin · Preppy stylist", Style = "Preppy", Budget = 5000},
+    {Name = "Alex · Streetwear fan", Style = "Streetwear", Budget = 6000},
+    {Name = "Sam · Vintage shopper", Style = "Vintage", Budget = 1000},
+    {Name = "Lee · Neighborhood shopper", Style = "Preppy", Budget = 600},
+    {Name = "Bea · Designer curator", Style = "Designer", Budget = 40000},
 }
 local function shallowPublicItem(item)
     if item.Inspected then return table.clone(item) end
@@ -26,7 +26,7 @@ end
 function GameService.new(data, world, event)
     return setmetatable({Data = data, World = world, Event = event,
         Random = Random.new(), Sessions = {}, Offers = {}, Cooldowns = {}, Buckets = {}, TeleportAt = {},
-        Held = {},
+        Held = {}, CustomerFriends = {},
         Auction = nil, NextAuction = os.time() + 45, NextCustomer = {}, Ready = {},
         Closing = false, JoinedAt = {}, Showcase = {Week = Economy.week(os.time()), Entries = {}, Votes = {}}}, GameService)
 end
@@ -78,7 +78,9 @@ end
 function GameService:value(profile, item)
     local definition = Catalog.ById[item.DefId]
     local demand = if (item.Style or definition.Style) == self:demandStyle() then 1.2 else 1
-    local bonus = if (item.Style or definition.Style) == profile.Theme then 1.1 else 1
+    local themeStyle = {Cozy="Preppy", Retro="Vintage", Futuristic="Streetwear", Antique="Designer", Cute="Y2K",
+        RoseGold="Y2K", NeonNight="Streetwear", Curator="Designer"}
+    local bonus = if (item.Style or definition.Style) == (themeStyle[profile.Theme] or profile.Theme) then 1.1 else 1
     return Economy.value(definition, item, Config.RarityMultipliers, Config.ConditionMultipliers, demand, bonus)
 end
 function GameService:resetQuests(profile)
@@ -229,7 +231,7 @@ function GameService:source(player, payload)
     profile.XP += 4; self:stat(profile, "Found", 1)
     if profile.Tutorial == 0 then profile.Tutorial = 1; self:analytics(player, "TutorialFind") end
     if profile.Stats.Found == 2 then self:analytics(player, "SecondFind") end
-    self:notify(player, "A mystery find! Open your bag to inspect it."); self:snapshot(player)
+    self:notify(player, "A mystery fashion find! Open your bag and inspect the label."); self:snapshot(player)
 end
 function GameService:inspect(player, payload)
     local profile = self:profile(player)
@@ -277,7 +279,7 @@ function GameService:beginRestore(player, payload)
     local item = self:find(profile, payload.Uid)
     if item and self.Exchange and self.Exchange:itemReserved(player.UserId, item.Uid) then return self:notify(player, "Remove this item from its listing or trade first.") end
     if item and self:isHeld(player.UserId, item.Uid) then return self:notify(player, "Put this item back in your bag before restoring it.") end
-    if not item or not item.Inspected or item.Slot or item.Condition >= 5 then return self:notify(player, "Choose an inspected item below Mint; take it off display first.") end
+    if not item or not item.Inspected or item.Slot or item.Condition >= 5 then return self:notify(player, "Choose an inspected item below Like New; take it off display first.") end
     local kind = payload.Kind or Catalog.ById[item.DefId].Minigame
     if not table.find({"Scrub", "Polish", "Rewire", "Repaint", "Assemble"}, kind) then return end
     local order = {}; for i = 1, 16 do order[i] = i end
@@ -375,16 +377,39 @@ function GameService:makeOffer(player)
     if not profile or self.Offers[player.UserId] then return end
     local displayed = {}; for _, item in ipairs(profile.Inventory) do if item.Slot then table.insert(displayed, item) end end
     if #displayed == 0 then return end
-    local customer = customers[self.Random:NextInteger(1, #customers)]
+    local customer = table.clone(customers[self.Random:NextInteger(1, #customers)])
+    local friends = self.CustomerFriends[player.UserId]
+    if friends and #friends > 0 then
+        local friend = friends[self.Random:NextInteger(1, #friends)]
+        customer.Name = (friend.DisplayName or friend.Username or "Friend") .. " · Your friend"
+        customer.AvatarUserId = friend.Id
+    end
     local item = displayed[self.Random:NextInteger(1, #displayed)]
     local value = self:value(profile, item)
     local preferred = item.Style == customer.Style
     local amount = math.floor(value * (if preferred then 1.15 else self.Random:NextNumber(0.85, 1.05)))
-    if profile.Tutorial == 4 then customer = {Name = "Mabel · Welcome gift", Budget = 100000}; amount = math.max(150, amount) end
+    if profile.Tutorial == 4 then customer.Budget = 100000; customer.Name = customer.Name .. " · First customer"; amount = math.max(150, amount) end
     if amount > customer.Budget then return end
     self.Offers[player.UserId] = {Uid = item.Uid, Amount = amount, Customer = customer.Name,
         Ends = os.time() + 20, Countered = false, Preferred = preferred}
-    self.World:customer(player.UserId, customer.Name); self:snapshot(player)
+    self.World:customer(player.UserId, customer.Name, customer.AvatarUserId); self:snapshot(player)
+end
+
+function GameService:loadCustomerFriends(player)
+    local friends = {}
+    local ok, pages = pcall(Players.GetFriendsAsync, Players, player.UserId)
+    if ok and pages then
+        for _ = 1, 3 do
+            for _, friend in ipairs(pages:GetCurrentPage()) do
+                if type(friend.Id) == "number" then table.insert(friends, friend) end
+                if #friends >= 30 then break end
+            end
+            if #friends >= 30 or pages.IsFinished then break end
+            local advanced = pcall(pages.AdvanceToNextPageAsync, pages)
+            if not advanced then break end
+        end
+    end
+    if player.Parent then self.CustomerFriends[player.UserId] = friends end
 end
 function GameService:haggle(player, payload)
     local profile = self:profile(player)
@@ -674,6 +699,7 @@ function GameService:join(player)
     if not self.World:assign(player) then self.Data:release(player.UserId); player:Kick("This town is full. Please join another server."); return end
     self.Ready[player.UserId] = true; self.JoinedAt[player.UserId] = os.clock(); self:resetQuests(profile); self:prepareLogin(profile)
     self.NextCustomer[player.UserId] = os.time() + 10
+    task.spawn(function() self:loadCustomerFriends(player) end)
     player.CharacterAdded:Connect(function()
         task.wait(0.8)
         local uid = self.Held[player.UserId]
@@ -687,7 +713,7 @@ function GameService:join(player)
     local level = Instance.new("IntValue"); level.Name = "Level"; level.Value = Economy.level(profile.XP); level.Parent = leaderstats
     self:refresh(player); self:analytics(player, "SessionStart")
     if self.Live then task.spawn(function() self.Live:join(player) end) end
-    self:notify(player, if profile.Tutorial < 5 then "Welcome! Find a mystery item in Dumpster Alley." else "Welcome back to Thrift Street!")
+    self:notify(player, if profile.Tutorial < 5 then "Welcome! Start with $500 and thrift your first fashion find at the outlet." else "Welcome back to Thrift Street!")
 end
 function GameService:leave(player)
     local joined = self.JoinedAt[player.UserId]
@@ -702,7 +728,7 @@ function GameService:leave(player)
     end
     self.Sessions[player.UserId] = nil; self.Offers[player.UserId] = nil
     self.Held[player.UserId] = nil; self.World:clearHeld(player)
-    self.Cooldowns[player.UserId] = nil; self.Buckets[player.UserId] = nil; self.NextCustomer[player.UserId] = nil
+    self.Cooldowns[player.UserId] = nil; self.Buckets[player.UserId] = nil; self.NextCustomer[player.UserId] = nil; self.CustomerFriends[player.UserId] = nil
     self.World:release(player.UserId)
     self.Data:release(player.UserId)
 end

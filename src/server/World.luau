@@ -1,4 +1,5 @@
 local CollectionService = game:GetService("CollectionService")
+local Players = game:GetService("Players")
 local Lighting = game:GetService("Lighting")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
@@ -294,7 +295,7 @@ function World:exactSquare()
     Kit.part(quests, "Cork", Vector3.new(13, 7, 0.2), qcf * CFrame.new(0, 6.5, -0.55), Color3.fromRGB(214, 170, 120))
     Kit.part(quests, "Canopy", Vector3.new(16, 0.6, 3.6), qcf * CFrame.new(0, 11.8, -0.4), E.Teal)
     local _, questBoard = Kit.sign(quests, "DAILY QUESTS", qcf * CFrame.new(0, 10.6, -0.7), Vector3.new(12, 1.8, 0.15), E.Teal, E.Cream); prompt(questBoard, "Open daily quests", "Quests")
-    for index, card in ipairs({"SELL\n3 stories", "RESTORE\n3 keepsakes", "FIND\n3 treasures"}) do
+    for index, card in ipairs({"SELL\n3 outfits", "FRESHEN\n3 pieces", "THRIFT\n3 finds"}) do
         Kit.sign(quests, card, qcf * CFrame.new(-4.2 + (index - 1) * 4.2, 6.2, -0.75), Vector3.new(3.6, 4.2, 0.12), E.Cream, E.Dark)
     end
     local spawn = Instance.new("SpawnLocation"); spawn.Name = "TownSpawn"; spawn.Size = Vector3.new(7, 0.3, 7); spawn.CFrame = CFrame.new(0, 0.5, -8)
@@ -305,7 +306,7 @@ function World:exactSquare()
 end
 function World:exactSourcing()
     local sourcing = Kit.model(self.Root, "ExactSourcingDistrict")
-    local alley = Kit.model(sourcing, "DumpsterAlley")
+    local alley = Kit.model(sourcing, "ThriftOutlet")
     Kit.part(alley, "NorthBrickWall", Vector3.new(55, 16, 10), CFrame.new(-77.5, 8, -33), E.BrickDark, Enum.Material.Brick)
     Kit.part(alley, "SouthBrickWall", Vector3.new(55, 16, 10), CFrame.new(-77.5, 8, -73), E.BrickDark, Enum.Material.Brick)
     Kit.part(alley, "WestBrickWall", Vector3.new(2, 16, 30), CFrame.new(-106, 8, -53), E.BrickDark, Enum.Material.Brick)
@@ -320,24 +321,26 @@ function World:exactSourcing()
     Kit.cylinder(alley, "DrainPipe", 0.4, 16, CFrame.new(-95, 8, -67.5), E.Steel, Enum.Material.Metal)
     Kit.part(alley, "FireEscape", Vector3.new(8, 0.4, 3), CFrame.new(-85, 8, -66.5), E.Charcoal, Enum.Material.Metal)
     for _, x in ipairs({-87, -85.4}) do Kit.part(alley, "LadderRail", Vector3.new(0.2, 8, 0.2), CFrame.new(x, 4, -66), E.Charcoal, Enum.Material.Metal) end
-    local function dumpster(x, z, color)
-        local bin = Kit.part(alley, "SalvageDumpster", Vector3.new(7, 4, 4), CFrame.new(x, 2.1, z), color, Enum.Material.Metal)
-        Kit.part(alley, "DumpsterBand", Vector3.new(7.2, 0.4, 4.2), CFrame.new(x, 3.3, z), E.Charcoal, Enum.Material.Metal)
-        Kit.part(alley, "OpenLid", Vector3.new(7.2, 0.4, 4.4), CFrame.new(x, 4.7, z + 1.4) * CFrame.Angles(-0.38, 0, 0), E.Charcoal, Enum.Material.Metal)
-        Kit.ball(alley, "TrashBag", Vector3.new(2.2, 2.2, 2.2), CFrame.new(x - 1.5, 4.4, z - 0.4), E.Charcoal)
-        Kit.ball(alley, "TrashBag", Vector3.new(1.8, 1.8, 1.8), CFrame.new(x + 1.2, 4.2, z - 0.8), Color3.fromRGB(60, 80, 70))
-        prompt(bin, "Search for a treasure", "Source")
+    local function thriftBin(x, z, color)
+        local bin = Kit.part(alley, "RollingThriftBin", Vector3.new(7, 2.5, 4), CFrame.new(x, 1.45, z), color, Enum.Material.Metal)
+        Kit.part(alley, "BinTopRail", Vector3.new(7.3, 0.3, 4.3), CFrame.new(x, 2.7, z), E.Gold, Enum.Material.Metal)
+        for side = -1, 1, 2 do
+            Kit.ball(alley, "Caster", Vector3.new(0.75, 0.75, 0.5), CFrame.new(x + side * 2.7, 0.35, z + 1.45), E.Charcoal)
+            Kit.part(alley, "FoldedClothes", Vector3.new(2.2, 0.45, 2.8), CFrame.new(x + side * 1.35, 3.15, z), if side < 0 then E.Coral else E.Blue, Enum.Material.Fabric, nil, false)
+            Kit.part(alley, "FoldedClothes", Vector3.new(2, 0.38, 2.5), CFrame.new(x + side * 1.35, 3.6, z), if side < 0 then E.Cream else E.Gold, Enum.Material.Fabric, nil, false)
+        end
+        prompt(bin, "Thrift a fashion find · $25", "Source")
     end
-    dumpster(-95, -62, E.Dumpster); dumpster(-82, -63, E.Blue); dumpster(-68, -62, E.Dumpster); dumpster(-90, -44, Color3.fromRGB(150, 60, 50))
+    thriftBin(-95, -62, E.Teal); thriftBin(-82, -63, E.Blue); thriftBin(-68, -62, E.Teal); thriftBin(-90, -44, E.Coral)
     for _, position in ipairs({{-100,-45},{-75,-43},{-58,-66}}) do Kit.crate(alley, CFrame.new(position[1], 0.2, position[2]), Vector3.new(2.8, 2.8, 2.8), false) end
-    for _, position in ipairs({{-102,-60},{-72,-44}}) do Kit.cylinder(alley, "Barrel", 1.2, 3, CFrame.new(position[1], 1.6, position[2]), E.Red, Enum.Material.Metal) end
-    for index = 0, 5 do Kit.ball(alley, "LooseTrash", Vector3.new(1.6 + index % 3 * 0.4, 1.6 + index % 3 * 0.4, 1.6 + index % 3 * 0.4), CFrame.new(-98 + index * 9, 0.9, -52 + index % 2 * 4), E.Charcoal) end
+    for _, position in ipairs({{-102,-60},{-72,-44}}) do Kit.cylinder(alley, "GarmentRackPost", 0.32, 6, CFrame.new(position[1], 3.1, position[2]), E.Gold, Enum.Material.Metal) end
+    for index = 0, 5 do Kit.part(alley, "FoldedFashion", Vector3.new(2.2, 0.4, 1.6), CFrame.new(-98 + index * 9, 0.35, -52 + index % 2 * 4), ({E.Coral,E.Cream,E.Teal,E.Blue,E.Gold})[index % 5 + 1], Enum.Material.Fabric, nil, false) end
     local puddle = Kit.cylinder(alley, "Puddle", 3, 0.05, CFrame.new(-72, 0.14, -52), E.Water, Enum.Material.Glass, false); puddle.Transparency = 0.5
     local smallPuddle = Kit.cylinder(alley, "Puddle", 2, 0.05, CFrame.new(-92, 0.14, -50), E.Water, Enum.Material.Glass, false); smallPuddle.Transparency = 0.5
     local alleySignCF = CFrame.lookAt(Vector3.new(-52, 0, -53), Vector3.new(0, 0, -53))
     for _, x in ipairs({-15, 15}) do Kit.part(alley, "AlleySignPost", Vector3.new(1.6, 14, 1.6), alleySignCF * CFrame.new(x, 7, 0), E.Charcoal, Enum.Material.Metal) end
-    Kit.sign(alley, "DUMPSTER ALLEY", alleySignCF * CFrame.new(0, 13, 0), Vector3.new(30, 3, 0.4), E.Charcoal, E.Gold)
-    Kit.sign(alley, "START HERE", alleySignCF * CFrame.new(0, 10.3, -0.3), Vector3.new(9, 1.7, 0.2), E.Red, E.Cream)
+    Kit.sign(alley, "THRIFT OUTLET", alleySignCF * CFrame.new(0, 13, 0), Vector3.new(30, 3, 0.4), E.Charcoal, E.Gold)
+    Kit.sign(alley, "START HERE · $25 FINDS", alleySignCF * CFrame.new(0, 10.3, -0.3), Vector3.new(17, 1.7, 0.2), E.Red, E.Cream)
     for index = 0, 5 do for _, x in ipairs({-66,-80,-94}) do Kit.ball(alley, "AlleyLight", Vector3.new(1.2, 1.2, 1.2), CFrame.new(x, 11.5, -62 + index * 5), Color3.fromRGB(255, 233, 168), Enum.Material.Neon, false) end end
     local flea = Kit.model(sourcing, "FleaField")
     Kit.part(flea, "Field", Vector3.new(50, 0.2, 40), CFrame.new(-88, 0.05, -112), Color3.fromRGB(176, 214, 140), Enum.Material.Grass)
@@ -351,21 +354,21 @@ function World:exactSourcing()
     for _, z in ipairs({-118,-106}) do Kit.part(flea, "GatePost", Vector3.new(1, 7, 1), CFrame.new(-63, 3.5, z), E.Wood, Enum.Material.Wood) end
     Kit.part(flea, "GateHeader", Vector3.new(0.8, 0.8, 13), CFrame.new(-63, 7, -112), E.Wood, Enum.Material.Wood)
     local fieldSignCF = CFrame.lookAt(Vector3.new(-63, 0, -112), Vector3.new(0, 0, -112))
-    Kit.sign(flea, "FLEA FIELD", fieldSignCF * CFrame.new(0, 5.6, 0), Vector3.new(9, 2, 0.3), E.Coral, E.Cream)
+    Kit.sign(flea, "FASHION FLEA", fieldSignCF * CFrame.new(0, 5.6, 0), Vector3.new(11, 2, 0.3), E.Coral, E.Cream)
     for _, position in ipairs({{-106,-125},{-94,-121},{-82,-126},{-72,-119},{-104,-108},{-88,-112},{-74,-106},{-98,-97}}) do
         local spot = Kit.cylinder(flea, "FindSpot", 2.5, 0.8, CFrame.new(position[1], 0.5, position[2]), Color3.fromRGB(139, 104, 70), Enum.Material.Ground)
-        prompt(spot, "Search the flea field", "Source")
+        prompt(spot, "Browse the fashion flea", "Source")
         for _, angle in ipairs({0.785, -0.785}) do Kit.part(flea, "DigMarker", Vector3.new(2.8, 0.1, 0.5), CFrame.new(position[1], 0.95, position[2]) * CFrame.Angles(0, angle, 0), E.Red, nil, nil, false) end
     end
     for index, x in ipairs({-106,-92,-78}) do
         local tableTop = Kit.part(flea, "FleaTable", Vector3.new(7, 0.4, 3.4), CFrame.new(x, 3.4, -97), E.LightWood, Enum.Material.Wood)
-        prompt(tableTop, "Browse flea finds", "Source")
+        prompt(tableTop, "Browse vintage clothing", "Source")
         for _, offset in ipairs({-3, 3}) do Kit.part(flea, "TableLeg", Vector3.new(0.5, 3.2, 0.5), CFrame.new(x + offset, 1.8, -97), E.Wood, Enum.Material.Wood) end
         for item = 1, 4 do Kit.part(flea, "FleaFind", Vector3.new(0.9, 0.8 + item % 3 * 0.4, 0.9), CFrame.new(x - 2.3 + item, 4.3, -97), ({E.Purple,E.Cream,E.Red,E.Dark})[item]) end
     end
     local parcelCF = CFrame.new(78, 0, -35) * CFrame.Angles(0, math.pi / 2, 0)
     local parcelPost = exactShell(sourcing, "ParcelPost", parcelCF, 24, 12, 20, E.Soft, E.Teal, {{-2.5,2.5,0,8},{-9,-5,3,8},{5,9,3,8}})
-    Kit.sign(parcelPost, "PARCEL POST", parcelCF * CFrame.new(0, 10, -10.3), Vector3.new(16, 2.8, 0.25), E.Cream, E.Dark)
+    Kit.sign(parcelPost, "DONATION DROP", parcelCF * CFrame.new(0, 10, -10.3), Vector3.new(16, 2.8, 0.25), E.Cream, E.Dark)
     Kit.part(parcelPost, "RedAwning", Vector3.new(14, 0.4, 3.4), parcelCF * CFrame.new(0, 8.9, -11.7), E.Red, Enum.Material.Fabric)
     for _, x in ipairs({-11, 11}) do
         Kit.part(parcelPost, "MailboxPost", Vector3.new(0.5, 2, 0.5), parcelCF * CFrame.new(x, 1, -13), E.Charcoal, Enum.Material.Metal)
@@ -380,21 +383,28 @@ function World:exactSourcing()
     local sourceCF = CFrame.new(80, 0, -80) * CFrame.Angles(0, math.pi / 2, 0)
     local wholesale = exactShell(sourcing, "WholesaleSource", sourceCF, 28, 14, 24, E.Brick, E.Steel, {{-6,6,0,10},{-13,-10,5,10},{10,13,5,10}})
     Kit.cylinder(wholesale, "SteelHeader", 1, 12, sourceCF * CFrame.new(0, 10.8, -12.5) * CFrame.Angles(0, 0, math.pi / 2), E.Steel, Enum.Material.Metal)
-    Kit.sign(wholesale, "SOURCE", sourceCF * CFrame.new(0, 12.4, -12.3), Vector3.new(14, 3.4, 0.3), E.Cream, E.Red)
-    Kit.sign(wholesale, "WHOLESALE RESTOCK", sourceCF * CFrame.new(0, 9.6, -12.2), Vector3.new(14, 1.4, 0.2), E.Red, E.Cream)
-    local sourceCrate
-    for index = 0, 2 do
-        sourceCrate = Kit.part(wholesale, "WholesaleCrate", Vector3.new(4, 0.5, 4), sourceCF * CFrame.new(-12 + index * 4.4, 0.35, -16), E.LightWood, Enum.Material.Wood)
-        for level = 1, 2 + index % 2 do Kit.part(wholesale, "StockBox", Vector3.new(3.6, 1.6, 3.6), sourceCF * CFrame.new(-12 + index * 4.4, 0.6 + level * 1.65 - 0.8, -16), ({E.LightWood,E.Card,E.Wood})[(index + level) % 3 + 1]) end
+    Kit.sign(wholesale, "CURATED RACK", sourceCF * CFrame.new(0, 12.4, -12.3), Vector3.new(18, 3.4, 0.3), E.Cream, E.Red)
+    Kit.sign(wholesale, "PREMIUM FASHION FINDS", sourceCF * CFrame.new(0, 9.6, -12.2), Vector3.new(18, 1.4, 0.2), E.Red, E.Cream)
+    local browseRack
+    for rackIndex, rackX in ipairs({-10, -3.5, 3.5, 10}) do
+        local base = Kit.part(wholesale, "RackBase", Vector3.new(5.4, 0.3, 3.6), sourceCF * CFrame.new(rackX, 0.35, -16), E.LightWood, Enum.Material.Wood)
+        if rackIndex == 1 then browseRack = base end
+        for side = -1, 1, 2 do Kit.part(wholesale, "RackPost", Vector3.new(0.22, 6.4, 0.22), sourceCF * CFrame.new(rackX + side * 2.3, 3.5, -16), E.Gold, Enum.Material.Metal) end
+        Kit.part(wholesale, "RackRail", Vector3.new(5, 0.2, 0.2), sourceCF * CFrame.new(rackX, 6.4, -16), E.Gold, Enum.Material.Metal)
+        for garment = 0, 4 do
+            local gx = rackX - 1.8 + garment * 0.9
+            Kit.part(wholesale, "PremiumGarment", Vector3.new(0.72, 2.8 + garment % 2 * 0.5, 1.5), sourceCF * CFrame.new(gx, 4.65, -16),
+                ({E.Coral,E.Cream,E.Teal,E.Blue,E.Gold})[(garment + rackIndex) % 5 + 1], Enum.Material.Fabric, nil, false)
+            Kit.part(wholesale, "Hanger", Vector3.new(0.82, 0.08, 0.08), sourceCF * CFrame.new(gx, 6.2, -16), E.Steel, Enum.Material.Metal, nil, false)
+        end
     end
-    if sourceCrate then prompt(sourceCrate, "Browse wholesale lots", "Estate") end
-    Kit.cylinder(wholesale, "BlueBarrel", 1.2, 3, sourceCF * CFrame.new(12, 1.6, -15), E.Blue, Enum.Material.Metal)
-    Kit.cylinder(wholesale, "RedBarrel", 1.2, 3, sourceCF * CFrame.new(14.8, 1.6, -15.6), E.Red, Enum.Material.Metal)
-    Kit.part(wholesale, "ForkliftBody", Vector3.new(3, 2, 4.4), sourceCF * CFrame.new(6, 1.7, -17), Color3.fromRGB(240, 190, 40), Enum.Material.Metal)
-    Kit.part(wholesale, "ForkliftSeat", Vector3.new(3, 1.6, 1.2), sourceCF * CFrame.new(6, 2.2, -14.4), E.Charcoal)
-    Kit.part(wholesale, "ForkliftRoof", Vector3.new(3, 0.2, 2.8), sourceCF * CFrame.new(6, 5.8, -16.6), E.Charcoal, Enum.Material.Metal)
-    for _, x in ipairs({5.1, 6.9}) do Kit.part(wholesale, "ForkliftMast", Vector3.new(0.4, 6, 0.4), sourceCF * CFrame.new(x, 3.7, -19.4), E.Charcoal, Enum.Material.Metal) end
-    for level = 0, 3 do for item = 0, 6 do Kit.part(wholesale, "WholesaleStock", Vector3.new(1.3, 1.5, 1.3), sourceCF * CFrame.new(-12 + item * 2.1, 1.8 + level * 2.4, 10), ({E.Card,E.LightWood,E.Red,E.Teal})[(item + level) % 4 + 1]) end end
+    if browseRack then prompt(browseRack, "Browse premium clothing · $90", "Estate") end
+    local foldTable = Kit.part(wholesale, "FoldingTable", Vector3.new(12, 0.4, 4), sourceCF * CFrame.new(0, 3.2, 8), E.LightWood, Enum.Material.Wood)
+    for side = -1, 1, 2 do Kit.part(wholesale, "TableLeg", Vector3.new(0.35, 3, 0.35), sourceCF * CFrame.new(side * 5.2, 1.6, 8), E.Gold, Enum.Material.Metal) end
+    for stack = 0, 5 do for level = 0, 2 do
+        Kit.part(wholesale, "FoldedPremiumFashion", Vector3.new(1.65, 0.28, 2.4), sourceCF * CFrame.new(-4.5 + stack * 1.8, 3.55 + level * 0.3, 8),
+            ({E.Cream,E.Coral,E.Blue,E.Teal,E.Gold})[(stack + level) % 5 + 1], Enum.Material.Fabric, nil, false)
+    end end
 end
 function World:exactDistrict()
     local district = Kit.model(self.Root, "ExactPublicBuildings")
@@ -459,10 +469,10 @@ function World:exactDistrict()
         for _, legX in ipairs({-5.5,5.5}) do for _, legZ in ipairs({-1.3,1.3}) do
             Kit.part(restore, "WorkshopLeg", Vector3.new(0.5, 3.1, 0.5), restoreCF * CFrame.new(x + legX, 2, -2 + legZ), E.Wood, Enum.Material.Wood)
         end end
-        if x < 0 then prompt(bench, "Restore a treasure", "Workbench") end
+        if x < 0 then prompt(bench, "Freshen a fashion find", "Workbench") end
     end
     local restoreTrigger = Kit.part(restore, "RestoreInteraction", Vector3.new(6, 8, 1), restoreCF * CFrame.new(0, 4, -15), E.Cream, nil, nil, false); restoreTrigger.Transparency = 1
-    prompt(restoreTrigger, "Restore a treasure", "Workbench")
+    prompt(restoreTrigger, "Freshen a fashion find", "Workbench")
     local designerCF = CFrame.new(40, 0, -105) * CFrame.Angles(0, math.pi, 0)
     local designer = exactShell(district, "DesignerShowcase", designerCF, 36, 16, 28, E.Dark, E.Charcoal,
         {{-3,3,0,9.5},{-16,-6,2,11},{6,16,2,11}})
@@ -688,7 +698,7 @@ function World:exactEnvironment()
     local signpost = Kit.model(environment, "TownSignpost")
     Kit.cylinder(signpost, "Post", 0.45, 12, CFrame.new(10, 6, -74), E.Wood, Enum.Material.Wood)
     Kit.ball(signpost, "Finial", Vector3.new(1.4,1.4,1.4), CFrame.new(10,12.2,-74), E.Gold, Enum.Material.Metal, false)
-    local directions = {{"↑ THRIFT STREET",E.Teal,E.Cream},{"DUMPSTER ALLEY →",E.Charcoal,E.Gold},{"← PARCEL POST",E.Gold,Color3.fromRGB(58,42,0)},{"← SOURCE",E.Red,E.Cream},{"FLEA FIELD →",E.Coral,E.Cream}}
+    local directions = {{"↑ THRIFT STREET",E.Teal,E.Cream},{"THRIFT OUTLET →",E.Charcoal,E.Gold},{"← DONATION DROP",E.Gold,Color3.fromRGB(58,42,0)},{"← CURATED RACK",E.Red,E.Cream},{"FASHION FLEA →",E.Coral,E.Cream}}
     for index, direction in ipairs(directions) do
         Kit.sign(signpost, direction[1], CFrame.new(10, 12.55 - index * 1.55, -74.7), Vector3.new(8,1.3,0.2), direction[2], direction[3])
     end
@@ -1772,8 +1782,32 @@ function World:holdItem(player, definition, item, config)
     end
     return true
 end
-function World:customer(userId, name)
+function World:customer(userId, name, avatarUserId)
     local plot = self.Owners[userId]; if not plot then return end
+    if avatarUserId then
+        task.spawn(function()
+            local okDescription, description = pcall(Players.GetHumanoidDescriptionFromUserId, Players, avatarUserId)
+            if not okDescription or not self.Owners[userId] then self:customer(userId, name); return end
+            local okModel, avatar = pcall(Players.CreateHumanoidModelFromDescription, Players, description, Enum.HumanoidRigType.R15)
+            if not okModel or not avatar or not self.Owners[userId] then self:customer(userId, name); return end
+            self.CustomerSerial += 1
+            local id = self.CustomerSerial; avatar.Name = "FriendCustomer_" .. id; avatar.Parent = self.Root
+            pcall(avatar.ScaleTo, avatar, 0.82)
+            for _, child in ipairs(avatar:GetDescendants()) do
+                if child:IsA("BasePart") then child.Anchored = true; child.CanCollide = false; child.CanTouch = false; child.CanQuery = false
+                elseif child:IsA("Script") or child:IsA("LocalScript") then child:Destroy() end
+            end
+            local head = avatar:FindFirstChild("Head") or avatar:FindFirstChildWhichIsA("BasePart")
+            if head then
+                local bill = Instance.new("BillboardGui"); bill.Size = UDim2.fromOffset(210, 44); bill.StudsOffset = Vector3.new(0, 1.7, 0); bill.MaxDistance = 45; bill.Parent = head
+                local label = Instance.new("TextLabel"); label.Size = UDim2.fromScale(1, 1); label.BackgroundTransparency = 0.1; label.BackgroundColor3 = P.Paper
+                label.Text = name; label.TextColor3 = P.Ink; label.TextSize = 14; label.TextWrapped = true; label.Font = Enum.Font.GothamBold; label.Parent = bill
+                local corner = Instance.new("UICorner"); corner.CornerRadius = UDim.new(0, 8); corner.Parent = label
+            end
+            self.Customers[id] = {Model = avatar, Owner = userId, CF = plot.CF, Age = 0, Parts = {}, Id = id, Avatar = true}
+        end)
+        return
+    end
     self.CustomerSerial += 1
     local id = self.CustomerSerial
     local model = Kit.model(self.Root, "Customer_" .. id)
@@ -1825,13 +1859,16 @@ function World:animateCustomers(delta)
                 else x = math.sin((age - 4) / 13 * math.pi) * 1.5 end
                 local face = if age > 17 then math.pi else 0
                 local base = npc.CF * CFrame.new(x, if moving then math.abs(math.sin(age * 8)) * 0.08 else 0, z) * CFrame.Angles(0, face, 0)
-                for name, entry in pairs(npc.Parts) do
-                    local swing = 0
-                    if moving then
-                        if name == "LeftLeg" or name == "LeftShoe" or name == "RightArm" or name == "RightHand" then swing = math.sin(age * 8) * 0.3
-                        elseif name == "RightLeg" or name == "RightShoe" or name == "LeftArm" or name == "LeftHand" then swing = -math.sin(age * 8) * 0.3 end
+                if npc.Avatar then npc.Model:PivotTo(base * CFrame.new(0, 3, 0))
+                else
+                    for name, entry in pairs(npc.Parts) do
+                        local swing = 0
+                        if moving then
+                            if name == "LeftLeg" or name == "LeftShoe" or name == "RightArm" or name == "RightHand" then swing = math.sin(age * 8) * 0.3
+                            elseif name == "RightLeg" or name == "RightShoe" or name == "LeftArm" or name == "LeftHand" then swing = -math.sin(age * 8) * 0.3 end
+                        end
+                        entry.Part.CFrame = base * entry.Offset * CFrame.Angles(swing, 0, 0)
                     end
-                    entry.Part.CFrame = base * entry.Offset * CFrame.Angles(swing, 0, 0)
                 end
             end
         end

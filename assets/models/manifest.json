@@ -1,482 +1,482 @@
 {
-  "lamps_1": {
-    "name": "Tulip Lamp",
-    "category": "Lamps",
+  "tshirts_1": {
+    "name": "Black Logo Tee",
+    "category": "T-Shirts",
     "variant": 1,
-    "parts": 9
+    "parts": 6
   },
-  "lamps_2": {
-    "name": "Banker Lamp",
-    "category": "Lamps",
+  "tshirts_2": {
+    "name": "Gray Everyday Tee",
+    "category": "T-Shirts",
     "variant": 2,
+    "parts": 6
+  },
+  "tshirts_3": {
+    "name": "White Logo Tee",
+    "category": "T-Shirts",
+    "variant": 3,
     "parts": 8
   },
-  "lamps_3": {
-    "name": "Mushroom Lamp",
-    "category": "Lamps",
-    "variant": 3,
-    "parts": 9
-  },
-  "lamps_4": {
-    "name": "Arc Lamp",
-    "category": "Lamps",
+  "tshirts_4": {
+    "name": "Black Striped Tee",
+    "category": "T-Shirts",
     "variant": 4,
     "parts": 6
   },
-  "lamps_5": {
-    "name": "Lantern Lamp",
-    "category": "Lamps",
+  "tshirts_5": {
+    "name": "White Striped Tee",
+    "category": "T-Shirts",
     "variant": 5,
-    "parts": 13
-  },
-  "lamps_6": {
-    "name": "Desk Lamp",
-    "category": "Lamps",
-    "variant": 6,
-    "parts": 7
-  },
-  "lamps_7": {
-    "name": "Lava Lamp",
-    "category": "Lamps",
-    "variant": 7,
-    "parts": 7
-  },
-  "lamps_8": {
-    "name": "Tiffany Lamp",
-    "category": "Lamps",
-    "variant": 8,
-    "parts": 12
-  },
-  "lamps_9": {
-    "name": "Studio Lamp",
-    "category": "Lamps",
-    "variant": 9,
-    "parts": 9
-  },
-  "lamps_10": {
-    "name": "Moon Lamp",
-    "category": "Lamps",
-    "variant": 10,
-    "parts": 7
-  },
-  "radios_1": {
-    "name": "Pocket Radio",
-    "category": "Radios",
-    "variant": 1,
-    "parts": 11
-  },
-  "radios_2": {
-    "name": "Bakelite Radio",
-    "category": "Radios",
-    "variant": 2,
-    "parts": 13
-  },
-  "radios_3": {
-    "name": "Boombox Radio",
-    "category": "Radios",
-    "variant": 3,
-    "parts": 18
-  },
-  "radios_4": {
-    "name": "Cathedral Radio",
-    "category": "Radios",
-    "variant": 4,
-    "parts": 11
-  },
-  "radios_5": {
-    "name": "Transistor Radio",
-    "category": "Radios",
-    "variant": 5,
-    "parts": 13
-  },
-  "radios_6": {
-    "name": "Space Radio",
-    "category": "Radios",
-    "variant": 6,
-    "parts": 15
-  },
-  "radios_7": {
-    "name": "Kitchen Radio",
-    "category": "Radios",
-    "variant": 7,
-    "parts": 14
-  },
-  "radios_8": {
-    "name": "Travel Radio",
-    "category": "Radios",
-    "variant": 8,
-    "parts": 18
-  },
-  "radios_9": {
-    "name": "Jukebox Radio",
-    "category": "Radios",
-    "variant": 9,
-    "parts": 16
-  },
-  "radios_10": {
-    "name": "Crystal Radio",
-    "category": "Radios",
-    "variant": 10,
-    "parts": 13
-  },
-  "clocks_1": {
-    "name": "Cuckoo Clock",
-    "category": "Clocks",
-    "variant": 1,
-    "parts": 18
-  },
-  "clocks_2": {
-    "name": "Mantel Clock",
-    "category": "Clocks",
-    "variant": 2,
-    "parts": 14
-  },
-  "clocks_3": {
-    "name": "Alarm Clock",
-    "category": "Clocks",
-    "variant": 3,
-    "parts": 16
-  },
-  "clocks_4": {
-    "name": "Sunburst Clock",
-    "category": "Clocks",
-    "variant": 4,
-    "parts": 21
-  },
-  "clocks_5": {
-    "name": "Pendulum Clock",
-    "category": "Clocks",
-    "variant": 5,
-    "parts": 15
-  },
-  "clocks_6": {
-    "name": "Flip Clock",
-    "category": "Clocks",
-    "variant": 6,
-    "parts": 15
-  },
-  "clocks_7": {
-    "name": "Station Clock",
-    "category": "Clocks",
-    "variant": 7,
-    "parts": 18
-  },
-  "clocks_8": {
-    "name": "Carriage Clock",
-    "category": "Clocks",
-    "variant": 8,
-    "parts": 18
-  },
-  "clocks_9": {
-    "name": "Orbital Clock",
-    "category": "Clocks",
-    "variant": 9,
-    "parts": 27
-  },
-  "clocks_10": {
-    "name": "Kitten Clock",
-    "category": "Clocks",
-    "variant": 10,
-    "parts": 19
-  },
-  "chairs_1": {
-    "name": "Rocking Chair",
-    "category": "Chairs",
-    "variant": 1,
-    "parts": 17
-  },
-  "chairs_2": {
-    "name": "Windsor Chair",
-    "category": "Chairs",
-    "variant": 2,
-    "parts": 16
-  },
-  "chairs_3": {
-    "name": "Tulip Chair",
-    "category": "Chairs",
-    "variant": 3,
     "parts": 6
   },
-  "chairs_4": {
-    "name": "School Chair",
-    "category": "Chairs",
-    "variant": 4,
-    "parts": 9
-  },
-  "chairs_5": {
-    "name": "Lounge Chair",
-    "category": "Chairs",
-    "variant": 5,
-    "parts": 12
-  },
-  "chairs_6": {
-    "name": "Bistro Chair",
-    "category": "Chairs",
+  "tshirts_6": {
+    "name": "Golden Music Tee",
+    "category": "T-Shirts",
     "variant": 6,
-    "parts": 11
+    "parts": 8
   },
-  "chairs_7": {
-    "name": "Velvet Chair",
-    "category": "Chairs",
+  "tshirts_7": {
+    "name": "Simple Pattern Tee",
+    "category": "T-Shirts",
     "variant": 7,
-    "parts": 12
+    "parts": 6
   },
-  "chairs_8": {
-    "name": "Rattan Chair",
-    "category": "Chairs",
+  "tshirts_8": {
+    "name": "Pizza Graphic Tee",
+    "category": "T-Shirts",
     "variant": 8,
-    "parts": 18
+    "parts": 6
   },
-  "chairs_9": {
-    "name": "Rocket Chair",
-    "category": "Chairs",
+  "tshirts_9": {
+    "name": "Heart Pizza Tee",
+    "category": "T-Shirts",
     "variant": 9,
-    "parts": 9
+    "parts": 8
   },
-  "chairs_10": {
-    "name": "Doll Chair",
-    "category": "Chairs",
+  "tshirts_10": {
+    "name": "Teal Classic Tee",
+    "category": "T-Shirts",
     "variant": 10,
+    "parts": 6
+  },
+  "shirts_1": {
+    "name": "Blue Plaid Shirt",
+    "category": "Shirts",
+    "variant": 1,
     "parts": 10
   },
-  "toys_1": {
-    "name": "Robot Toy",
-    "category": "Toys",
-    "variant": 1,
-    "parts": 19
-  },
-  "toys_2": {
-    "name": "Train Toy",
-    "category": "Toys",
+  "shirts_2": {
+    "name": "Moto Shirt",
+    "category": "Shirts",
     "variant": 2,
-    "parts": 20
+    "parts": 10
   },
-  "toys_3": {
-    "name": "Teddy Toy",
-    "category": "Toys",
-    "variant": 3,
-    "parts": 16
-  },
-  "toys_4": {
-    "name": "Rocket Toy",
-    "category": "Toys",
-    "variant": 4,
-    "parts": 9
-  },
-  "toys_5": {
-    "name": "Carousel Toy",
-    "category": "Toys",
-    "variant": 5,
-    "parts": 24
-  },
-  "toys_6": {
-    "name": "Dollhouse Toy",
-    "category": "Toys",
-    "variant": 6,
-    "parts": 19
-  },
-  "toys_7": {
-    "name": "Racecar Toy",
-    "category": "Toys",
-    "variant": 7,
-    "parts": 14
-  },
-  "toys_8": {
-    "name": "Duck Toy",
-    "category": "Toys",
-    "variant": 8,
-    "parts": 12
-  },
-  "toys_9": {
-    "name": "Airplane Toy",
-    "category": "Toys",
-    "variant": 9,
-    "parts": 13
-  },
-  "toys_10": {
-    "name": "Dinosaur Toy",
-    "category": "Toys",
-    "variant": 10,
-    "parts": 14
-  },
-  "mirrors_1": {
-    "name": "Oval Mirror",
-    "category": "Mirrors",
-    "variant": 1,
-    "parts": 6
-  },
-  "mirrors_2": {
-    "name": "Sun Mirror",
-    "category": "Mirrors",
-    "variant": 2,
-    "parts": 20
-  },
-  "mirrors_3": {
-    "name": "Vanity Mirror",
-    "category": "Mirrors",
+  "shirts_3": {
+    "name": "Denim Layer Shirt",
+    "category": "Shirts",
     "variant": 3,
     "parts": 10
   },
-  "mirrors_4": {
-    "name": "Arch Mirror",
-    "category": "Mirrors",
+  "shirts_4": {
+    "name": "Pastel Layered Shirt",
+    "category": "Shirts",
     "variant": 4,
     "parts": 10
   },
-  "mirrors_5": {
-    "name": "Pocket Mirror",
-    "category": "Mirrors",
+  "shirts_5": {
+    "name": "Purple Teal Top",
+    "category": "Shirts",
     "variant": 5,
-    "parts": 8
+    "parts": 10
   },
-  "mirrors_6": {
-    "name": "Gilded Mirror",
-    "category": "Mirrors",
+  "shirts_6": {
+    "name": "White Tie Front Top",
+    "category": "Shirts",
     "variant": 6,
-    "parts": 14
+    "parts": 10
   },
-  "mirrors_7": {
-    "name": "Cloud Mirror",
-    "category": "Mirrors",
+  "shirts_7": {
+    "name": "Blue Tie Front Top",
+    "category": "Shirts",
     "variant": 7,
-    "parts": 18
+    "parts": 10
   },
-  "mirrors_8": {
-    "name": "Star Mirror",
-    "category": "Mirrors",
+  "shirts_8": {
+    "name": "Classic Zip Shirt",
+    "category": "Shirts",
     "variant": 8,
+    "parts": 10
+  },
+  "shirts_9": {
+    "name": "Denim Hoodie Shirt",
+    "category": "Shirts",
+    "variant": 9,
+    "parts": 10
+  },
+  "shirts_10": {
+    "name": "Guitar Layer Shirt",
+    "category": "Shirts",
+    "variant": 10,
+    "parts": 10
+  },
+  "pants_1": {
+    "name": "Ripped Skater Pants",
+    "category": "Pants",
+    "variant": 1,
+    "parts": 7
+  },
+  "pants_2": {
+    "name": "Black Wetsuit Pants",
+    "category": "Pants",
+    "variant": 2,
+    "parts": 7
+  },
+  "pants_3": {
+    "name": "Brown Cargo Pants",
+    "category": "Pants",
+    "variant": 3,
     "parts": 9
   },
-  "mirrors_9": {
-    "name": "Shell Mirror",
-    "category": "Mirrors",
-    "variant": 9,
-    "parts": 12
+  "pants_4": {
+    "name": "White Leather Pants",
+    "category": "Pants",
+    "variant": 4,
+    "parts": 7
   },
-  "mirrors_10": {
-    "name": "Heart Mirror",
-    "category": "Mirrors",
+  "pants_5": {
+    "name": "Brown Moto Pants",
+    "category": "Pants",
+    "variant": 5,
+    "parts": 7
+  },
+  "pants_6": {
+    "name": "Black Jeans White Shoes",
+    "category": "Pants",
+    "variant": 6,
+    "parts": 9
+  },
+  "pants_7": {
+    "name": "Classic Blue Jeans",
+    "category": "Pants",
+    "variant": 7,
+    "parts": 7
+  },
+  "pants_8": {
+    "name": "Dark Green Jeans",
+    "category": "Pants",
+    "variant": 8,
+    "parts": 7
+  },
+  "pants_9": {
+    "name": "Black Sneaker Jeans",
+    "category": "Pants",
+    "variant": 9,
+    "parts": 9
+  },
+  "pants_10": {
+    "name": "Everyday Black Jeans",
+    "category": "Pants",
     "variant": 10,
     "parts": 7
   },
-  "cameras_1": {
-    "name": "Box Camera",
-    "category": "Cameras",
+  "shorts_1": {
+    "name": "Jean Shorts White Shoes",
+    "category": "Shorts",
     "variant": 1,
-    "parts": 5
+    "parts": 7
   },
-  "cameras_2": {
-    "name": "Instant Camera",
-    "category": "Cameras",
+  "shorts_2": {
+    "name": "Black Bermuda Shorts",
+    "category": "Shorts",
     "variant": 2,
-    "parts": 5
+    "parts": 7
   },
-  "cameras_3": {
-    "name": "Twin Lens Camera",
-    "category": "Cameras",
+  "shorts_3": {
+    "name": "Classic Jean Shorts",
+    "category": "Shorts",
     "variant": 3,
-    "parts": 6
+    "parts": 7
   },
-  "cameras_4": {
-    "name": "Pocket Camera",
-    "category": "Cameras",
+  "shorts_4": {
+    "name": "Light Wash Jean Shorts",
+    "category": "Shorts",
     "variant": 4,
-    "parts": 4
+    "parts": 7
   },
-  "cameras_5": {
-    "name": "Bellows Camera",
-    "category": "Cameras",
+  "shorts_5": {
+    "name": "Light Blue Bermuda Shorts",
+    "category": "Shorts",
     "variant": 5,
-    "parts": 9
+    "parts": 7
   },
-  "cameras_6": {
-    "name": "Rangefinder Camera",
-    "category": "Cameras",
+  "shorts_6": {
+    "name": "Red Basketball Shorts",
+    "category": "Shorts",
     "variant": 6,
+    "parts": 7
+  },
+  "shorts_7": {
+    "name": "Lime Boxing Shorts",
+    "category": "Shorts",
+    "variant": 7,
+    "parts": 7
+  },
+  "shorts_8": {
+    "name": "Salmon Bermuda Shorts",
+    "category": "Shorts",
+    "variant": 8,
+    "parts": 7
+  },
+  "shorts_9": {
+    "name": "Mint Bermuda Shorts",
+    "category": "Shorts",
+    "variant": 9,
+    "parts": 7
+  },
+  "shorts_10": {
+    "name": "Blue Basketball Shorts",
+    "category": "Shorts",
+    "variant": 10,
+    "parts": 7
+  },
+  "jackets_1": {
+    "name": "Classic Zip Jacket",
+    "category": "Jackets",
+    "variant": 1,
+    "parts": 8
+  },
+  "jackets_2": {
+    "name": "Denim White Hoodie",
+    "category": "Jackets",
+    "variant": 2,
+    "parts": 8
+  },
+  "jackets_3": {
+    "name": "Pastel Star Jacket",
+    "category": "Jackets",
+    "variant": 3,
+    "parts": 8
+  },
+  "jackets_4": {
+    "name": "Black Leather Jacket",
+    "category": "Jackets",
+    "variant": 4,
+    "parts": 8
+  },
+  "jackets_5": {
+    "name": "Light Wash Denim Jacket",
+    "category": "Jackets",
+    "variant": 5,
+    "parts": 8
+  },
+  "jackets_6": {
+    "name": "Gray Hooded Jacket",
+    "category": "Jackets",
+    "variant": 6,
+    "parts": 8
+  },
+  "jackets_7": {
+    "name": "White Denim Jacket",
+    "category": "Jackets",
+    "variant": 7,
+    "parts": 8
+  },
+  "jackets_8": {
+    "name": "Black Guitar Jacket",
+    "category": "Jackets",
+    "variant": 8,
+    "parts": 8
+  },
+  "jackets_9": {
+    "name": "White Collared Jacket",
+    "category": "Jackets",
+    "variant": 9,
+    "parts": 8
+  },
+  "jackets_10": {
+    "name": "Brown Leather Jacket",
+    "category": "Jackets",
+    "variant": 10,
+    "parts": 8
+  },
+  "dresses_1": {
+    "name": "Red Evening Dress",
+    "category": "Dresses",
+    "variant": 1,
     "parts": 6
   },
-  "cameras_7": {
-    "name": "Studio Camera",
-    "category": "Cameras",
+  "dresses_2": {
+    "name": "Floral Day Dress",
+    "category": "Dresses",
+    "variant": 2,
+    "parts": 6
+  },
+  "dresses_3": {
+    "name": "White Ruffle Dress",
+    "category": "Dresses",
+    "variant": 3,
+    "parts": 8
+  },
+  "dresses_4": {
+    "name": "Pink Chiffon Dress",
+    "category": "Dresses",
+    "variant": 4,
+    "parts": 6
+  },
+  "dresses_5": {
+    "name": "Red Ruffle Dress",
+    "category": "Dresses",
+    "variant": 5,
+    "parts": 6
+  },
+  "dresses_6": {
+    "name": "Blue Chiffon Dress",
+    "category": "Dresses",
+    "variant": 6,
+    "parts": 8
+  },
+  "dresses_7": {
+    "name": "Beige Knit Dress",
+    "category": "Dresses",
     "variant": 7,
     "parts": 6
   },
-  "cameras_8": {
-    "name": "Movie Camera",
-    "category": "Cameras",
+  "dresses_8": {
+    "name": "Pink Knit Dress",
+    "category": "Dresses",
     "variant": 8,
-    "parts": 5
-  },
-  "cameras_9": {
-    "name": "Underwater Camera",
-    "category": "Cameras",
-    "variant": 9,
     "parts": 6
   },
-  "cameras_10": {
-    "name": "Toy Camera",
-    "category": "Cameras",
+  "dresses_9": {
+    "name": "Black Knit Dress",
+    "category": "Dresses",
+    "variant": 9,
+    "parts": 8
+  },
+  "dresses_10": {
+    "name": "Gray Knit Dress",
+    "category": "Dresses",
     "variant": 10,
     "parts": 6
   },
-  "vases_1": {
-    "name": "Bud Vase",
-    "category": "Vases",
+  "shoes_1": {
+    "name": "White Canvas Shoes",
+    "category": "Shoes",
     "variant": 1,
-    "parts": 3
+    "parts": 12
   },
-  "vases_2": {
-    "name": "Ginger Vase",
-    "category": "Vases",
+  "shoes_2": {
+    "name": "Gray Canvas Shoes",
+    "category": "Shoes",
     "variant": 2,
-    "parts": 4
+    "parts": 12
   },
-  "vases_3": {
-    "name": "Amphora Vase",
-    "category": "Vases",
+  "shoes_3": {
+    "name": "Black Dress Shoes",
+    "category": "Shoes",
     "variant": 3,
-    "parts": 5
+    "parts": 12
   },
-  "vases_4": {
-    "name": "Bubble Vase",
-    "category": "Vases",
+  "shoes_4": {
+    "name": "Red Running Shoes",
+    "category": "Shoes",
     "variant": 4,
-    "parts": 3
+    "parts": 12
   },
-  "vases_5": {
-    "name": "Fluted Vase",
-    "category": "Vases",
+  "shoes_5": {
+    "name": "Pink Canvas Shoes",
+    "category": "Shoes",
     "variant": 5,
     "parts": 12
   },
-  "vases_6": {
-    "name": "Swan Vase",
-    "category": "Vases",
+  "shoes_6": {
+    "name": "Black Running Shoes",
+    "category": "Shoes",
     "variant": 6,
-    "parts": 5
+    "parts": 12
   },
-  "vases_7": {
-    "name": "Geometric Vase",
-    "category": "Vases",
+  "shoes_7": {
+    "name": "Blue Running Shoes",
+    "category": "Shoes",
+    "variant": 7,
+    "parts": 12
+  },
+  "shoes_8": {
+    "name": "Blue Canvas Shoes",
+    "category": "Shoes",
+    "variant": 8,
+    "parts": 12
+  },
+  "shoes_9": {
+    "name": "White Running Shoes",
+    "category": "Shoes",
+    "variant": 9,
+    "parts": 12
+  },
+  "shoes_10": {
+    "name": "Black Purple Canvas Shoes",
+    "category": "Shoes",
+    "variant": 10,
+    "parts": 12
+  },
+  "accessories_1": {
+    "name": "Paper Bucket Hat",
+    "category": "Accessories",
+    "variant": 1,
+    "parts": 4
+  },
+  "accessories_2": {
+    "name": "Black Cowboy Hat",
+    "category": "Accessories",
+    "variant": 2,
+    "parts": 4
+  },
+  "accessories_3": {
+    "name": "Umbrella Hat",
+    "category": "Accessories",
+    "variant": 3,
+    "parts": 8
+  },
+  "accessories_4": {
+    "name": "Gray Winter Hat",
+    "category": "Accessories",
+    "variant": 4,
+    "parts": 4
+  },
+  "accessories_5": {
+    "name": "Cheese Hat",
+    "category": "Accessories",
+    "variant": 5,
+    "parts": 7
+  },
+  "accessories_6": {
+    "name": "Candy Scarf Hat",
+    "category": "Accessories",
+    "variant": 6,
+    "parts": 4
+  },
+  "accessories_7": {
+    "name": "Nurse Cap",
+    "category": "Accessories",
     "variant": 7,
     "parts": 4
   },
-  "vases_8": {
-    "name": "Rose Vase",
-    "category": "Vases",
+  "accessories_8": {
+    "name": "Ranger Hat",
+    "category": "Accessories",
     "variant": 8,
-    "parts": 9
+    "parts": 4
   },
-  "vases_9": {
-    "name": "Celadon Vase",
-    "category": "Vases",
+  "accessories_9": {
+    "name": "Blue Top Hat",
+    "category": "Accessories",
     "variant": 9,
-    "parts": 6
+    "parts": 4
   },
-  "vases_10": {
-    "name": "Moon Vase",
-    "category": "Vases",
+  "accessories_10": {
+    "name": "Eternal Top Hat",
+    "category": "Accessories",
     "variant": 10,
-    "parts": 8
+    "parts": 4
   }
 }
