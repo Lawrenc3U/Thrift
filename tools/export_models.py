@@ -1,12 +1,22 @@
 #!/usr/bin/env python3
 """Export the original 80-item primitive library as a reusable Roblox model pack."""
 from pathlib import Path
-import json, math, subprocess, tempfile
+import json, math, os, shutil, subprocess, tempfile
 import xml.etree.ElementTree as ET
 
 ROOT = Path(__file__).resolve().parents[1]
-LUAU = Path("/workspace/tooling/luau/luau")
 OUT = ROOT / "assets" / "models"
+
+def find_luau():
+    configured = os.environ.get("LUAU")
+    candidates = [
+        configured,
+        shutil.which("luau"),
+        shutil.which("luau.exe"),
+        str(ROOT / "tools" / "bin" / ("luau.exe" if os.name == "nt" else "luau")),
+        "/workspace/tooling/luau/luau",
+    ]
+    return next((candidate for candidate in candidates if candidate and Path(candidate).is_file()), None)
 
 DRIVER = r'''
 local catalog = require("%s")
@@ -34,9 +44,18 @@ def item(parent, cls, name, ref):
 
 def main():
     OUT.mkdir(parents=True,exist_ok=True)
-    with tempfile.NamedTemporaryFile("w",suffix=".luau",dir=ROOT,delete=False) as handle:
+    luau = find_luau()
+    if not luau:
+        pack, manifest_path = OUT / "ThriftFlipItems.rbxmx", OUT / "manifest.json"
+        assert pack.is_file() and manifest_path.is_file(), "Luau CLI is required to generate the missing model pack"
+        ET.parse(pack)
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        assert len(manifest) == 80, f"expected 80 committed item models, got {len(manifest)}"
+        print("SKIP model regeneration: Luau CLI is not installed; validated the committed 80-item model pack.")
+        return
+    with tempfile.NamedTemporaryFile("w",suffix=".luau",dir=ROOT,delete=False,encoding="utf-8") as handle:
         handle.write(DRIVER); driver=Path(handle.name)
-    try: lines=subprocess.run([str(LUAU),str(driver)],check=True,capture_output=True,text=True,cwd=ROOT).stdout.splitlines()
+    try: lines=subprocess.run([luau,str(driver)],check=True,capture_output=True,text=True,cwd=ROOT).stdout.splitlines()
     finally: driver.unlink(missing_ok=True)
     models=[]; current=None
     for line in lines:
@@ -71,7 +90,7 @@ def main():
     ET.indent(root); pack=OUT/"ThriftFlipItems.rbxmx"; ET.ElementTree(root).write(pack,encoding="utf-8",xml_declaration=True)
     ET.parse(pack)
     manifest={m["id"]:{"name":m["name"],"category":m["category"],"variant":m["variant"],"parts":len(m["parts"])} for m in models}
-    (OUT/"manifest.json").write_text(json.dumps(manifest,indent=2)+"\n")
+    (OUT/"manifest.json").write_text(json.dumps(manifest,indent=2)+"\n",encoding="utf-8")
     print(f"Exported {len(models)} original item models ({sum(len(m['parts']) for m in models)} parts) to {pack}")
 
 if __name__ == "__main__": main()

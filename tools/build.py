@@ -44,7 +44,7 @@ def build(output: Path) -> tuple[int, int, int]:
             cls = {'': 'ModuleScript', '.server': 'Script', '.client': 'LocalScript'}[suffix]
             name = path.stem.removesuffix(suffix) if suffix else path.stem
             _, props = item(target, cls, name)
-            ET.SubElement(props, 'ProtectedString', {'name': 'Source'}).text = path.read_text()
+            ET.SubElement(props, 'ProtectedString', {'name': 'Source'}).text = path.read_text(encoding='utf-8')
             script_count += 1
 
     # Embed reviewed Creator Store models so the generated place is self-contained.
@@ -95,7 +95,7 @@ def build(output: Path) -> tuple[int, int, int]:
     # Round-trip every script to catch escaping or accidental omission.
     sources = ET.parse(output).findall('.//ProtectedString[@name="Source"]')
     assert len(sources) == script_count
-    expected = sorted(p.read_text() for p in (ROOT / 'src').rglob('*.luau'))
+    expected = sorted(p.read_text(encoding='utf-8') for p in (ROOT / 'src').rglob('*.luau'))
     assert sorted(s.text for s in sources) == expected
     return count, script_count, imported_count
 

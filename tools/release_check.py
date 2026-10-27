@@ -57,7 +57,7 @@ def check_upload_pack() -> None:
 
 
 def unconfigured_assets() -> list[str]:
-    source = (ROOT / "src" / "shared" / "AssetConfig.luau").read_text()
+    source = (ROOT / "src" / "shared" / "AssetConfig.luau").read_text(encoding="utf-8")
     audio_block = re.search(r"\bAudio\s*=\s*\{(.*?)\}", source, re.DOTALL)
     assert audio_block, "AssetConfig.Audio table is missing"
     values = {name: int(value) for name, value in re.findall(r"\b([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(\d+)\b", audio_block.group(1))}
@@ -66,7 +66,7 @@ def unconfigured_assets() -> list[str]:
 
 
 def unconfigured_store() -> list[str]:
-    source = (ROOT / "src" / "shared" / "LiveConfig.luau").read_text()
+    source = (ROOT / "src" / "shared" / "LiveConfig.luau").read_text(encoding="utf-8")
     offers = re.findall(r'\bKey\s*=\s*"([^"]+)"\s*,\s*Id\s*=\s*(\d+)', source)
     assert offers, "LiveConfig store catalog is missing"
     return [key for key, value in offers if int(value) == 0]

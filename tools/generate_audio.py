@@ -75,7 +75,7 @@ def main():
             track[i] *= i / (.025 * RATE)
             track[-i - 1] *= i / (.025 * RATE)
         manifest[name] = save(name, track)
-    (OUT / 'manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')
+    (OUT / 'manifest.json').write_text(json.dumps(manifest, indent=2) + '\n', encoding='utf-8')
     print(f'Generated {len(manifest)} original audio files in {OUT}')
 
 if __name__ == '__main__':

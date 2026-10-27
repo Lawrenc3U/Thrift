@@ -6,7 +6,7 @@ import shutil
 import subprocess
 
 ROOT=Path(__file__).resolve().parents[1]
-source=(ROOT/"src/shared/ExchangeRules.luau").read_text()
+source=(ROOT/"src/shared/ExchangeRules.luau").read_text(encoding="utf-8")
 source=source.rsplit("return ExchangeRules",1)[0]
 suite=r'''
 local function item(id) return {Uid=id,DefId="lamps_1",Rarity=2,Condition=4,Variance=1,Inspected=true} end
@@ -37,6 +37,6 @@ if not luau:
     print("SKIP Luau exchange tests: Luau CLI is not installed. Roblox Studio testing is still required.")
     raise SystemExit(0)
 try:
-    target.write_text(source+"\n"+suite)
+    target.write_text(source+"\n"+suite,encoding="utf-8")
     subprocess.run([luau,str(target)],check=True,cwd=ROOT)
 finally: target.unlink(missing_ok=True)
