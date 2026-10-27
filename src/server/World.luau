@@ -166,7 +166,8 @@ local function exactShell(parent, name, cf, width, height, depth, wall, roof, op
     return model, front
 end
 function World.new()
-    local self = setmetatable({Plots = {}, Owners = {}, Customers = {}, CustomerSerial = 0, CatalogTemplates = {}}, World)
+    local self = setmetatable({Plots = {}, Owners = {}, Customers = {}, CustomerSerial = 0,
+        CatalogTemplates = {}, CatalogFailures = {}}, World)
     local existing = workspace:FindFirstChild("ThriftStreet")
     if existing then existing:Destroy() end
     self.Root = Kit.model(workspace, "ThriftStreet")
@@ -1699,23 +1700,24 @@ function World:catalogMannequin(definition)
             table.insert(accessories, {AssetId = definition.CatalogComponentIds[2], AccessoryType = Enum.AccessoryType.RightShoe, Order = 2, IsLayered = true})
         else
             local accessoryType = Enum.AccessoryType[definition.AvatarAssetType]
-            if not accessoryType then description:Destroy(); return nil end
+            if not accessoryType then description:Destroy(); return nil, "Unsupported accessory type " .. tostring(definition.AvatarAssetType) end
             table.insert(accessories, {AssetId = definition.CatalogAssetId, AccessoryType = accessoryType,
                 Order = 1, IsLayered = definition.AvatarAssetType ~= "Hat"})
         end
-        local applied = pcall(description.SetAccessories, description, accessories, true)
-        if not applied then description:Destroy(); return nil end
+        local applied, applyError = pcall(description.SetAccessories, description, accessories, true)
+        if not applied then description:Destroy(); return nil, "SetAccessories failed: " .. tostring(applyError) end
     end
     local ok, avatar = pcall(function()
         return Players:CreateHumanoidModelFromDescriptionAsync(description, Enum.HumanoidRigType.R15)
     end)
+    local primaryError = if ok then nil else avatar
     if not ok then
         ok, avatar = pcall(function()
             return Players:CreateHumanoidModelFromDescription(description, Enum.HumanoidRigType.R15)
         end)
     end
     description:Destroy()
-    if not ok or not avatar then return nil end
+    if not ok or not avatar then return nil, "Avatar creation failed: " .. tostring(primaryError) .. " / " .. tostring(avatar) end
     avatar.Name = "RobloxCatalogMannequin"
     local humanoid = avatar:FindFirstChildOfClass("Humanoid")
     if humanoid then humanoid.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None end
@@ -1736,18 +1738,43 @@ function World:installCatalogMannequin(model, definition, displayCF)
     model:SetAttribute("CatalogLoading", true)
     local fallbackParts = {}
     for _, child in ipairs(model:GetDescendants()) do if child:IsA("BasePart") then table.insert(fallbackParts, child) end end
+    local fallbackCF, fallbackSize = model:GetBoundingBox()
+    local rotation = displayCF - displayCF.Position
+    local card = Instance.new("Part"); card.Name = "OfficialCatalogDisplay"
+    card.Size = Vector3.new(2.8, 3.45, 0.12)
+    card.CFrame = CFrame.new(fallbackCF.Position.X, fallbackCF.Position.Y - fallbackSize.Y / 2 + card.Size.Y / 2, fallbackCF.Position.Z) * rotation
+    card.Color = P.Paper; card.Material = Enum.Material.SmoothPlastic; card.Anchored = true
+    card.CanCollide = false; card.CanTouch = false; card.CanQuery = false; card.Parent = model
+    local thumb = "rbxthumb://type=" .. (definition.CatalogItemType or "Asset") .. "&id=" .. definition.CatalogAssetId .. "&w=420&h=420"
+    for _, face in ipairs({Enum.NormalId.Front, Enum.NormalId.Back}) do
+        local surface = Instance.new("SurfaceGui"); surface.Name = "CatalogThumbnail"; surface.Face = face
+        surface.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud; surface.PixelsPerStud = 120; surface.LightInfluence = 0; surface.Parent = card
+        local image = Instance.new("ImageLabel"); image.Size = UDim2.fromScale(1, 1); image.BackgroundColor3 = P.Paper
+        image.BorderSizePixel = 0; image.Image = thumb; image.ScaleType = Enum.ScaleType.Fit; image.Parent = surface
+        local label = Instance.new("TextLabel"); label.AnchorPoint = Vector2.new(0.5, 1); label.Position = UDim2.new(0.5, 0, 1, -6)
+        label.Size = UDim2.new(0.9, 0, 0, 25); label.BackgroundColor3 = P.Teal; label.BackgroundTransparency = 0.05
+        label.Text = "OFFICIAL ROBLOX CATALOG"; label.TextColor3 = P.Cream; label.TextScaled = true; label.Font = Enum.Font.GothamBold; label.Parent = surface
+        local corner = Instance.new("UICorner"); corner.CornerRadius = UDim.new(0, 6); corner.Parent = label
+    end
+    for _, part in ipairs(fallbackParts) do if part.Parent then part.Transparency = 1 end end
     task.spawn(function()
-        local avatar = self:catalogMannequin(definition)
-        if not avatar then model:SetAttribute("CatalogLoading", false); return end
+        local avatar, loadError = self:catalogMannequin(definition)
+        if not avatar then
+            if model.Parent then model:SetAttribute("CatalogLoading", false) end
+            if not self.CatalogFailures[definition.Id] then
+                self.CatalogFailures[definition.Id] = true
+                warn("[THRIFT CATALOG] " .. definition.Name .. " (" .. definition.CatalogAssetId .. ") stayed on its official catalog card because the wearable could not load: " .. tostring(loadError))
+            end
+            return
+        end
         if not model.Parent then avatar:Destroy(); return end
-        local fallbackCF, fallbackSize = model:GetBoundingBox()
         local desired = CFrame.new(fallbackCF.Position.X, fallbackCF.Position.Y - fallbackSize.Y / 2, fallbackCF.Position.Z)
-            * (displayCF - displayCF.Position)
+            * rotation
         avatar.Parent = model
         local avatarCF, avatarSize = avatar:GetBoundingBox()
         local desiredBounds = desired * CFrame.new(0, avatarSize.Y / 2, 0)
         avatar:PivotTo(desiredBounds * avatarCF:Inverse() * avatar:GetPivot())
-        for _, part in ipairs(fallbackParts) do if part.Parent then part.Transparency = 1 end end
+        if card.Parent then card:Destroy() end
         model:SetAttribute("CatalogLoading", false); model:SetAttribute("UsesRobloxCatalogAvatar", true)
     end)
 end
@@ -1793,6 +1820,22 @@ function World:holdItem(player, definition, item, config)
 
     local model = ItemModels.create(character, definition, item, CFrame.new(), config)
     model.Name = "Held " .. definition.Name; model:SetAttribute("ThriftHeldItem", true); model:SetAttribute("Uid", item.Uid)
+    if definition.CatalogAssetId then
+        for _, child in ipairs(model:GetDescendants()) do if child:IsA("BasePart") then child.Transparency = 1 end end
+        local garment = Instance.new("Part"); garment.Name = "CatalogGarmentBag"; garment.Size = Vector3.new(2.15, 2.65, 0.22)
+        garment.CFrame = CFrame.new(0, 1.35, 0); garment.Color = P.Paper; garment.Material = Enum.Material.Fabric
+        garment.Anchored = true; garment.CanCollide = false; garment.CanTouch = false; garment.CanQuery = false; garment.Parent = model
+        local thumb = "rbxthumb://type=" .. (definition.CatalogItemType or "Asset") .. "&id=" .. definition.CatalogAssetId .. "&w=420&h=420"
+        for _, face in ipairs({Enum.NormalId.Front, Enum.NormalId.Back}) do
+            local surface = Instance.new("SurfaceGui"); surface.Face = face; surface.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud
+            surface.PixelsPerStud = 100; surface.LightInfluence = 0; surface.Parent = garment
+            local image = Instance.new("ImageLabel"); image.Size = UDim2.fromScale(1, 1); image.BackgroundColor3 = P.Paper
+            image.BorderSizePixel = 0; image.Image = thumb; image.ScaleType = Enum.ScaleType.Fit; image.Parent = surface
+        end
+        local handle = Instance.new("Part"); handle.Name = "HangerHandle"; handle.Size = Vector3.new(0.85, 0.12, 0.12)
+        handle.CFrame = CFrame.new(0, 2.76, 0); handle.Color = P.Gold; handle.Material = Enum.Material.Metal
+        handle.Anchored = true; handle.CanCollide = false; handle.CanTouch = false; handle.CanQuery = false; handle.Parent = model
+    end
     local _, initialSize = model:GetBoundingBox()
     local largest = math.max(initialSize.X, initialSize.Y, initialSize.Z, 0.01)
     model:ScaleTo(math.min(1.1, 2.35 / largest))

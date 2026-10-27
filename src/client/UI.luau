@@ -259,6 +259,19 @@ function UI.preview(parent, definition, item, height, hidden)
         label.AutomaticSize = Enum.AutomaticSize.None; label.TextXAlignment = Enum.TextXAlignment.Center; label.Font = Enum.Font.GothamBlack
         return viewport
     end
+    if definition and definition.CatalogAssetId then
+        local official = Instance.new("ImageLabel"); official.Name = "OfficialCatalogPreview"
+        official.Size = UDim2.new(1, -12, 1, -12); official.Position = UDim2.fromOffset(6, 6)
+        official.BackgroundTransparency = 1; official.BorderSizePixel = 0
+        official.Image = "rbxthumb://type=" .. (definition.CatalogItemType or "Asset") .. "&id=" .. definition.CatalogAssetId .. "&w=420&h=420"
+        official.ScaleType = Enum.ScaleType.Fit; official.ZIndex = 2; official.Parent = viewport
+        local badge = UI.label(viewport, "OFFICIAL ROBLOX CATALOG", 9, UI.Colors.White)
+        badge.AnchorPoint = Vector2.new(0.5, 1); badge.Position = UDim2.new(0.5, 0, 1, -7)
+        badge.Size = UDim2.fromOffset(168, 20); badge.AutomaticSize = Enum.AutomaticSize.None
+        badge.TextXAlignment = Enum.TextXAlignment.Center; badge.BackgroundColor3 = UI.Colors.Teal
+        badge.BackgroundTransparency = 0.04; badge.ZIndex = 3; UI.corner(badge, 8)
+        return viewport
+    end
     local ok, model = pcall(function()
         if not Models then
             Models = require(ReplicatedStorage.Shared:WaitForChild("ItemModels"))
@@ -297,18 +310,6 @@ function UI.preview(parent, definition, item, height, hidden)
         local label = UI.label(viewport, definition and definition.Name or "Your find", 20, UI.Colors.Teal)
         label.Size = UDim2.fromScale(1, 1); label.AutomaticSize = Enum.AutomaticSize.None; label.TextXAlignment = Enum.TextXAlignment.Center
         warn("Item preview failed: " .. tostring(model))
-    end
-    if definition and definition.CatalogAssetId then
-        local catalog = Instance.new("ImageLabel"); catalog.Name = "CatalogReference"
-        catalog.AnchorPoint = Vector2.new(1, 0); catalog.Position = UDim2.new(1, -8, 0, 8)
-        catalog.Size = UDim2.fromOffset(94, 94); catalog.BackgroundColor3 = UI.Colors.Panel
-        catalog.BackgroundTransparency = 0.08; catalog.BorderSizePixel = 0; catalog.ZIndex = 4
-        catalog.Image = "rbxthumb://type=" .. (definition.CatalogItemType or "Asset") .. "&id=" .. definition.CatalogAssetId .. "&w=150&h=150"
-        catalog.ScaleType = Enum.ScaleType.Crop; catalog.Parent = viewport; UI.corner(catalog, 9); UI.stroke(catalog, UI.Colors.White, 1, 0.2)
-        local tag = UI.label(viewport, "ROBLOX CATALOG", 8, UI.Colors.White); tag.ZIndex = 5
-        tag.AnchorPoint = Vector2.new(1, 0); tag.Position = UDim2.new(1, -8, 0, 102); tag.Size = UDim2.fromOffset(94, 14)
-        tag.AutomaticSize = Enum.AutomaticSize.None; tag.TextXAlignment = Enum.TextXAlignment.Center
-        tag.BackgroundColor3 = UI.Colors.Teal; tag.BackgroundTransparency = 0.05; UI.corner(tag, 5)
     end
     return viewport
 end
