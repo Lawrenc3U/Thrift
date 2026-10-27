@@ -117,7 +117,7 @@ local function updateHud()
     ui:setSubtitle(if state.Ephemeral then "STUDIO PRACTICE | PROGRESS DOES NOT SAVE" else "YOUR COZY CORNER OF THRIFT STREET")
     ui.Effects = state.Settings.Effects
     audio:setEnabled(state.Settings.Music, state.Settings.Effects, state.Settings.TownMusic, state.Settings.AuctionMusic)
-    audio:setZone(page == "Auction" and "auction_music" or page == "Town" and "town" or "shop")
+    audio:setZone(page == "Auction" and "auction_music" or "town")
 end
 
 event.OnClientEvent:Connect(function(kind, payload)

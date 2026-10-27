@@ -42,13 +42,13 @@ return {
         sale = 81392987750332,
         reward = 99501271310366,
         place = 133598000364353,
-        auction = 83293755211284,
+        auction = 83449340624247,
         error = 129930853045405,
         scrub = 123462534642816,
         polish = 81392987750332,
         shop = 137874278034401,
         town = 125552778383679,
-        auction_music = 83449340624247,
+        auction_music = 83293755211284,
     },
     Images = {Icon = 0, Thumbnail = 0, Logo = 0},
     MusicVolume = 0.22,
@@ -26715,7 +26715,7 @@ local Shared = game:GetService("ReplicatedStorage"):WaitForChild("Shared")
 local Assets = require(Shared.AssetConfig)
 local Audio = {}
 Audio.__index = Audio
-local MUSIC_NAMES = {"shop", "town", "auction_music"}
+local MUSIC_NAMES = {"town", "auction_music"}
 local function validAudioId(id)
     -- Reject the sample sequence shown in setup documentation. This prevents a
     -- copied example from producing thirteen ContentProvider errors in Studio.
@@ -26724,7 +26724,7 @@ local function validAudioId(id)
 end
 function Audio.new()
     local self = setmetatable({Music = true, Effects = true, TownMusic = true, AuctionMusic = true,
-        Tracks = {}, Last = {}, Zone = "shop"}, Audio)
+        Tracks = {}, Last = {}, Zone = "town"}, Audio)
     self.Group = Instance.new("SoundGroup"); self.Group.Name = "ThriftAudio"; self.Group.Parent = SoundService
     self.MusicGroup = Instance.new("SoundGroup"); self.MusicGroup.Name = "ThriftMusic"; self.MusicGroup.Parent = self.Group
     self.EffectsGroup = Instance.new("SoundGroup"); self.EffectsGroup.Name = "ThriftEffects"; self.EffectsGroup.Parent = self.Group
@@ -26754,7 +26754,7 @@ function Audio.new()
             end
         end
     end)
-    self:setZone("shop")
+    self:setZone("town")
     return self
 end
 function Audio:setEnabled(music, effects, townMusic, auctionMusic)
@@ -26921,7 +26921,7 @@ local function updateHud()
     ui:setSubtitle(if state.Ephemeral then "STUDIO PRACTICE | PROGRESS DOES NOT SAVE" else "YOUR COZY CORNER OF THRIFT STREET")
     ui.Effects = state.Settings.Effects
     audio:setEnabled(state.Settings.Music, state.Settings.Effects, state.Settings.TownMusic, state.Settings.AuctionMusic)
-    audio:setZone(page == "Auction" and "auction_music" or page == "Town" and "town" or "shop")
+    audio:setZone(page == "Auction" and "auction_music" or "town")
 end
 
 event.OnClientEvent:Connect(function(kind, payload)

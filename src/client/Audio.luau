@@ -4,7 +4,7 @@ local Shared = game:GetService("ReplicatedStorage"):WaitForChild("Shared")
 local Assets = require(Shared.AssetConfig)
 local Audio = {}
 Audio.__index = Audio
-local MUSIC_NAMES = {"shop", "town", "auction_music"}
+local MUSIC_NAMES = {"town", "auction_music"}
 local function validAudioId(id)
     -- Reject the sample sequence shown in setup documentation. This prevents a
     -- copied example from producing thirteen ContentProvider errors in Studio.
@@ -13,7 +13,7 @@ local function validAudioId(id)
 end
 function Audio.new()
     local self = setmetatable({Music = true, Effects = true, TownMusic = true, AuctionMusic = true,
-        Tracks = {}, Last = {}, Zone = "shop"}, Audio)
+        Tracks = {}, Last = {}, Zone = "town"}, Audio)
     self.Group = Instance.new("SoundGroup"); self.Group.Name = "ThriftAudio"; self.Group.Parent = SoundService
     self.MusicGroup = Instance.new("SoundGroup"); self.MusicGroup.Name = "ThriftMusic"; self.MusicGroup.Parent = self.Group
     self.EffectsGroup = Instance.new("SoundGroup"); self.EffectsGroup.Name = "ThriftEffects"; self.EffectsGroup.Parent = self.Group
@@ -43,7 +43,7 @@ function Audio.new()
             end
         end
     end)
-    self:setZone("shop")
+    self:setZone("town")
     return self
 end
 function Audio:setEnabled(music, effects, townMusic, auctionMusic)
