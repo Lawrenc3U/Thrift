@@ -25114,28 +25114,80 @@ end
 function World:exactDistrict()
     local district = Kit.model(self.Root, "ExactPublicBuildings")
     district:SetAttribute("Source", "Thrift Flip Town 3D Preview (2).html")
+    district:SetAttribute("ShopBuilderReference", "ThriftStreetShops.lua")
     local marketCF = CFrame.new(0, 0, -105) * CFrame.Angles(0, math.pi, 0)
     local market = Kit.model(district, "Market")
     Kit.part(market, "MarketFloor", Vector3.new(36, 0.4, 28), marketCF * CFrame.new(0, 0.2, 0), E.Stone, Enum.Material.Pavement)
-    for stallIndex, x in ipairs({-11, 0, 11}) do
+    local stalls = {
+        {X = -11, Name = "ANTIQUES", Color = E.Red, Goods = {E.Gold,E.Purple,E.LightWood,E.Teal}},
+        {X = 0, Name = "CLOTHES", Color = E.Teal, Goods = {E.Coral,E.Gold,E.Teal,E.Purple}},
+        {X = 11, Name = "COLLECTIBLES", Color = E.Gold, Goods = {E.Coral,E.Teal,E.Cream,E.Purple}},
+    }
+    for stallIndex, stall in ipairs(stalls) do
+        local x = stall.X
         for stripe = 1, 6 do
-            local color = if stripe % 2 == 1 then ({E.Red,E.Teal,E.Gold})[stallIndex] else E.Cream
+            local color = if stripe % 2 == 1 then stall.Color else E.Cream
             Kit.part(market, "AwningStripe", Vector3.new(1.5, 0.4, 7.4), marketCF * CFrame.new(x - 4.5 + (stripe - 0.5) * 1.5, 8.4, -4), color, Enum.Material.Fabric)
+            Kit.part(market, "AwningValance", Vector3.new(1.5, 1, 0.3), marketCF * CFrame.new(x - 4.5 + (stripe - 0.5) * 1.5, 7.7, -7.7), color, Enum.Material.Fabric, nil, false)
         end
         local counter = Kit.part(market, "MarketCounter", Vector3.new(8, 2.6, 2.4), marketCF * CFrame.new(x, 1.8, -6), E.Wood, Enum.Material.Wood)
         prompt(counter, "Browse the market", "Market")
         for _, dx in ipairs({-4, 4}) do for _, dz in ipairs({-3, 3}) do Kit.part(market, "StallPost", Vector3.new(0.5, 8, 0.5), marketCF * CFrame.new(x + dx, 4.2, -4 + dz), E.Wood, Enum.Material.Wood) end end
+        Kit.part(market, "CounterTop", Vector3.new(8.4, 0.3, 2.8), marketCF * CFrame.new(x, 3.25, -6), E.LightWood, Enum.Material.Wood)
+        Kit.part(market, "BackTable", Vector3.new(8, 0.3, 1.6), marketCF * CFrame.new(x, 4.2, -1.4), E.LightWood, Enum.Material.Wood)
+        for item = 1, 6 do
+            local height = 0.9 + item % 3 * 0.4
+            local position = marketCF * CFrame.new(x - 3.5 + (item - 1) * 1.4, 3.4 + height / 2, -6)
+            if stall.Name == "ANTIQUES" then
+                Kit.cylinder(market, "AntiqueVase", 0.45, height + 0.4, position, stall.Goods[item % #stall.Goods + 1], Enum.Material.Marble, false)
+            else
+                Kit.part(market, "MarketGoods", Vector3.new(0.9, height, 0.9), position, stall.Goods[item % #stall.Goods + 1], if stall.Name == "CLOTHES" then Enum.Material.Fabric else Enum.Material.SmoothPlastic, nil, false)
+            end
+        end
+        Kit.sign(market, stall.Name, marketCF * CFrame.new(x, 6.6, -7.4), Vector3.new(8, 1.6, 0.25), stall.Color,
+            if stallIndex == 3 then Color3.fromRGB(58, 42, 0) else E.Cream)
     end
     Kit.sign(market, "MARKET", marketCF * CFrame.new(0, 11, -12), Vector3.new(20, 3, 0.4), E.Gold, Color3.fromRGB(58, 42, 0))
-    for _, x in ipairs({-9, 9}) do Kit.part(market, "MarketSignPost", Vector3.new(1.2, 12, 1.2), marketCF * CFrame.new(x, 6.4, -12), E.Wood, Enum.Material.Wood) end
+    for _, x in ipairs({-9, 9}) do
+        Kit.part(market, "MarketSignPost", Vector3.new(1.2, 12, 1.2), marketCF * CFrame.new(x, 6.4, -12), E.Wood, Enum.Material.Wood)
+        Kit.part(market, "MarketSignBase", Vector3.new(2, 0.6, 2), marketCF * CFrame.new(x, 0.7, -12), E.Stone, Enum.Material.Concrete)
+        Kit.plant(market, marketCF * CFrame.new(x * 1.35, 0.5, -12), 0.7)
+    end
+    for index = 0, 8 do
+        Kit.part(market, "MarketBunting", Vector3.new(1, 1, 0.1), marketCF * CFrame.new(-8 + index * 2, 8.8, -12.4) * CFrame.Angles(0, 0, math.pi / 4),
+            ({E.Red,E.Teal,E.Cream,E.Coral})[index % 4 + 1], Enum.Material.Fabric, nil, false)
+    end
     local restoreCF = CFrame.new(-40, 0, -105) * CFrame.Angles(0, math.pi, 0)
-    local restore = exactShell(district, "RestoreShop", restoreCF, 36, 15, 28, E.Brick, E.Charcoal, {{-3,3,0,9}})
+    local restore = exactShell(district, "RestoreShop", restoreCF, 36, 15, 28, E.Brick, E.Charcoal,
+        {{-8,8,0,9.5},{-16,-11.5,4,9},{11.5,16,4,9}})
     Kit.sign(restore, "RESTORE SHOP", restoreCF * CFrame.new(0, 13.4, -14.3), Vector3.new(20, 3, 0.3), E.Cream, Color3.fromRGB(138, 63, 43))
+    Kit.cylinder(restore, "RolledGarageDoor", 1.1, 16, restoreCF * CFrame.new(0, 10.2, -14.6) * CFrame.Angles(0, 0, math.pi / 2), E.Steel, Enum.Material.Metal)
+    for _, x in ipairs({-8.2,8.2}) do Kit.part(restore, "GarageRail", Vector3.new(0.4, 9.5, 0.4), restoreCF * CFrame.new(x, 4.75, -14.2), E.Steel, Enum.Material.Metal) end
+    Kit.part(restore, "Pegboard", Vector3.new(15, 7, 0.3), restoreCF * CFrame.new(-9, 6, 12.8), E.LightWood, Enum.Material.Wood)
+    for tool = 0, 6 do
+        local x = -15.5 + tool * 2.1
+        Kit.part(restore, "ToolHandle", Vector3.new(0.25, 2.2, 0.25), restoreCF * CFrame.new(x, 6 + tool % 2, 12.5), E.Wood, Enum.Material.Wood, nil, false)
+        Kit.part(restore, "ToolHead", Vector3.new(1.2, 0.6, 0.3), restoreCF * CFrame.new(x, 7.3 + tool % 2, 12.5), E.Steel, Enum.Material.Metal, nil, false)
+    end
+    for _, x in ipairs({-9,9}) do
+        local bench = Kit.part(restore, "WorkshopBench", Vector3.new(12, 0.4, 3.2), restoreCF * CFrame.new(x, 3.6, -2), E.LightWood, Enum.Material.Wood)
+        for _, legX in ipairs({-5.5,5.5}) do for _, legZ in ipairs({-1.3,1.3}) do
+            Kit.part(restore, "WorkshopLeg", Vector3.new(0.5, 3.1, 0.5), restoreCF * CFrame.new(x + legX, 2, -2 + legZ), E.Wood, Enum.Material.Wood)
+        end end
+        if x &lt; 0 then prompt(bench, "Restore a treasure", "Workbench") end
+    end
     local restoreTrigger = Kit.part(restore, "RestoreInteraction", Vector3.new(6, 8, 1), restoreCF * CFrame.new(0, 4, -15), E.Cream, nil, nil, false); restoreTrigger.Transparency = 1
     prompt(restoreTrigger, "Restore a treasure", "Workbench")
     local designerCF = CFrame.new(40, 0, -105) * CFrame.Angles(0, math.pi, 0)
-    local designer = exactShell(district, "DesignerShowcase", designerCF, 36, 16, 28, E.Dark, E.Charcoal, {{-3,3,0,9}})
+    local designer = exactShell(district, "DesignerShowcase", designerCF, 36, 16, 28, E.Dark, E.Charcoal,
+        {{-3,3,0,9.5},{-16,-6,2,11},{6,16,2,11}})
     Kit.sign(designer, "DESIGNER SHOWCASE", designerCF * CFrame.new(0, 14.4, -14.3), Vector3.new(20, 3, 0.3), E.Cream, E.Dark)
+    Kit.part(designer, "RedCarpet", Vector3.new(6, 0.15, 9), designerCF * CFrame.new(0, 0.08, -19), E.Red, Enum.Material.Fabric, nil, false)
+    for _, x in ipairs({-11,11}) do
+        Kit.cylinder(designer, "MannequinStand", 1.25, 0.3, designerCF * CFrame.new(x, 0.8, -10.5), E.Steel, Enum.Material.Metal)
+        Kit.part(designer, "MannequinDress", Vector3.new(3, 3.8, 1.8), designerCF * CFrame.new(x, 4.3, -10.5), if x &lt; 0 then E.Coral else E.Gold, Enum.Material.Fabric, nil, false)
+        Kit.ball(designer, "MannequinHead", Vector3.new(1.4, 1.4, 1.4), designerCF * CFrame.new(x, 7.7, -10.5), E.Cream, nil, false)
+    end
     local designerTrigger = Kit.part(designer, "ShowcaseInteraction", Vector3.new(6, 8, 1), designerCF * CFrame.new(0, 4, -15), E.Cream, nil, nil, false); designerTrigger.Transparency = 1
     prompt(designerTrigger, "Enter designer showcase", "Showcase")
     local showcase = Kit.model(designer, "LiveItemShowcase")
@@ -25233,6 +25285,18 @@ function World:exactAuctionHouse(parent)
     Kit.ball(auction, "TowerFinial", Vector3.new(2, 2, 2), cf * CFrame.new(0, 35.4, -5), E.Gold, Enum.Material.Metal, false)
     Kit.part(auction, "FlagPole", Vector3.new(0.2, 5, 0.2), cf * CFrame.new(0, 38, -5), E.Steel, Enum.Material.Metal, nil, false)
     Kit.part(auction, "AuctionFlag", Vector3.new(3, 1.8, 0.15), cf * CFrame.new(1.6, 39.4, -5), E.Coral, Enum.Material.Fabric, nil, false)
+    Kit.part(auction, "AuctionAisle", Vector3.new(4.5, 0.12, 19), cf * CFrame.new(0, 0.56, -3), E.Red, Enum.Material.Fabric, nil, false)
+    for row, z in ipairs({-10,-5,0}) do
+        for _, x in ipairs({-10,-6,6,10}) do
+            local chairPosition = Vector3.new(x, 0, z)
+            local chairCF = cf * CFrame.lookAt(chairPosition, Vector3.new(0, 0, 8))
+            if not catalogAsset(auction, "DiningChair", chairCF * CFrame.Angles(0, -math.pi / 2, 0), 0.46) then
+                Kit.chair(auction, chairCF, E.Wood, if row % 2 == 0 then E.Cream else E.Teal)
+            end
+        end
+    end
+    Kit.part(auction, "StageCurtainLeft", Vector3.new(3, 11, 0.6), cf * CFrame.new(-9, 6, 14.7), E.Red, Enum.Material.Fabric)
+    Kit.part(auction, "StageCurtainRight", Vector3.new(3, 11, 0.6), cf * CFrame.new(9, 6, 14.7), E.Red, Enum.Material.Fabric)
     local display = Kit.model(auction, "CurrentLotDisplay")
     Kit.part(display, "LotPlinth", Vector3.new(6.5, 3, 6.5), cf * CFrame.new(0, 2, 8), E.Cream, Enum.Material.Marble)
     Kit.part(display, "LotGoldBand", Vector3.new(6.9, 0.35, 6.9), cf * CFrame.new(0, 3.65, 8), E.Gold, Enum.Material.Metal)
