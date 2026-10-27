@@ -8,7 +8,7 @@ function Profile.new()
         Login = {Day = -2, Streak = 0, ClaimedDay = -2},
         Weekly = {Week = -1, Restored = 0, Sold = 0, Claimed = false},
         Decorations = {}, PlacedDecor = {}, DecorLayout = {}, Reputation = 0, RatingTotal = 0, RatingCount = 0, Rated = {},
-        Settings = {Music = true, Effects = true}, Titles = {},
+        Settings = {Music = true, TownMusic = true, AuctionMusic = true, Effects = true}, Titles = {},
         AppliedReceipts = {}, Exchange = {Pending = false},
     }
 end

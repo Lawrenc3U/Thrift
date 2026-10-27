@@ -12,7 +12,8 @@ local function validAudioId(id)
         and not (id >= 12345678901 and id <= 12345678913)
 end
 function Audio.new()
-    local self = setmetatable({Music = true, Effects = true, Tracks = {}, Last = {}, Zone = "shop"}, Audio)
+    local self = setmetatable({Music = true, Effects = true, TownMusic = true, AuctionMusic = true,
+        Tracks = {}, Last = {}, Zone = "shop"}, Audio)
     self.Group = Instance.new("SoundGroup"); self.Group.Name = "ThriftAudio"; self.Group.Parent = SoundService
     self.MusicGroup = Instance.new("SoundGroup"); self.MusicGroup.Name = "ThriftMusic"; self.MusicGroup.Parent = self.Group
     self.EffectsGroup = Instance.new("SoundGroup"); self.EffectsGroup.Name = "ThriftEffects"; self.EffectsGroup.Parent = self.Group
@@ -45,15 +46,20 @@ function Audio.new()
     self:setZone("shop")
     return self
 end
-function Audio:setEnabled(music, effects)
-    self.Music = music ~= false; self.Effects = effects ~= false
+function Audio:setEnabled(music, effects, townMusic, auctionMusic)
+    local nextMusic, nextTown, nextAuction = music ~= false, townMusic ~= false, auctionMusic ~= false
+    local musicChanged = self.Music ~= nextMusic or self.TownMusic ~= nextTown or self.AuctionMusic ~= nextAuction
+    self.Music = nextMusic; self.TownMusic = nextTown; self.AuctionMusic = nextAuction; self.Effects = effects ~= false
     self.MusicGroup.Volume = if self.Music then 1 else 0
     self.EffectsGroup.Volume = if self.Effects then 1 else 0
+    if musicChanged then self:setZone(self.Zone, true) end
 end
-function Audio:setZone(zone)
-    if self.Zone == zone and self.Current then return end
+function Audio:setZone(zone, force)
+    if self.Zone == zone and self.Current and not force then return end
     self.Zone = zone
-    local nextTrack = self.Tracks[zone]
+    local zoneEnabled = zone ~= "town" or self.TownMusic
+    zoneEnabled = zoneEnabled and (zone ~= "auction_music" or self.AuctionMusic)
+    local nextTrack = if self.Music and zoneEnabled then self.Tracks[zone] else nil
     if self.Current == nextTrack then return end
     local previous = self.Current
     if previous then

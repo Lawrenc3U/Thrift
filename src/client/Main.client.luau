@@ -65,6 +65,7 @@ ui:addQuickAction("Store", "store", Color3.fromRGB(122, 92, 224), function() ope
 ui:addMoreAction("Style", "style", function() open("Themes") end)
 ui:addMoreAction("Tools", "tools", function() open("Tools") end)
 ui:addMoreAction("Expand", "expand", function() open("Expand") end)
+ui:addMoreAction("Audio", "settings", function() open("Settings") end)
 ui.AuctionBar.Activated:Connect(function() open("Auction") end)
 
 local tutorialHints = {
@@ -115,7 +116,7 @@ local function updateHud()
     else ui.ObjectiveTitle.Text = "OBJECTIVE" end
     ui:setSubtitle(if state.Ephemeral then "STUDIO PRACTICE | PROGRESS DOES NOT SAVE" else "YOUR COZY CORNER OF THRIFT STREET")
     ui.Effects = state.Settings.Effects
-    audio:setEnabled(state.Settings.Music, state.Settings.Effects)
+    audio:setEnabled(state.Settings.Music, state.Settings.Effects, state.Settings.TownMusic, state.Settings.AuctionMusic)
     audio:setZone(page == "Auction" and "auction_music" or page == "Town" and "town" or "shop")
 end
 

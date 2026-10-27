@@ -1340,7 +1340,7 @@ function Profile.new()
         Login = {Day = -2, Streak = 0, ClaimedDay = -2},
         Weekly = {Week = -1, Restored = 0, Sold = 0, Claimed = false},
         Decorations = {}, PlacedDecor = {}, DecorLayout = {}, Reputation = 0, RatingTotal = 0, RatingCount = 0, Rated = {},
-        Settings = {Music = true, Effects = true}, Titles = {},
+        Settings = {Music = true, TownMusic = true, AuctionMusic = true, Effects = true}, Titles = {},
         AppliedReceipts = {}, Exchange = {Pending = false},
     }
 end
@@ -23805,7 +23805,8 @@ function GameService:showcase(player, payload)
 end
 function GameService:settings(player, payload)
     local profile = self:profile(player)
-    if (payload.Name == "Music" or payload.Name == "Effects") and type(payload.Enabled) == "boolean" then
+    local allowed = {Music = true, TownMusic = true, AuctionMusic = true, Effects = true}
+    if allowed[payload.Name] and type(payload.Enabled) == "boolean" then
         profile.Settings[payload.Name] = payload.Enabled; self:snapshot(player)
     end
 end
@@ -26712,7 +26713,8 @@ local function validAudioId(id)
         and not (id &gt;= 12345678901 and id &lt;= 12345678913)
 end
 function Audio.new()
-    local self = setmetatable({Music = true, Effects = true, Tracks = {}, Last = {}, Zone = "shop"}, Audio)
+    local self = setmetatable({Music = true, Effects = true, TownMusic = true, AuctionMusic = true,
+        Tracks = {}, Last = {}, Zone = "shop"}, Audio)
     self.Group = Instance.new("SoundGroup"); self.Group.Name = "ThriftAudio"; self.Group.Parent = SoundService
     self.MusicGroup = Instance.new("SoundGroup"); self.MusicGroup.Name = "ThriftMusic"; self.MusicGroup.Parent = self.Group
     self.EffectsGroup = Instance.new("SoundGroup"); self.EffectsGroup.Name = "ThriftEffects"; self.EffectsGroup.Parent = self.Group
@@ -26745,15 +26747,20 @@ function Audio.new()
     self:setZone("shop")
     return self
 end
-function Audio:setEnabled(music, effects)
-    self.Music = music ~= false; self.Effects = effects ~= false
+function Audio:setEnabled(music, effects, townMusic, auctionMusic)
+    local nextMusic, nextTown, nextAuction = music ~= false, townMusic ~= false, auctionMusic ~= false
+    local musicChanged = self.Music ~= nextMusic or self.TownMusic ~= nextTown or self.AuctionMusic ~= nextAuction
+    self.Music = nextMusic; self.TownMusic = nextTown; self.AuctionMusic = nextAuction; self.Effects = effects ~= false
     self.MusicGroup.Volume = if self.Music then 1 else 0
     self.EffectsGroup.Volume = if self.Effects then 1 else 0
+    if musicChanged then self:setZone(self.Zone, true) end
 end
-function Audio:setZone(zone)
-    if self.Zone == zone and self.Current then return end
+function Audio:setZone(zone, force)
+    if self.Zone == zone and self.Current and not force then return end
     self.Zone = zone
-    local nextTrack = self.Tracks[zone]
+    local zoneEnabled = zone ~= "town" or self.TownMusic
+    zoneEnabled = zoneEnabled and (zone ~= "auction_music" or self.AuctionMusic)
+    local nextTrack = if self.Music and zoneEnabled then self.Tracks[zone] else nil
     if self.Current == nextTrack then return end
     local previous = self.Current
     if previous then
@@ -26852,6 +26859,7 @@ ui:addQuickAction("Store", "store", Color3.fromRGB(122, 92, 224), function() ope
 ui:addMoreAction("Style", "style", function() open("Themes") end)
 ui:addMoreAction("Tools", "tools", function() open("Tools") end)
 ui:addMoreAction("Expand", "expand", function() open("Expand") end)
+ui:addMoreAction("Audio", "settings", function() open("Settings") end)
 ui.AuctionBar.Activated:Connect(function() open("Auction") end)
 
 local tutorialHints = {
@@ -26902,7 +26910,7 @@ local function updateHud()
     else ui.ObjectiveTitle.Text = "OBJECTIVE" end
     ui:setSubtitle(if state.Ephemeral then "STUDIO PRACTICE | PROGRESS DOES NOT SAVE" else "YOUR COZY CORNER OF THRIFT STREET")
     ui.Effects = state.Settings.Effects
-    audio:setEnabled(state.Settings.Music, state.Settings.Effects)
+    audio:setEnabled(state.Settings.Music, state.Settings.Effects, state.Settings.TownMusic, state.Settings.AuctionMusic)
     audio:setZone(page == "Auction" and "auction_music" or page == "Town" and "town" or "shop")
 end
 
@@ -28343,12 +28351,16 @@ function Pages:adminPage()
 end
 
 function Pages:settingsPage()
-    local frame = self:card("Comfort and accessibility")
-    self:button(frame, "Music: " .. (if self.State.Settings.Music then "On" else "Off"), "Settings", {Name="Music",Enabled=not self.State.Settings.Music}, true)
-    self:button(frame, "Effects: " .. (if self.State.Settings.Effects then "On" else "Off"), "Settings", {Name="Effects",Enabled=not self.State.Settings.Effects}, true)
-    UI.label(frame, "Rarity always uses a symbol and name alongside color. All controls use large touch targets.", 15, UI.Colors.Muted)
+    local frame = self:card("Audio controls")
+    self:button(frame, "All music: " .. (if self.State.Settings.Music then "On" else "Muted"), "Settings", {Name="Music",Enabled=not self.State.Settings.Music}, true)
+    self:button(frame, "Town music: " .. (if self.State.Settings.TownMusic then "On" else "Muted"), "Settings", {Name="TownMusic",Enabled=not self.State.Settings.TownMusic}, true)
+    self:button(frame, "Auction music: " .. (if self.State.Settings.AuctionMusic then "On" else "Muted"), "Settings", {Name="AuctionMusic",Enabled=not self.State.Settings.AuctionMusic}, true)
+    self:button(frame, "Sound effects: " .. (if self.State.Settings.Effects then "On" else "Muted"), "Settings", {Name="Effects",Enabled=not self.State.Settings.Effects}, true)
+    UI.label(frame, "Town and auction preferences are saved separately. All music is the master control.", 14, UI.Colors.Muted)
+    local comfort = self:card("Comfort and accessibility")
+    UI.label(comfort, "Rarity always uses a symbol and name alongside color. All controls use large touch targets.", 15, UI.Colors.Muted)
     local titles = {}; for title in pairs(self.State.Titles) do table.insert(titles,title) end; table.sort(titles)
-    UI.label(frame, "Titles: " .. (if #titles == 0 then "Your story is just beginning" else table.concat(titles, ", ")), 16)
+    UI.label(comfort, "Titles: " .. (if #titles == 0 then "Your story is just beginning" else table.concat(titles, ", ")), 16)
 end
 
 function Pages:townPage()
@@ -28473,6 +28485,9 @@ function UI.vectorIcon(parent, kind, color, position, size, zIndex)
         line(12, 13, 15, 3, -90); line(8, 7, 8, 3, -45); line(16, 7, 8, 3, 45); line(12, 21, 16, 2)
     elseif kind == "admin" then
         outline(5, 3, 14, 17, 6); line(12, 11, 10, 2, -90); line(12, 11, 8, 2)
+    elseif kind == "settings" then
+        line(7, 12, 6, 7); line(11, 9, 7, 2, -38); line(11, 15, 7, 2, 38)
+        line(17, 8, 6, 2, 48); line(19, 12, 8, 2, 0); line(17, 16, 6, 2, -48)
     elseif kind == "chevron" then
         line(9, 11, 9, 2, 42); line(15, 11, 9, 2, -42); line(9, 16, 9, 2, 42); line(15, 16, 9, 2, -42)
     elseif kind == "arrow" then

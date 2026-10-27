@@ -703,12 +703,16 @@ function Pages:adminPage()
 end
 
 function Pages:settingsPage()
-    local frame = self:card("Comfort and accessibility")
-    self:button(frame, "Music: " .. (if self.State.Settings.Music then "On" else "Off"), "Settings", {Name="Music",Enabled=not self.State.Settings.Music}, true)
-    self:button(frame, "Effects: " .. (if self.State.Settings.Effects then "On" else "Off"), "Settings", {Name="Effects",Enabled=not self.State.Settings.Effects}, true)
-    UI.label(frame, "Rarity always uses a symbol and name alongside color. All controls use large touch targets.", 15, UI.Colors.Muted)
+    local frame = self:card("Audio controls")
+    self:button(frame, "All music: " .. (if self.State.Settings.Music then "On" else "Muted"), "Settings", {Name="Music",Enabled=not self.State.Settings.Music}, true)
+    self:button(frame, "Town music: " .. (if self.State.Settings.TownMusic then "On" else "Muted"), "Settings", {Name="TownMusic",Enabled=not self.State.Settings.TownMusic}, true)
+    self:button(frame, "Auction music: " .. (if self.State.Settings.AuctionMusic then "On" else "Muted"), "Settings", {Name="AuctionMusic",Enabled=not self.State.Settings.AuctionMusic}, true)
+    self:button(frame, "Sound effects: " .. (if self.State.Settings.Effects then "On" else "Muted"), "Settings", {Name="Effects",Enabled=not self.State.Settings.Effects}, true)
+    UI.label(frame, "Town and auction preferences are saved separately. All music is the master control.", 14, UI.Colors.Muted)
+    local comfort = self:card("Comfort and accessibility")
+    UI.label(comfort, "Rarity always uses a symbol and name alongside color. All controls use large touch targets.", 15, UI.Colors.Muted)
     local titles = {}; for title in pairs(self.State.Titles) do table.insert(titles,title) end; table.sort(titles)
-    UI.label(frame, "Titles: " .. (if #titles == 0 then "Your story is just beginning" else table.concat(titles, ", ")), 16)
+    UI.label(comfort, "Titles: " .. (if #titles == 0 then "Your story is just beginning" else table.concat(titles, ", ")), 16)
 end
 
 function Pages:townPage()

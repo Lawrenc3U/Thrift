@@ -184,6 +184,15 @@ test("admin tools reject ordinary players and validate server-side grants", func
     equal(#profile.Inventory, 1); equal(profile.Inventory[1].Rarity, 5); assert(profile.Inventory[1].Inspected)
     s:admin(p, {Command = "Cash", Amount = 0 / 0}); equal(profile.Cash, startingCash + 1000)
 end)
+test("audio preferences save town and auction mute controls independently", function()
+    local s, p, profile = fixture()
+    s:settings(p, {Name = "TownMusic", Enabled = false})
+    equal(profile.Settings.TownMusic, false); equal(profile.Settings.AuctionMusic, true)
+    s:settings(p, {Name = "AuctionMusic", Enabled = false})
+    equal(profile.Settings.AuctionMusic, false); equal(profile.Settings.Music, true)
+    s:settings(p, {Name = "Unknown", Enabled = false})
+    assert(profile.Settings.Unknown == nil)
+end)
 test("sale executes once and removes the exact inventory item", function()
     local s, p, profile, world = fixture(); local item = addItem(profile); item.Slot = 1
     world.Allowed = false -- Automatic offers can be answered from anywhere in town.

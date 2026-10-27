@@ -530,7 +530,8 @@ function GameService:showcase(player, payload)
 end
 function GameService:settings(player, payload)
     local profile = self:profile(player)
-    if (payload.Name == "Music" or payload.Name == "Effects") and type(payload.Enabled) == "boolean" then
+    local allowed = {Music = true, TownMusic = true, AuctionMusic = true, Effects = true}
+    if allowed[payload.Name] and type(payload.Enabled) == "boolean" then
         profile.Settings[payload.Name] = payload.Enabled; self:snapshot(player)
     end
 end

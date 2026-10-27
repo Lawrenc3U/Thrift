@@ -85,6 +85,9 @@ function UI.vectorIcon(parent, kind, color, position, size, zIndex)
         line(12, 13, 15, 3, -90); line(8, 7, 8, 3, -45); line(16, 7, 8, 3, 45); line(12, 21, 16, 2)
     elseif kind == "admin" then
         outline(5, 3, 14, 17, 6); line(12, 11, 10, 2, -90); line(12, 11, 8, 2)
+    elseif kind == "settings" then
+        line(7, 12, 6, 7); line(11, 9, 7, 2, -38); line(11, 15, 7, 2, 38)
+        line(17, 8, 6, 2, 48); line(19, 12, 8, 2, 0); line(17, 16, 6, 2, -48)
     elseif kind == "chevron" then
         line(9, 11, 9, 2, 42); line(15, 11, 9, 2, -42); line(9, 16, 9, 2, 42); line(15, 16, 9, 2, -42)
     elseif kind == "arrow" then
