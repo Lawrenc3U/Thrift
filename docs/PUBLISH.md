@@ -19,6 +19,8 @@ python3 tools/release_check.py --require-uploaded-assets
 python3 tools/build.py
 ```
 
+On Windows, the release check automatically finds `luau.exe` and `luau-compile.exe` on `PATH`. If the optional Luau CLI is not installed, it skips the command-line unit tests with a clear warning and still validates the assets and generated place. Roblox Studio testing remains required either way.
+
 Create the three game passes and one developer product listed in `docs/MONETIZATION.md`, then replace their `Id = 0` values in `src/shared/LiveConfig.luau`. Until then, Store shows reviewable previews and never opens a purchase prompt.
 
 Open `dist/ThriftFlip.rbxlx` in the current Roblox Studio and publish it to a private test experience. Set the server size to eight players.
