@@ -4,13 +4,19 @@ local Shared = game:GetService("ReplicatedStorage"):WaitForChild("Shared")
 local Assets = require(Shared.AssetConfig)
 local Audio = {}
 Audio.__index = Audio
+local function validAudioId(id)
+    -- Reject the sample sequence shown in setup documentation. This prevents a
+    -- copied example from producing thirteen ContentProvider errors in Studio.
+    return type(id) == "number" and id > 0 and id % 1 == 0
+        and not (id >= 12345678901 and id <= 12345678913)
+end
 function Audio.new()
     local self = setmetatable({Music = true, Effects = true, Tracks = {}, Last = {}, Zone = "shop"}, Audio)
     self.Group = Instance.new("SoundGroup"); self.Group.Name = "ThriftAudio"; self.Group.Parent = SoundService
     self.MusicGroup = Instance.new("SoundGroup"); self.MusicGroup.Name = "ThriftMusic"; self.MusicGroup.Parent = self.Group
     self.EffectsGroup = Instance.new("SoundGroup"); self.EffectsGroup.Name = "ThriftEffects"; self.EffectsGroup.Parent = self.Group
     for name, id in pairs(Assets.Audio) do
-        if type(id) == "number" and id > 0 then
+        if validAudioId(id) then
             local music = name == "shop" or name == "town" or name == "auction_music"
             local sound = Instance.new("Sound"); sound.Name = name; sound.SoundId = "rbxassetid://" .. id
             sound.Looped = music; sound.Volume = if music then Assets.MusicVolume else Assets.EffectsVolume

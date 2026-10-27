@@ -1,6 +1,8 @@
 -- Upload assets/audio/*.wav through your experience's Asset Manager, then paste
 -- the resulting numeric IDs here. All shipped files are original project assets.
--- Zero deliberately means unconfigured. Do not substitute arbitrary catalog IDs.
+-- Zero deliberately means unconfigured. Do not substitute arbitrary catalog IDs
+-- or documentation examples such as 12345678901; only use IDs copied from your
+-- uploaded Audio assets in Roblox Asset Manager.
 return {
     Audio = {
         click = 0, reveal = 0, restore = 0, sale = 0, reward = 0,

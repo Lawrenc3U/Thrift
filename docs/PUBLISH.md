@@ -12,6 +12,8 @@ In Creator Dashboard, set the experience icon to `assets/marketing/experience-ic
 
 Upload every WAV in `assets/audio` through the experience's Asset Manager. Copy each resulting numeric ID into the matching key in `src/shared/AssetConfig.luau`. All thirteen WAV files are original, generated project audio. Do not copy the catalog page ID or an audio preview URL.
 
+IDs such as `12345678901` in examples are placeholders, not Roblox assets. Every configured value must be the numeric ID copied from the matching uploaded **Audio** asset.
+
 After entering the IDs, run:
 
 ```sh

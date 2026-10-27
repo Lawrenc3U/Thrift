@@ -19,6 +19,7 @@ IMAGES = {
     "thumbnail-key-art.png": (1920, 1080),
 }
 AUDIO_KEYS = {"click", "reveal", "restore", "sale", "reward", "place", "auction", "error", "scrub", "polish", "shop", "town", "auction_music"}
+PLACEHOLDER_AUDIO_IDS = set(range(12345678901, 12345678914))
 
 
 def run(*command: str) -> None:
@@ -65,6 +66,14 @@ def unconfigured_assets() -> list[str]:
     return sorted(name for name, value in values.items() if value == 0)
 
 
+def placeholder_assets() -> list[str]:
+    source = (ROOT / "src" / "shared" / "AssetConfig.luau").read_text(encoding="utf-8")
+    audio_block = re.search(r"\bAudio\s*=\s*\{(.*?)\}", source, re.DOTALL)
+    assert audio_block, "AssetConfig.Audio table is missing"
+    values = {name: int(value) for name, value in re.findall(r"\b([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(\d+)\b", audio_block.group(1))}
+    return sorted(name for name, value in values.items() if value in PLACEHOLDER_AUDIO_IDS)
+
+
 def unconfigured_store() -> list[str]:
     source = (ROOT / "src" / "shared" / "LiveConfig.luau").read_text(encoding="utf-8")
     offers = re.findall(r'\bKey\s*=\s*"([^"]+)"\s*,\s*Id\s*=\s*(\d+)', source)
@@ -91,13 +100,17 @@ def main() -> int:
     print(f"PASS place XML: {len(scripts)} embedded scripts, {place.stat().st_size / 1024:.0f} KiB")
 
     missing = unconfigured_assets()
+    placeholders = placeholder_assets()
     store = unconfigured_store()
     if missing:
         print("UPLOAD REQUIRED creator-owned IDs:", ", ".join(missing))
+    if placeholders:
+        print("INVALID placeholder audio IDs:", ", ".join(placeholders))
+        print("Copy each real Audio asset ID from Roblox Asset Manager; the 123456789xx values are examples only.")
     if store:
         print("STORE SETUP REQUIRED creator-owned product IDs:", ", ".join(store))
-    if args.require_uploaded_assets and (missing or store): return 2
-    if not missing and not store:
+    if args.require_uploaded_assets and (missing or placeholders or store): return 2
+    if not missing and not placeholders and not store:
         print("PASS creator-owned asset IDs are configured")
     print("OFFLINE RELEASE CHECK PASSED")
     print("Roblox Studio, multiplayer, DataStore, device, and performance checks still require Roblox tools.")
