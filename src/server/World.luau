@@ -26,6 +26,14 @@ local catalogMetadata = {
     ParkBench = {Id = 23153972, Name = "Park Bench"},
     Mailbox = {Id = 56449011, Name = "Mailbox"},
     PicnicTable = {Id = 23153940, Name = "Picnic Table"},
+    DiningChair = {Id = 56449487, Name = "Dining Chair"},
+    Bookshelf = {Id = 56449804, Name = "Bookshelf"},
+    Fountain = {Id = 23153947, Name = "Fountain"},
+    Streetlight = {Id = 56449028, Name = "Streetlight"},
+    TrashBin = {Id = 28453, Name = "Trash Bin"},
+    WritingDesk = {Id = 56447744, Name = "Writing Desk"},
+    DresserWide = {Id = 56449753, Name = "Dresser - Wide"},
+    RoyalRug = {Id = 28229, Name = "Royal Crimson Rug"},
 }
 local function catalogAsset(parent, key, cf, scale)
     local folder = ServerStorage:FindFirstChild("CatalogAssets")
@@ -193,7 +201,10 @@ function World:exactLandscape()
     end
     Kit.sign(arch, "THRIFT STREET", CFrame.new(0, 14.5, -18), Vector3.new(44, 4.2, 0.5), E.Teal, E.Cream)
     Kit.sign(arch, "EVERY FIND HAS A STORY", CFrame.new(0, 11.6, -18.3), Vector3.new(24, 1.4, 0.2), E.Cream, E.Dark)
-    for z = 17, 119, 34 do exactPost(ground, -20.5, z); exactPost(ground, 20.5, z) end
+    for z = 17, 119, 34 do
+        if not catalogAsset(ground, "Streetlight", CFrame.new(-20.5, 0, z), 0.72) then exactPost(ground, -20.5, z) end
+        if not catalogAsset(ground, "Streetlight", CFrame.new(20.5, 0, z) * CFrame.Angles(0, math.pi, 0), 0.72) then exactPost(ground, 20.5, z) end
+    end
     local trees = {
         {-45,-25,1},{45,-25,1},{-60,-20,.9},{62,-15,1.1},{-110,-20,1},{110,-30,1.2},{-20,-132,1.1},{20,-132,1},
         {62,-128,1.1},{100,-112,1},{0,-138,1.3},{-62,20,1},{64,60,1},{-64,80,1.1},{64,100,1},{-62,125,1},
@@ -208,20 +219,23 @@ function World:exactLandscape()
 end
 function World:exactSquare()
     local square = Kit.model(self.Root, "ExactTownPlaza")
-    Kit.cylinder(square, "FountainBase", 13, 2.4, CFrame.new(0, 1.2, -55), E.Stone, Enum.Material.Concrete)
-    local water = Kit.cylinder(square, "FountainWater", 11, 0.2, CFrame.new(0, 2.45, -55), E.Water, Enum.Material.Glass, false); water.Transparency = 0.3
-    for index = 0, 19 do
-        local angle = index * math.pi / 10
-        Kit.part(square, "RimStone", Vector3.new(4.2, 0.8, 1.4), CFrame.new(math.cos(angle) * 12.3, 2.7, -55 + math.sin(angle) * 12.3) * CFrame.Angles(0, -(angle + math.pi / 2), 0), E.Stone, Enum.Material.Concrete)
-    end
-    Kit.cylinder(square, "FountainColumn", 1.8, 7, CFrame.new(0, 5.5, -55), E.Stone, Enum.Material.Concrete)
-    Kit.cylinder(square, "UpperBowl", 5, 1, CFrame.new(0, 9.5, -55), E.Stone, Enum.Material.Concrete)
-    local upperWater = Kit.cylinder(square, "UpperWater", 4.3, 0.2, CFrame.new(0, 10.05, -55), E.Water, Enum.Material.Glass, false); upperWater.Transparency = 0.3
-    Kit.cylinder(square, "UpperColumn", 0.6, 3, CFrame.new(0, 11.5, -55), E.Stone, Enum.Material.Concrete)
-    Kit.ball(square, "GoldFinial", Vector3.new(1.6, 1.6, 1.6), CFrame.new(0, 13.3, -55), E.Gold, Enum.Material.Metal, false)
-    for index = 0, 9 do
-        local angle = index * math.pi / 5
-        Kit.ball(square, "WaterDrop", Vector3.new(0.7, 0.7, 0.7), CFrame.new(math.cos(angle) * 2.2, 12.2 - index % 3 * 0.6, -55 + math.sin(angle) * 2.2), Color3.fromRGB(190, 232, 245), Enum.Material.Glass, false).Transparency = 0.3
+    local featuredFountain = catalogAsset(square, "Fountain", CFrame.new(0, 0, -55), 0.68)
+    if not featuredFountain then
+        Kit.cylinder(square, "FountainBase", 13, 2.4, CFrame.new(0, 1.2, -55), E.Stone, Enum.Material.Concrete)
+        local water = Kit.cylinder(square, "FountainWater", 11, 0.2, CFrame.new(0, 2.45, -55), E.Water, Enum.Material.Glass, false); water.Transparency = 0.3
+        for index = 0, 19 do
+            local angle = index * math.pi / 10
+            Kit.part(square, "RimStone", Vector3.new(4.2, 0.8, 1.4), CFrame.new(math.cos(angle) * 12.3, 2.7, -55 + math.sin(angle) * 12.3) * CFrame.Angles(0, -(angle + math.pi / 2), 0), E.Stone, Enum.Material.Concrete)
+        end
+        Kit.cylinder(square, "FountainColumn", 1.8, 7, CFrame.new(0, 5.5, -55), E.Stone, Enum.Material.Concrete)
+        Kit.cylinder(square, "UpperBowl", 5, 1, CFrame.new(0, 9.5, -55), E.Stone, Enum.Material.Concrete)
+        local upperWater = Kit.cylinder(square, "UpperWater", 4.3, 0.2, CFrame.new(0, 10.05, -55), E.Water, Enum.Material.Glass, false); upperWater.Transparency = 0.3
+        Kit.cylinder(square, "UpperColumn", 0.6, 3, CFrame.new(0, 11.5, -55), E.Stone, Enum.Material.Concrete)
+        Kit.ball(square, "GoldFinial", Vector3.new(1.6, 1.6, 1.6), CFrame.new(0, 13.3, -55), E.Gold, Enum.Material.Metal, false)
+        for index = 0, 9 do
+            local angle = index * math.pi / 5
+            Kit.ball(square, "WaterDrop", Vector3.new(0.7, 0.7, 0.7), CFrame.new(math.cos(angle) * 2.2, 12.2 - index % 3 * 0.6, -55 + math.sin(angle) * 2.2), Color3.fromRGB(190, 232, 245), Enum.Material.Glass, false).Transparency = 0.3
+        end
     end
     for index = 0, 3 do
         local angle = index * math.pi / 2 + math.pi / 4
@@ -231,7 +245,7 @@ function World:exactSquare()
         local angle = index * math.pi / 2 + math.pi / 2
         local position = Vector3.new(math.cos(angle) * 21, 0, -55 + math.sin(angle) * 21)
         local facing = CFrame.lookAt(position, Vector3.new(0, 0, -55))
-        Kit.bench(square, facing)
+        if not catalogAsset(square, "ParkBench", facing * CFrame.Angles(0, math.pi, 0), 0.68) then Kit.bench(square, facing) end
     end
     for index = 0, 7 do
         local angle = index * math.pi / 4 + math.pi / 8
@@ -557,8 +571,10 @@ function World:exactEnvironment()
     for row, z in ipairs({17,51,85,119}) do
         for sideIndex, side in ipairs({-1,1}) do
             local benchCF = CFrame.lookAt(Vector3.new(side * 18, 0, z), Vector3.new(0, 0, z))
-            Kit.bench(environment, benchCF)
-            Kit.cylinder(environment, "StreetBin", 0.9, 2.4, CFrame.new(side * 18, 1.2, z + 5), Color3.fromRGB(52,100,80), Enum.Material.Metal)
+            if not catalogAsset(environment, "ParkBench", benchCF * CFrame.Angles(0, math.pi, 0), 0.66) then Kit.bench(environment, benchCF) end
+            if not catalogAsset(environment, "TrashBin", CFrame.new(side * 18, 0, z + 5), 0.9) then
+                Kit.cylinder(environment, "StreetBin", 0.9, 2.4, CFrame.new(side * 18, 1.2, z + 5), Color3.fromRGB(52,100,80), Enum.Material.Metal)
+            end
             Kit.part(environment, "StreetBanner", Vector3.new(2.2, 5, 0.3), CFrame.new(side * 19.2, 7.2, z), if (row + sideIndex) % 2 == 0 then E.Coral else E.Teal, Enum.Material.Fabric, nil, false)
             Kit.cylinder(environment, "BannerFinial", 0.8, 0.2, CFrame.new(side * 19.2, 7.6, z - 0.25) * CFrame.Angles(math.pi / 2, 0, 0), E.Gold, Enum.Material.Metal, false)
         end
@@ -592,7 +608,7 @@ function World:exactEnvironment()
         for _, offset in ipairs({{3,0},{-3,0},{0,3},{0,-3}}) do
             local chairPosition = Vector3.new(x + offset[1], 0, z + offset[2])
             local chairCF = CFrame.lookAt(chairPosition, Vector3.new(x, 0, z))
-            Kit.chair(cafe, chairCF, E.Wood, E.Cream)
+            if not catalogAsset(cafe, "DiningChair", chairCF * CFrame.Angles(0, -math.pi / 2, 0), 0.48) then Kit.chair(cafe, chairCF, E.Wood, E.Cream) end
         end
     end
     -- Riverside Park occupies the east side exactly as shown in the preview.
@@ -633,8 +649,9 @@ function World:exactEnvironment()
     for index = 0, 3 do
         local angle = index*math.pi/2+math.pi/4
         local benchCF = CFrame.lookAt(Vector3.new(px+math.cos(angle)*32,0,pz+math.sin(angle)*32), Vector3.new(px,0,pz))
-        Kit.bench(park, benchCF)
-        exactPost(park, px+math.cos(angle+math.pi/4)*33, pz+math.sin(angle+math.pi/4)*33)
+        if not catalogAsset(park, "ParkBench", benchCF * CFrame.Angles(0, math.pi, 0), 0.68) then Kit.bench(park, benchCF) end
+        local postX, postZ = px+math.cos(angle+math.pi/4)*33, pz+math.sin(angle+math.pi/4)*33
+        if not catalogAsset(park, "Streetlight", CFrame.new(postX, 0, postZ) * CFrame.Angles(0, angle, 0), 0.72) then exactPost(park, postX, postZ) end
     end
     local willowX, willowZ = px+20, pz-30
     Kit.cylinder(park, "WillowTrunk", 1.2, 9, CFrame.new(willowX,4.5,willowZ), E.Wood, Enum.Material.Wood)
@@ -1344,6 +1361,7 @@ function World:buildInterior(plot, tier)
     local depth = backZ + 14
     plot.Tier = tier; plot.Depth = depth; plot.BackZ = backZ
     Kit.part(model, "OakFloor", Vector3.new(30, 0.5, depth), cf * CFrame.new(0, 0.25, (backZ - 14) / 2), E.LightWood, Enum.Material.WoodPlanks)
+    catalogAsset(model, "RoyalRug", cf * CFrame.new(0, 0.51, 1.5), 0.3)
     plot.Wall = Kit.part(model, "FeatureWall", Vector3.new(30, 12, 1), cf * CFrame.new(0, 6, backZ - 0.5), plot.WallColor or plot.Color)
     for side = -1, 1, 2 do
         Kit.part(model, "SideWall", Vector3.new(1, 12, depth - 2), cf * CFrame.new(side * 14.5, 6, (backZ - 14) / 2), plot.WallColor or E.Cream)
@@ -1409,10 +1427,13 @@ function World:buildInterior(plot, tier)
         plot.Slots[slot] = {Base = top, Model = furniture, Prompt = interaction, CF = cf * CFrame.new(position + Vector3.new(0, surface + 0.02, 0))}
     end
     if tier >= 2 then
+        catalogAsset(model, "Bookshelf", cf * CFrame.new(10.8, 0.5, backZ - 2.2) * CFrame.Angles(0, math.pi, 0), 0.62)
         Kit.sign(model, "EVERY OBJECT HAS A STORY", cf * CFrame.new(6.5, 8, backZ - 0.55), Vector3.new(10, 2.7, 0.2), P.Cream, P.Ink)
         window(model, cf * CFrame.new(7.2, 5.3, backZ - 0.55), 7, 4)
     end
     if tier >= 3 then
+        catalogAsset(model, "DresserWide", cf * CFrame.new(7.5, 0.5, 15), 0.55)
+        catalogAsset(model, "WritingDesk", cf * CFrame.new(-7.5, 0.5, 15) * CFrame.Angles(0, math.pi, 0), 0.52)
         Kit.part(model, "ShowroomArch", Vector3.new(27, 1, 1), cf * CFrame.new(0, 10, 12), E.Gold)
         for side = -1, 1, 2 do Kit.part(model, "ArchPillar", Vector3.new(1, 10, 1), cf * CFrame.new(side * 12.8, 5, 12), E.Cream) end
         Kit.sign(model, "THE CURATED COLLECTION", cf * CFrame.new(0, 9.8, 11.4), Vector3.new(18, 1.3, 0.15), E.Gold, E.Dark)

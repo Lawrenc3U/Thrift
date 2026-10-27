@@ -16,7 +16,7 @@ The user's target is the full game in `game-design.md`. The code now implements 
 
 | Area | Current implementation | Remaining production work |
 | --- | --- | --- |
-| World/art | Town matched to the supplied 3D preview, eight claimable shops, public buildings, sourcing sets and 80 original item models | Final Studio lighting pass, optional custom Blender meshes, icon/thumbnail upload |
+| World/art | Town matched to the supplied 3D preview, eight claimable shops, 12 audited Roblox-authored Creator Store models, public buildings, sourcing sets and 80 original item models | Final Studio lighting pass and icon/thumbnail upload |
 | Shop tiers | Four capacities with changing architecture, themes and movable floor decor | Final collision and mobile placement QA |
 | Restoration | Five item-centered touch/mouse interactions with server validation | Tune tolerance and timing from device playtests |
 | Customers | Eight personalities, budgets/preferences, animated arrival/exit and haggling | Optional rigged walk cycles and expanded browsing animations |

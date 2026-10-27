@@ -1,0 +1,635 @@
+<roblox xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.roblox.com/roblox.xsd" version="4">
+  <External>null</External>
+  <External>nil</External>
+  <Item class="Model" referent="RBX0">
+    <Properties>
+      <bool name="Archivable">true</bool>
+      <CoordinateFrame name="ModelInPrimary">
+        <X>0</X>
+        <Y>0</Y>
+        <Z>0</Z>
+        <R00>1</R00>
+        <R01>0</R01>
+        <R02>0</R02>
+        <R10>0</R10>
+        <R11>1</R11>
+        <R12>0</R12>
+        <R20>0</R20>
+        <R21>0</R21>
+        <R22>1</R22>
+      </CoordinateFrame>
+      <string name="Name">Streetlight</string>
+      <Ref name="PrimaryPart">null</Ref>
+    </Properties>
+    <Item class="Part" referent="RBX1">
+      <Properties>
+        <bool name="Anchored">true</bool>
+        <bool name="Archivable">true</bool>
+        <float name="BackParamA">-0.5</float>
+        <float name="BackParamB">0.5</float>
+        <token name="BackSurface">0</token>
+        <token name="BackSurfaceInput">0</token>
+        <float name="BottomParamA">-0.5</float>
+        <float name="BottomParamB">0.5</float>
+        <token name="BottomSurface">0</token>
+        <token name="BottomSurfaceInput">0</token>
+        <int name="BrickColor">199</int>
+        <CoordinateFrame name="CFrame">
+          <X>58.2999992</X>
+          <Y>14.996212</Y>
+          <Z>21.5000076</Z>
+          <R00>1</R00>
+          <R01>-2.30113619e-006</R01>
+          <R02>-3.4556075e-007</R02>
+          <R10>3.45691205e-007</R10>
+          <R11>5.69075346e-005</R11>
+          <R12>1.00000012</R12>
+          <R20>-2.3011155e-006</R20>
+          <R21>-1.00000012</R21>
+          <R22>5.69075346e-005</R22>
+        </CoordinateFrame>
+        <bool name="CanCollide">false</bool>
+        <float name="Elasticity">0.5</float>
+        <token name="FormFactor">3</token>
+        <float name="Friction">0.300000012</float>
+        <float name="FrontParamA">-0.5</float>
+        <float name="FrontParamB">0.5</float>
+        <token name="FrontSurface">0</token>
+        <token name="FrontSurfaceInput">0</token>
+        <float name="LeftParamA">-0.5</float>
+        <float name="LeftParamB">0.5</float>
+        <token name="LeftSurface">0</token>
+        <token name="LeftSurfaceInput">0</token>
+        <bool name="Locked">false</bool>
+        <token name="Material">800</token>
+        <string name="Name">Smooth Block Model</string>
+        <float name="Reflectance">0</float>
+        <float name="RightParamA">-0.5</float>
+        <float name="RightParamB">0.5</float>
+        <token name="RightSurface">0</token>
+        <token name="RightSurfaceInput">0</token>
+        <Vector3 name="RotVelocity">
+          <X>0</X>
+          <Y>0</Y>
+          <Z>0</Z>
+        </Vector3>
+        <float name="TopParamA">-0.5</float>
+        <float name="TopParamB">0.5</float>
+        <token name="TopSurface">0</token>
+        <token name="TopSurfaceInput">0</token>
+        <float name="Transparency">0</float>
+        <Vector3 name="Velocity">
+          <X>0</X>
+          <Y>0</Y>
+          <Z>0</Z>
+        </Vector3>
+        <token name="shape">1</token>
+        <Vector3 name="size">
+          <X>0.400000036</X>
+          <Y>4.40000725</Y>
+          <Z>0.400000036</Z>
+        </Vector3>
+      </Properties>
+      <Item class="ManualWeld" referent="RBX2">
+        <Properties>
+          <bool name="Archivable">true</bool>
+          <CoordinateFrame name="C0">
+            <X>0.200000018</X>
+            <Y>-2.20000362</Y>
+            <Z>0.200000018</Z>
+            <R00>1</R00>
+            <R01>0</R01>
+            <R02>0</R02>
+            <R10>0</R10>
+            <R11>0</R11>
+            <R12>-1</R12>
+            <R20>-0</R20>
+            <R21>1</R21>
+            <R22>0</R22>
+          </CoordinateFrame>
+          <CoordinateFrame name="C1">
+            <X>0.200008392</X>
+            <Y>1.19999313</Y>
+            <Z>0.196029663</Z>
+            <R00>1</R00>
+            <R01>-4.54747351e-013</R01>
+            <R02>7.91196969e-013</R02>
+            <R10>-7.91196969e-013</R10>
+            <R11>0</R11>
+            <R12>-1.00000024</R12>
+            <R20>-4.54747351e-013</R20>
+            <R21>1.00000024</R21>
+            <R22>0</R22>
+          </CoordinateFrame>
+          <string name="Name">Smooth Block Model-to-Smooth Block Model Strong Joint</string>
+          <Ref name="Part0">RBX1</Ref>
+          <Ref name="Part1">RBX3</Ref>
+          <int name="Surface0">4</int>
+          <int name="Surface1">1</int>
+        </Properties>
+      </Item>
+    </Item>
+    <Item class="Part" referent="RBX4">
+      <Properties>
+        <bool name="Anchored">true</bool>
+        <bool name="Archivable">true</bool>
+        <float name="BackParamA">-0.5</float>
+        <float name="BackParamB">0.5</float>
+        <token name="BackSurface">0</token>
+        <token name="BackSurfaceInput">0</token>
+        <float name="BottomParamA">-0.5</float>
+        <float name="BottomParamB">0.5</float>
+        <token name="BottomSurface">0</token>
+        <token name="BottomSurfaceInput">0</token>
+        <int name="BrickColor">226</int>
+        <CoordinateFrame name="CFrame">
+          <X>58.2999992</X>
+          <Y>14.5999908</Y>
+          <Z>24.9000015</Z>
+          <R00>1</R00>
+          <R01>-2.30113619e-006</R01>
+          <R02>-3.4556075e-007</R02>
+          <R10>3.45691205e-007</R10>
+          <R11>5.69075346e-005</R11>
+          <R12>1.00000012</R12>
+          <R20>-2.3011155e-006</R20>
+          <R21>-1.00000012</R21>
+          <R22>5.69075346e-005</R22>
+        </CoordinateFrame>
+        <bool name="CanCollide">false</bool>
+        <float name="Elasticity">0.5</float>
+        <token name="FormFactor">3</token>
+        <float name="Friction">0.300000012</float>
+        <float name="FrontParamA">-0.5</float>
+        <float name="FrontParamB">0.5</float>
+        <token name="FrontSurface">0</token>
+        <token name="FrontSurfaceInput">0</token>
+        <float name="LeftParamA">-0.5</float>
+        <float name="LeftParamB">0.5</float>
+        <token name="LeftSurface">0</token>
+        <token name="LeftSurfaceInput">0</token>
+        <bool name="Locked">false</bool>
+        <token name="Material">256</token>
+        <string name="Name">Smooth Block Model</string>
+        <float name="Reflectance">0</float>
+        <float name="RightParamA">-0.5</float>
+        <float name="RightParamB">0.5</float>
+        <token name="RightSurface">0</token>
+        <token name="RightSurfaceInput">0</token>
+        <Vector3 name="RotVelocity">
+          <X>0</X>
+          <Y>0</Y>
+          <Z>0</Z>
+        </Vector3>
+        <float name="TopParamA">-0.5</float>
+        <float name="TopParamB">0.5</float>
+        <token name="TopSurface">0</token>
+        <token name="TopSurfaceInput">0</token>
+        <float name="Transparency">0.400000006</float>
+        <Vector3 name="Velocity">
+          <X>0</X>
+          <Y>0</Y>
+          <Z>0</Z>
+        </Vector3>
+        <token name="shape">1</token>
+        <Vector3 name="size">
+          <X>1</X>
+          <Y>2</Y>
+          <Z>0.400000006</Z>
+        </Vector3>
+      </Properties>
+      <Item class="ManualWeld" referent="RBX5">
+        <Properties>
+          <bool name="Archivable">true</bool>
+          <CoordinateFrame name="C0">
+            <X>-0.5</X>
+            <Y>-1</Y>
+            <Z>0.200000003</Z>
+            <R00>1</R00>
+            <R01>0</R01>
+            <R02>0</R02>
+            <R10>0</R10>
+            <R11>1</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+          <CoordinateFrame name="C1">
+            <X>-0.499996185</X>
+            <Y>-1.00002289</Y>
+            <Z>-0.199997902</Z>
+            <R00>1</R00>
+            <R01>-7.91196969e-013</R01>
+            <R02>-4.54747351e-013</R02>
+            <R10>-7.91196969e-013</R10>
+            <R11>1.00000024</R11>
+            <R12>0</R12>
+            <R20>-4.54747351e-013</R20>
+            <R21>0</R21>
+            <R22>1.00000024</R22>
+          </CoordinateFrame>
+          <string name="Name">Smooth Block Model-to-Smooth Block Model Strong Joint</string>
+          <Ref name="Part0">RBX4</Ref>
+          <Ref name="Part1">RBX3</Ref>
+          <int name="Surface0">2</int>
+          <int name="Surface1">5</int>
+        </Properties>
+      </Item>
+    </Item>
+    <Item class="Part" referent="RBX3">
+      <Properties>
+        <bool name="Anchored">true</bool>
+        <bool name="Archivable">true</bool>
+        <float name="BackParamA">-0.5</float>
+        <float name="BackParamB">0.5</float>
+        <token name="BackSurface">0</token>
+        <token name="BackSurfaceInput">0</token>
+        <float name="BottomParamA">-0.5</float>
+        <float name="BottomParamB">0.5</float>
+        <token name="BottomSurface">0</token>
+        <token name="BottomSurfaceInput">0</token>
+        <int name="BrickColor">199</int>
+        <CoordinateFrame name="CFrame">
+          <X>58.2999992</X>
+          <Y>14.9999886</Y>
+          <Z>24.9000015</Z>
+          <R00>1</R00>
+          <R01>-2.30113619e-006</R01>
+          <R02>-3.4556075e-007</R02>
+          <R10>3.45691205e-007</R10>
+          <R11>5.69075346e-005</R11>
+          <R12>1.00000012</R12>
+          <R20>-2.3011155e-006</R20>
+          <R21>-1.00000012</R21>
+          <R22>5.69075346e-005</R22>
+        </CoordinateFrame>
+        <bool name="CanCollide">false</bool>
+        <float name="Elasticity">0.5</float>
+        <token name="FormFactor">3</token>
+        <float name="Friction">0.300000012</float>
+        <float name="FrontParamA">-0.5</float>
+        <float name="FrontParamB">0.5</float>
+        <token name="FrontSurface">0</token>
+        <token name="FrontSurfaceInput">0</token>
+        <float name="LeftParamA">-0.5</float>
+        <float name="LeftParamB">0.5</float>
+        <token name="LeftSurface">0</token>
+        <token name="LeftSurfaceInput">0</token>
+        <bool name="Locked">false</bool>
+        <token name="Material">800</token>
+        <string name="Name">Smooth Block Model</string>
+        <float name="Reflectance">0</float>
+        <float name="RightParamA">-0.5</float>
+        <float name="RightParamB">0.5</float>
+        <token name="RightSurface">0</token>
+        <token name="RightSurfaceInput">0</token>
+        <Vector3 name="RotVelocity">
+          <X>0</X>
+          <Y>0</Y>
+          <Z>0</Z>
+        </Vector3>
+        <float name="TopParamA">-0.5</float>
+        <float name="TopParamB">0.5</float>
+        <token name="TopSurface">0</token>
+        <token name="TopSurfaceInput">0</token>
+        <float name="Transparency">0</float>
+        <Vector3 name="Velocity">
+          <X>0</X>
+          <Y>0</Y>
+          <Z>0</Z>
+        </Vector3>
+        <token name="shape">1</token>
+        <Vector3 name="size">
+          <X>1.60000002</X>
+          <Y>2.4000001</Y>
+          <Z>0.400000006</Z>
+        </Vector3>
+      </Properties>
+      <Item class="ManualWeld" referent="RBX6">
+        <Properties>
+          <bool name="Archivable">true</bool>
+          <CoordinateFrame name="C0">
+            <X>0.800000012</X>
+            <Y>-1.20000005</Y>
+            <Z>0.200000003</Z>
+            <R00>1</R00>
+            <R01>0</R01>
+            <R02>0</R02>
+            <R10>0</R10>
+            <R11>0</R11>
+            <R12>-1</R12>
+            <R20>-0</R20>
+            <R21>1</R21>
+            <R22>0</R22>
+          </CoordinateFrame>
+          <CoordinateFrame name="C1">
+            <X>0.800010681</X>
+            <Y>6.003932</Y>
+            <Z>-0.999954224</Z>
+            <R00>1</R00>
+            <R01>-4.54747351e-013</R01>
+            <R02>7.91196969e-013</R02>
+            <R10>-2.84217094e-014</R10>
+            <R11>1.00000012</R11>
+            <R12>-6.29727874e-005</R12>
+            <R20>2.77716001e-013</R20>
+            <R21>6.29727874e-005</R21>
+            <R22>1.00000012</R22>
+          </CoordinateFrame>
+          <string name="Name">Smooth Block Model-to-Smooth Block Model Strong Joint</string>
+          <Ref name="Part0">RBX3</Ref>
+          <Ref name="Part1">RBX7</Ref>
+          <int name="Surface0">4</int>
+          <int name="Surface1">5</int>
+        </Properties>
+      </Item>
+    </Item>
+    <Item class="Part" referent="RBX7">
+      <Properties>
+        <bool name="Anchored">true</bool>
+        <bool name="Archivable">true</bool>
+        <float name="BackParamA">-0.5</float>
+        <float name="BackParamB">0.5</float>
+        <token name="BackSurface">0</token>
+        <token name="BackSurfaceInput">0</token>
+        <float name="BottomParamA">-0.5</float>
+        <float name="BottomParamB">0.5</float>
+        <token name="BottomSurface">0</token>
+        <token name="BottomSurfaceInput">0</token>
+        <int name="BrickColor">199</int>
+        <CoordinateFrame name="CFrame">
+          <X>58.2999992</X>
+          <Y>9.19599438</Y>
+          <Z>27.1000042</Z>
+          <R00>1</R00>
+          <R01>-3.45705189e-007</R01>
+          <R02>2.30111368e-006</R02>
+          <R10>3.45691205e-007</R10>
+          <R11>1</R11>
+          <R12>6.06525555e-006</R12>
+          <R20>-2.3011155e-006</R20>
+          <R21>-6.06525418e-006</R21>
+          <R22>1</R22>
+        </CoordinateFrame>
+        <bool name="CanCollide">false</bool>
+        <float name="Elasticity">0.5</float>
+        <token name="FormFactor">3</token>
+        <float name="Friction">0.300000012</float>
+        <float name="FrontParamA">-0.5</float>
+        <float name="FrontParamB">0.5</float>
+        <token name="FrontSurface">0</token>
+        <token name="FrontSurfaceInput">0</token>
+        <float name="LeftParamA">-0.5</float>
+        <float name="LeftParamB">0.5</float>
+        <token name="LeftSurface">0</token>
+        <token name="LeftSurfaceInput">0</token>
+        <bool name="Locked">false</bool>
+        <token name="Material">800</token>
+        <string name="Name">Smooth Block Model</string>
+        <float name="Reflectance">0</float>
+        <float name="RightParamA">-0.5</float>
+        <float name="RightParamB">0.5</float>
+        <token name="RightSurface">0</token>
+        <token name="RightSurfaceInput">0</token>
+        <Vector3 name="RotVelocity">
+          <X>0</X>
+          <Y>0</Y>
+          <Z>0</Z>
+        </Vector3>
+        <float name="TopParamA">-0.5</float>
+        <float name="TopParamB">0.5</float>
+        <token name="TopSurface">0</token>
+        <token name="TopSurfaceInput">0</token>
+        <float name="Transparency">1</float>
+        <Vector3 name="Velocity">
+          <X>0</X>
+          <Y>0</Y>
+          <Z>0</Z>
+        </Vector3>
+        <token name="shape">1</token>
+        <Vector3 name="size">
+          <X>4</X>
+          <Y>16</Y>
+          <Z>2</Z>
+        </Vector3>
+      </Properties>
+    </Item>
+    <Item class="Part" referent="RBX8">
+      <Properties>
+        <bool name="Anchored">true</bool>
+        <bool name="Archivable">true</bool>
+        <float name="BackParamA">-0.5</float>
+        <float name="BackParamB">0.5</float>
+        <token name="BackSurface">0</token>
+        <token name="BackSurfaceInput">0</token>
+        <float name="BottomParamA">-0.5</float>
+        <float name="BottomParamB">0.5</float>
+        <token name="BottomSurface">0</token>
+        <token name="BottomSurfaceInput">0</token>
+        <int name="BrickColor">199</int>
+        <CoordinateFrame name="CFrame">
+          <X>58.2999992</X>
+          <Y>8.19599915</Y>
+          <Z>19.5</Z>
+          <R00>1</R00>
+          <R01>-3.45705189e-007</R01>
+          <R02>2.30111368e-006</R02>
+          <R10>3.45691205e-007</R10>
+          <R11>1</R11>
+          <R12>6.06525555e-006</R12>
+          <R20>-2.3011155e-006</R20>
+          <R21>-6.06525418e-006</R21>
+          <R22>1</R22>
+        </CoordinateFrame>
+        <bool name="CanCollide">true</bool>
+        <float name="Elasticity">0.5</float>
+        <token name="FormFactor">3</token>
+        <float name="Friction">0.300000012</float>
+        <float name="FrontParamA">-0.5</float>
+        <float name="FrontParamB">0.5</float>
+        <token name="FrontSurface">0</token>
+        <token name="FrontSurfaceInput">0</token>
+        <float name="LeftParamA">-0.5</float>
+        <float name="LeftParamB">0.5</float>
+        <token name="LeftSurface">0</token>
+        <token name="LeftSurfaceInput">0</token>
+        <bool name="Locked">false</bool>
+        <token name="Material">800</token>
+        <string name="Name">Smooth Block Model</string>
+        <float name="Reflectance">0</float>
+        <float name="RightParamA">-0.5</float>
+        <float name="RightParamB">0.5</float>
+        <token name="RightSurface">0</token>
+        <token name="RightSurfaceInput">0</token>
+        <Vector3 name="RotVelocity">
+          <X>0</X>
+          <Y>0</Y>
+          <Z>0</Z>
+        </Vector3>
+        <float name="TopParamA">-0.5</float>
+        <float name="TopParamB">0.5</float>
+        <token name="TopSurface">0</token>
+        <token name="TopSurfaceInput">0</token>
+        <float name="Transparency">0</float>
+        <Vector3 name="Velocity">
+          <X>0</X>
+          <Y>0</Y>
+          <Z>0</Z>
+        </Vector3>
+        <token name="shape">1</token>
+        <Vector3 name="size">
+          <X>0.400000036</X>
+          <Y>13.1999989</Y>
+          <Z>0.400000036</Z>
+        </Vector3>
+      </Properties>
+      <Item class="ManualWeld" referent="RBX9">
+        <Properties>
+          <bool name="Archivable">true</bool>
+          <CoordinateFrame name="C0">
+            <X>-0.200000018</X>
+            <Y>6.59999943</Y>
+            <Z>0.200000018</Z>
+            <R00>-1</R00>
+            <R01>0</R01>
+            <R02>0</R02>
+            <R10>0</R10>
+            <R11>0</R11>
+            <R12>1</R12>
+            <R20>0</R20>
+            <R21>1</R21>
+            <R22>0</R22>
+          </CoordinateFrame>
+          <CoordinateFrame name="C1">
+            <X>-0.199996948</X>
+            <Y>1.80003548</Y>
+            <Z>-0.200314522</Z>
+            <R00>-1</R00>
+            <R01>2.77716001e-013</R01>
+            <R02>-2.84217094e-014</R02>
+            <R10>7.91196969e-013</R10>
+            <R11>-1.00000012</R11>
+            <R12>6.29727874e-005</R12>
+            <R20>4.54747351e-013</R20>
+            <R21>6.29727874e-005</R21>
+            <R22>1.00000012</R22>
+          </CoordinateFrame>
+          <string name="Name">Smooth Block Model-to-Smooth Block Model Strong Joint</string>
+          <Ref name="Part0">RBX8</Ref>
+          <Ref name="Part1">RBX1</Ref>
+          <int name="Surface0">1</int>
+          <int name="Surface1">5</int>
+        </Properties>
+      </Item>
+      <Item class="ManualWeld" referent="RBX10">
+        <Properties>
+          <bool name="Archivable">true</bool>
+          <CoordinateFrame name="C0">
+            <X>0.200000018</X>
+            <Y>-6.59999943</Y>
+            <Z>0.200000018</Z>
+            <R00>1</R00>
+            <R01>0</R01>
+            <R02>0</R02>
+            <R10>0</R10>
+            <R11>0</R11>
+            <R12>-1</R12>
+            <R20>-0</R20>
+            <R21>1</R21>
+            <R22>0</R22>
+          </CoordinateFrame>
+          <CoordinateFrame name="C1">
+            <X>0.199989319</X>
+            <Y>0.200377584</Y>
+            <Z>0.200040817</Z>
+            <R00>1</R00>
+            <R01>2.77716001e-013</R01>
+            <R02>2.84217094e-014</R02>
+            <R10>-2.84217094e-014</R10>
+            <R11>4.54747351e-013</R11>
+            <R12>-1</R12>
+            <R20>2.77716001e-013</R20>
+            <R21>1</R21>
+            <R22>-4.54747351e-013</R22>
+          </CoordinateFrame>
+          <string name="Name">Smooth Block Model-to-Smooth Block Model Strong Joint</string>
+          <Ref name="Part0">RBX8</Ref>
+          <Ref name="Part1">RBX11</Ref>
+          <int name="Surface0">4</int>
+          <int name="Surface1">1</int>
+        </Properties>
+      </Item>
+    </Item>
+    <Item class="Part" referent="RBX11">
+      <Properties>
+        <bool name="Anchored">true</bool>
+        <bool name="Archivable">true</bool>
+        <float name="BackParamA">-0.5</float>
+        <float name="BackParamB">0.5</float>
+        <token name="BackSurface">0</token>
+        <token name="BackSurfaceInput">0</token>
+        <float name="BottomParamA">-0.5</float>
+        <float name="BottomParamB">0.5</float>
+        <token name="BottomSurface">0</token>
+        <token name="BottomSurfaceInput">0</token>
+        <int name="BrickColor">199</int>
+        <CoordinateFrame name="CFrame">
+          <X>58.3000145</X>
+          <Y>1.39562225</Y>
+          <Z>19.5</Z>
+          <R00>1</R00>
+          <R01>-3.45705189e-007</R01>
+          <R02>2.30111368e-006</R02>
+          <R10>3.45691205e-007</R10>
+          <R11>1</R11>
+          <R12>6.06525555e-006</R12>
+          <R20>-2.3011155e-006</R20>
+          <R21>-6.06525418e-006</R21>
+          <R22>1</R22>
+        </CoordinateFrame>
+        <bool name="CanCollide">true</bool>
+        <float name="Elasticity">0.5</float>
+        <token name="FormFactor">2</token>
+        <float name="Friction">0.300000012</float>
+        <float name="FrontParamA">-0.5</float>
+        <float name="FrontParamB">0.5</float>
+        <token name="FrontSurface">0</token>
+        <token name="FrontSurfaceInput">0</token>
+        <float name="LeftParamA">-0.5</float>
+        <float name="LeftParamB">0.5</float>
+        <token name="LeftSurface">0</token>
+        <token name="LeftSurfaceInput">0</token>
+        <bool name="Locked">false</bool>
+        <token name="Material">800</token>
+        <string name="Name">Smooth Block Model</string>
+        <float name="Reflectance">0</float>
+        <float name="RightParamA">-0.5</float>
+        <float name="RightParamB">0.5</float>
+        <token name="RightSurface">0</token>
+        <token name="RightSurfaceInput">0</token>
+        <Vector3 name="RotVelocity">
+          <X>0</X>
+          <Y>0</Y>
+          <Z>0</Z>
+        </Vector3>
+        <float name="TopParamA">-0.5</float>
+        <float name="TopParamB">0.5</float>
+        <token name="TopSurface">0</token>
+        <token name="TopSurfaceInput">0</token>
+        <float name="Transparency">0</float>
+        <Vector3 name="Velocity">
+          <X>0</X>
+          <Y>0</Y>
+          <Z>0</Z>
+        </Vector3>
+        <token name="shape">1</token>
+        <Vector3 name="size">
+          <X>1</X>
+          <Y>0.400000006</Y>
+          <Z>1</Z>
+        </Vector3>
+      </Properties>
+    </Item>
+  </Item>
+</roblox>

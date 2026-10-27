@@ -1,5 +1,5 @@
 {
-  "reviewedUtc": "2026-10-22",
+  "reviewedUtc": "2026-10-27",
   "source": "Roblox Creator Store",
   "policy": "Only Roblox-authored, public-domain models with zero embedded scripts are shipped.",
   "assets": {
@@ -34,6 +34,71 @@
       "creatorId": 1,
       "scripts": 0,
       "catalogUrl": "https://create.roblox.com/store/asset/23153940"
+    },
+    "DiningChair": {
+      "assetId": 56449487,
+      "catalogName": "Dining Chair",
+      "creator": "Roblox",
+      "creatorId": 1,
+      "scripts": 0,
+      "catalogUrl": "https://create.roblox.com/store/asset/56449487"
+    },
+    "Bookshelf": {
+      "assetId": 56449804,
+      "catalogName": "Bookshelf",
+      "creator": "Roblox",
+      "creatorId": 1,
+      "scripts": 0,
+      "catalogUrl": "https://create.roblox.com/store/asset/56449804"
+    },
+    "Fountain": {
+      "assetId": 23153947,
+      "catalogName": "Fountain",
+      "creator": "Roblox",
+      "creatorId": 1,
+      "scripts": 0,
+      "catalogUrl": "https://create.roblox.com/store/asset/23153947",
+      "sourceScriptsRemoved": 1
+    },
+    "Streetlight": {
+      "assetId": 56449028,
+      "catalogName": "Streetlight",
+      "creator": "Roblox",
+      "creatorId": 1,
+      "scripts": 0,
+      "catalogUrl": "https://create.roblox.com/store/asset/56449028"
+    },
+    "TrashBin": {
+      "assetId": 28453,
+      "catalogName": "Trash Bin",
+      "creator": "Roblox",
+      "creatorId": 1,
+      "scripts": 0,
+      "catalogUrl": "https://create.roblox.com/store/asset/28453"
+    },
+    "WritingDesk": {
+      "assetId": 56447744,
+      "catalogName": "Writing Desk",
+      "creator": "Roblox",
+      "creatorId": 1,
+      "scripts": 0,
+      "catalogUrl": "https://create.roblox.com/store/asset/56447744"
+    },
+    "DresserWide": {
+      "assetId": 56449753,
+      "catalogName": "Dresser - Wide",
+      "creator": "Roblox",
+      "creatorId": 1,
+      "scripts": 0,
+      "catalogUrl": "https://create.roblox.com/store/asset/56449753"
+    },
+    "RoyalRug": {
+      "assetId": 28229,
+      "catalogName": "Royal Crimson Rug",
+      "creator": "Roblox",
+      "creatorId": 1,
+      "scripts": 0,
+      "catalogUrl": "https://create.roblox.com/store/asset/28229"
     }
   }
 }
