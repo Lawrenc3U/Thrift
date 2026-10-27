@@ -4,6 +4,7 @@ local Shared = game:GetService("ReplicatedStorage"):WaitForChild("Shared")
 local Assets = require(Shared.AssetConfig)
 local Audio = {}
 Audio.__index = Audio
+local MUSIC_NAMES = {"shop", "town", "auction_music"}
 local function validAudioId(id)
     -- Reject the sample sequence shown in setup documentation. This prevents a
     -- copied example from producing thirteen ContentProvider errors in Studio.
@@ -24,6 +25,23 @@ function Audio.new()
             sound.Parent = SoundService; self.Tracks[name] = sound
         end
     end
+    local missingMusic = {}
+    for _, name in ipairs(MUSIC_NAMES) do
+        if not self.Tracks[name] then table.insert(missingMusic, name) end
+    end
+    if #missingMusic > 0 then
+        warn("[THRIFT AUDIO] Music is not configured: " .. table.concat(missingMusic, ", ")
+            .. ". Upload the matching WAV files and enter their real Audio asset IDs in AssetConfig.")
+    end
+    task.delay(8, function()
+        for _, name in ipairs(MUSIC_NAMES) do
+            local sound = self.Tracks[name]
+            if sound and sound.Parent and not sound.IsLoaded then
+                warn("[THRIFT AUDIO] " .. name .. " did not load. Verify that " .. sound.SoundId
+                    .. " is an Audio asset and that the experience has permission to use it.")
+            end
+        end
+    end)
     self:setZone("shop")
     return self
 end
