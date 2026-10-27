@@ -2,6 +2,16 @@
   "reviewedUtc": "2026-10-27",
   "source": "Roblox Creator Store",
   "policy": "Only Roblox-authored, public-domain models with zero embedded scripts are shipped.",
+  "preferredRuntimeAssets": {
+    "Fountain": {
+      "assetId": 145268350,
+      "catalogName": "Epic Silver Fountain",
+      "creator": "MichaelFawkes",
+      "publicDomain": true,
+      "catalogUrl": "https://create.roblox.com/store/asset/145268350",
+      "policy": "Loaded by InsertService, all LuaSourceContainer descendants removed before parenting, bundled fountain used on failure"
+    }
+  },
   "assets": {
     "LargeTree": {
       "assetId": 56449188,

@@ -24744,6 +24744,7 @@ end)
         <Properties>
           <string name="Name">World</string>
           <ProtectedString name="Source">local CollectionService = game:GetService("CollectionService")
+local InsertService = game:GetService("InsertService")
 local Lighting = game:GetService("Lighting")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
@@ -24780,16 +24781,58 @@ local catalogMetadata = {
     DresserWide = {Id = 56449753, Name = "Dresser - Wide"},
     RoyalRug = {Id = 28229, Name = "Royal Crimson Rug"},
 }
+local preferredCatalogMetadata = {
+    Fountain = {Id = 145268350, Name = "Epic Silver Fountain", Creator = "MichaelFawkes"},
+}
+local preferredCatalogTried = {}
+local function preferredCatalogAsset(folder, key)
+    local definition = preferredCatalogMetadata[key]
+    if not definition then return nil end
+    local preferredName = key .. "Preferred"
+    local existing = folder:FindFirstChild(preferredName)
+    if existing then return existing end
+    if preferredCatalogTried[key] then return nil end
+    preferredCatalogTried[key] = true
+    local ok, container = pcall(function() return InsertService:LoadAsset(definition.Id) end)
+    if not ok or not container then
+        warn("[THRIFT ASSET] Could not load " .. definition.Name .. " (" .. definition.Id .. "); using the bundled fountain.")
+        return nil
+    end
+    local template = Instance.new("Model"); template.Name = preferredName
+    for _, child in ipairs(container:GetChildren()) do child.Parent = template end
+    container:Destroy()
+    for _, child in ipairs(template:GetDescendants()) do
+        if child:IsA("LuaSourceContainer") then child:Destroy() end
+    end
+    if not template:FindFirstChildWhichIsA("BasePart", true) then
+        template:Destroy()
+        warn("[THRIFT ASSET] " .. definition.Name .. " contained no usable geometry; using the bundled fountain.")
+        return nil
+    end
+    template:SetAttribute("CatalogAssetId", definition.Id)
+    template:SetAttribute("CatalogName", definition.Name)
+    template:SetAttribute("CatalogCreator", definition.Creator)
+    template:SetAttribute("CatalogScriptsReviewed", true)
+    template.Parent = folder
+    return template
+end
 local function catalogAsset(parent, key, cf, scale)
     local folder = ServerStorage:FindFirstChild("CatalogAssets")
-    local template = folder and folder:FindFirstChild(key)
+    local template = folder and (preferredCatalogAsset(folder, key) or folder:FindFirstChild(key))
     local metadata = catalogMetadata[key]
     if not template or not template:IsA("Model") or not metadata then return nil end
     local clone = template:Clone(); clone.Name = "Catalog" .. key
-    clone:SetAttribute("CatalogAssetId", metadata.Id); clone:SetAttribute("CatalogName", metadata.Name)
-    clone:SetAttribute("CatalogCreator", "Roblox"); clone:SetAttribute("CatalogScriptsReviewed", true)
+    clone:SetAttribute("CatalogAssetId", template:GetAttribute("CatalogAssetId") or metadata.Id)
+    clone:SetAttribute("CatalogName", template:GetAttribute("CatalogName") or metadata.Name)
+    clone:SetAttribute("CatalogCreator", template:GetAttribute("CatalogCreator") or "Roblox")
+    clone:SetAttribute("CatalogScriptsReviewed", true)
     clone.Parent = parent
-    if scale and scale ~= 1 and not pcall(function() clone:ScaleTo(scale) end) then clone:Destroy(); return nil end
+    local requestedScale = scale
+    if key == "Fountain" and clone:GetAttribute("CatalogAssetId") == preferredCatalogMetadata.Fountain.Id then
+        local _, initialSize = clone:GetBoundingBox()
+        requestedScale = math.clamp(25 / math.max(initialSize.X, initialSize.Y, initialSize.Z, 0.01), 0.05, 8)
+    end
+    if requestedScale and requestedScale ~= 1 and not pcall(function() clone:ScaleTo(requestedScale) end) then clone:Destroy(); return nil end
     clone:PivotTo(cf)
     local bounds, size = clone:GetBoundingBox()
     local lift = cf.Position.Y - (bounds.Position.Y - size.Y / 2)
@@ -24990,7 +25033,7 @@ function World:exactSquare()
         local angle = index * math.pi / 2 + math.pi / 2
         local position = Vector3.new(math.cos(angle) * 21, 0, -55 + math.sin(angle) * 21)
         local facing = CFrame.lookAt(position, Vector3.new(0, 0, -55))
-        if not catalogAsset(square, "ParkBench", facing * CFrame.Angles(0, math.pi, 0), 0.68) then Kit.bench(square, facing) end
+        if not catalogAsset(square, "ParkBench", facing, 0.68) then Kit.bench(square, facing) end
     end
     for index = 0, 7 do
         local angle = index * math.pi / 4 + math.pi / 8
@@ -25380,7 +25423,7 @@ function World:exactEnvironment()
     for row, z in ipairs({17,51,85,119}) do
         for sideIndex, side in ipairs({-1,1}) do
             local benchCF = CFrame.lookAt(Vector3.new(side * 18, 0, z), Vector3.new(0, 0, z))
-            if not catalogAsset(environment, "ParkBench", benchCF * CFrame.Angles(0, math.pi, 0), 0.66) then Kit.bench(environment, benchCF) end
+            if not catalogAsset(environment, "ParkBench", benchCF, 0.66) then Kit.bench(environment, benchCF) end
             if not catalogAsset(environment, "TrashBin", CFrame.new(side * 18, 0, z + 5), 0.9) then
                 Kit.cylinder(environment, "StreetBin", 0.9, 2.4, CFrame.new(side * 18, 1.2, z + 5), Color3.fromRGB(52,100,80), Enum.Material.Metal)
             end
@@ -25458,7 +25501,7 @@ function World:exactEnvironment()
     for index = 0, 3 do
         local angle = index*math.pi/2+math.pi/4
         local benchCF = CFrame.lookAt(Vector3.new(px+math.cos(angle)*32,0,pz+math.sin(angle)*32), Vector3.new(px,0,pz))
-        if not catalogAsset(park, "ParkBench", benchCF * CFrame.Angles(0, math.pi, 0), 0.68) then Kit.bench(park, benchCF) end
+        if not catalogAsset(park, "ParkBench", benchCF, 0.68) then Kit.bench(park, benchCF) end
         local postX, postZ = px+math.cos(angle+math.pi/4)*33, pz+math.sin(angle+math.pi/4)*33
         if not catalogAsset(park, "Streetlight", CFrame.new(postX, 0, postZ) * CFrame.Angles(0, angle, 0), 0.72) then exactPost(park, postX, postZ) end
     end
