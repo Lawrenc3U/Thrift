@@ -27,6 +27,25 @@ Create the three game passes and one developer product listed in `docs/MONETIZAT
 
 Open `dist/ThriftFlip.rbxlx` in the current Roblox Studio and publish it to a private test experience. Set the server size to eight players.
 
+## Optional Epic Silver Fountain
+
+Roblox does not allow a published server to fetch third-party model `145268350` through `InsertService`. To use the exact model without authorization errors, insert **Epic Silver Fountain** by MichaelFawkes once through the authenticated Studio Toolbox. Select the inserted root model and run this in the Studio Command Bar:
+
+```lua
+local selected = game:GetService("Selection"):Get()[1]
+assert(selected and selected:IsA("Model"), "Select the inserted fountain model first")
+for _, child in ipairs(selected:GetDescendants()) do
+    if child:IsA("LuaSourceContainer") then child:Destroy() end
+end
+local folder = game:GetService("ServerStorage"):WaitForChild("CatalogAssets")
+local old = folder:FindFirstChild("EpicSilverFountain")
+if old then old:Destroy() end
+selected.Name = "EpicSilverFountain"
+selected.Parent = folder
+```
+
+Save or publish the place after running the command. The town automatically fits this model to the plaza. If it is absent, the bundled fountain is used without making a blocked network request.
+
 ## Required Roblox checks
 
 - Finish the complete tutorial with mouse and touch emulation: find, inspect, restore, display, and sell.

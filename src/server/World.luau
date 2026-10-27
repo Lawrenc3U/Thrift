@@ -1,5 +1,4 @@
 local CollectionService = game:GetService("CollectionService")
-local InsertService = game:GetService("InsertService")
 local Lighting = game:GetService("Lighting")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
@@ -39,36 +38,21 @@ local catalogMetadata = {
 local preferredCatalogMetadata = {
     Fountain = {Id = 145268350, Name = "Epic Silver Fountain", Creator = "MichaelFawkes"},
 }
-local preferredCatalogTried = {}
 local function preferredCatalogAsset(folder, key)
     local definition = preferredCatalogMetadata[key]
     if not definition then return nil end
-    local preferredName = key .. "Preferred"
-    local existing = folder:FindFirstChild(preferredName)
-    if existing then return existing end
-    if preferredCatalogTried[key] then return nil end
-    preferredCatalogTried[key] = true
-    local ok, container = pcall(function() return InsertService:LoadAsset(definition.Id) end)
-    if not ok or not container then
-        warn("[THRIFT ASSET] Could not load " .. definition.Name .. " (" .. definition.Id .. "); using the bundled fountain.")
-        return nil
+    local template
+    for _, name in ipairs({"EpicSilverFountain", "Epic Silver Fountain", key .. "Preferred"}) do
+        local candidate = folder:FindFirstChild(name)
+        if candidate and candidate:IsA("Model") and candidate:FindFirstChildWhichIsA("BasePart", true) then
+            template = candidate; break
+        end
     end
-    local template = Instance.new("Model"); template.Name = preferredName
-    for _, child in ipairs(container:GetChildren()) do child.Parent = template end
-    container:Destroy()
-    for _, child in ipairs(template:GetDescendants()) do
-        if child:IsA("LuaSourceContainer") then child:Destroy() end
-    end
-    if not template:FindFirstChildWhichIsA("BasePart", true) then
-        template:Destroy()
-        warn("[THRIFT ASSET] " .. definition.Name .. " contained no usable geometry; using the bundled fountain.")
-        return nil
-    end
+    if not template then return nil end
     template:SetAttribute("CatalogAssetId", definition.Id)
     template:SetAttribute("CatalogName", definition.Name)
     template:SetAttribute("CatalogCreator", definition.Creator)
     template:SetAttribute("CatalogScriptsReviewed", true)
-    template.Parent = folder
     return template
 end
 local function catalogAsset(parent, key, cf, scale)
@@ -81,6 +65,9 @@ local function catalogAsset(parent, key, cf, scale)
     clone:SetAttribute("CatalogName", template:GetAttribute("CatalogName") or metadata.Name)
     clone:SetAttribute("CatalogCreator", template:GetAttribute("CatalogCreator") or "Roblox")
     clone:SetAttribute("CatalogScriptsReviewed", true)
+    for _, child in ipairs(clone:GetDescendants()) do
+        if child:IsA("LuaSourceContainer") then child:Destroy() end
+    end
     clone.Parent = parent
     local requestedScale = scale
     if key == "Fountain" and clone:GetAttribute("CatalogAssetId") == preferredCatalogMetadata.Fountain.Id then

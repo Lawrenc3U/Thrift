@@ -2,14 +2,14 @@
   "reviewedUtc": "2026-10-27",
   "source": "Roblox Creator Store",
   "policy": "Only Roblox-authored, public-domain models with zero embedded scripts are shipped.",
-  "preferredRuntimeAssets": {
+  "preferredStudioAssets": {
     "Fountain": {
       "assetId": 145268350,
       "catalogName": "Epic Silver Fountain",
       "creator": "MichaelFawkes",
       "publicDomain": true,
       "catalogUrl": "https://create.roblox.com/store/asset/145268350",
-      "policy": "Loaded by InsertService, all LuaSourceContainer descendants removed before parenting, bundled fountain used on failure"
+      "policy": "Insert once through authenticated Studio Toolbox as ServerStorage/CatalogAssets/EpicSilverFountain; all LuaSourceContainer descendants are removed from clones before parenting; bundled fountain is used when absent"
     }
   },
   "assets": {
